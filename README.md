@@ -29,7 +29,8 @@ A standalone, client-side HTML document review and visual diff inspection studio
 
 ## 🚀 クイックスタート (Getting Started)
 
-🌐 **Webアプリを開く**: [https://tossy-apps.github.io/doc-review-studio/](https://tossy-apps.github.io/doc-review-studio/)
+- 🌐 **Webアプリを開く**: [https://tossy-apps.github.io/doc-review-studio/](https://tossy-apps.github.io/doc-review-studio/)
+- 📖 **操作マニュアル (HTML)**: [https://tossy-apps.github.io/doc-review-studio/manual.html](https://tossy-apps.github.io/doc-review-studio/manual.html)（または [manual.md](manual.md)）
 
 ### 利用手順
 
@@ -48,7 +49,16 @@ A standalone, client-side HTML document review and visual diff inspection studio
 
 ```text
 .
+├── images/             # マニュアル用キャプチャ画像
+│   ├── 01_main_view.png
+│   ├── 02_open_source.png
+│   ├── 03_evidence_input.png
+│   ├── 04_ai_prompt.png
+│   ├── 05_diff_inspector.png
+│   └── 06_pane_toggle.png
 ├── index.html          # DocReview Studio 本体 (GitHub Pages / ローカル実行用)
+├── manual.html         # 公開用操作マニュアル (単体閲覧可能HTML)
+├── manual.md           # 操作マニュアル原稿 (Markdown)
 ├── robots.txt          # クローラー向け設定
 ├── README.md           # 本ドキュメント
 └── LICENSE             # ライセンスファイル

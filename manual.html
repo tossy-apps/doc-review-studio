@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocReview Studio ユーザーズマニュアル</title>
+  <meta name="description" content="DocReview Studio の公式利用マニュアル。完全クライアントサイドでのHTML文書レビュー、AI指示プロンプト生成、WinMerge風Diff差分検証の手順を詳しく解説。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #0f1012;
+      --bg-card: #18191c;
+      --bg-header: #151619;
+      --bg-surface: #222429;
+      --border: #2e3138;
+      --border-focus: #3b82f6;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-light: #60a5fa;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'BIZ UDPGothic', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.75;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(21, 22, 25, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand-badge {
+      background: rgba(37, 99, 235, 0.2);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: var(--accent-light);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .header-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .launch-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .launch-btn:hover {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 40px 24px 100px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 48px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 24px 16px 80px;
+      }
+      .toc-sidebar {
+        display: none;
+      }
+    }
+
+    /* TOC Sidebar */
+    .toc-sidebar {
+      position: sticky;
+      top: 80px;
+      height: fit-content;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 16px;
+    }
+
+    .toc-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--accent-light);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toc-sidebar ul {
+      list-style: none;
+    }
+
+    .toc-sidebar li {
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+
+    .toc-sidebar a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+      display: block;
+      line-height: 1.4;
+    }
+
+    .toc-sidebar a:hover {
+      color: #fff;
+    }
+
+    /* Content Area */
+    .content-area {
+      min-width: 0;
+    }
+
+    .content-area h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 16px;
+      color: #ffffff;
+      line-height: 1.3;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 16px;
+    }
+
+    .content-area h2 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-top: 48px;
+      margin-bottom: 20px;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 4px solid var(--accent);
+      padding-left: 12px;
+      line-height: 1.4;
+    }
+
+    .content-area h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-top: 28px;
+      margin-bottom: 12px;
+      color: #e2e8f0;
+    }
+
+    .content-area h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      color: #cbd5e1;
+    }
+
+    .content-area p {
+      margin-bottom: 16px;
+      color: #d1d5db;
+      font-size: 14.5px;
+    }
+
+    .content-area hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 40px 0;
+    }
+
+    /* Lists */
+    .content-area ul, .content-area ol {
+      margin-bottom: 20px;
+      padding-left: 24px;
+      color: #d1d5db;
+      font-size: 14.5px;
+    }
+
+    .content-area li {
+      margin-bottom: 8px;
+    }
+
+    .content-area li strong {
+      color: #f3f4f6;
+    }
+
+    /* Images */
+    .content-area img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      margin: 18px 0 24px;
+      display: block;
+      background: #111214;
+    }
+
+    /* Tables */
+    .content-area table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0 28px;
+      background: var(--bg-card);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: 13.5px;
+    }
+
+    .content-area th {
+      background: var(--bg-surface);
+      color: #f1f5f9;
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .content-area td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+    }
+
+    .content-area tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Code Blocks */
+    .content-area pre {
+      background: #111214;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 16px 0 24px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #93c5fd;
+    }
+
+    .content-area code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #93c5fd;
+    }
+
+    .content-area pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    /* Callout Boxes (Blockquotes) */
+    .content-area blockquote {
+      background: rgba(37, 99, 235, 0.08);
+      border-left: 4px solid var(--accent-light);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 20px 0;
+      color: #bfdbfe;
+      font-size: 14px;
+    }
+
+    .content-area blockquote p {
+      margin-bottom: 0;
+      color: inherit;
+    }
+
+    /* Back to top button */
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      color: #fff;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transition: all 0.2s ease;
+      font-size: 18px;
+      z-index: 40;
+    }
+
+    .back-to-top:hover {
+      background: var(--accent);
+      border-color: var(--accent-light);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <a href="./index.html" class="brand">
+      <span class="brand-badge">Official Manual</span>
+      <span class="brand-title">DocReview Studio</span>
+    </a>
+    <div class="header-links">
+      <a href="./index.html" class="launch-btn">
+        <span>🚀 Webアプリを起動</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+    <!-- TOC Sidebar -->
+    <aside class="toc-sidebar">
+      <div class="toc-title">📑 目次 (INDEX)</div>
+      <ul>
+        <li><a href="#1-docreview-studio-の特徴設計思想">1. 特徴・設計思想</a></li>
+        <li><a href="#2-画面構成uiレイアウト">2. 画面構成（UI）</a></li>
+        <li><a href="#3-クイックスタート3ステップで始める">3. クイックスタート</a></li>
+        <li><a href="#4-基本レビュー手順指摘の記録エビデンス管理">4. 基本レビュー手順</a></li>
+        <li><a href="#5-aiプロンプト連携llm指示の一括生成">5. AIプロンプト連携</a></li>
+        <li><a href="#6-winmerge風-diff差分検証機能">6. WinMerge風 Diff検証</a></li>
+        <li><a href="#7-便利な操作ショートカット拡張機能">7. 便利な操作・拡張</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content-area">
+      <h1 id="docreview-studio">DocReview Studio ユーザーズマニュアル</h1>
+<p>DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアルや技術仕様書を読み込み、直感的なレビュー指摘の記録、AI修正指示プロンプトの自動生成、WinMerge風の左右Diff差分検証を行える<strong>完全クライアントサイド型ドキュメント校正スタジオ</strong>です。</p>
+<hr />
+<h2 id="_1">📑 目次</h2>
+<ol>
+<li><a href="#1-docreview-studio-の特徴設計思想">DocReview Studio の特徴・設計思想</a></li>
+<li><a href="#2-画面構成uiレイアウト">画面構成（UIレイアウト）</a></li>
+<li><a href="#3-クイックスタート3ステップで始める">クイックスタート（3ステップで始める）</a></li>
+<li><a href="#4-基本レビュー手順指摘の記録エビデンス管理">基本レビュー手順（指摘の記録・エビデンス管理）</a></li>
+<li><a href="#5-aiプロンプト連携llm指示の一括生成">AIプロンプト連携（LLM指示の一括生成）</a></li>
+<li><a href="#6-winmerge風-diff差分検証機能">WinMerge風 Diff差分検証機能</a></li>
+<li><a href="#7-便利な操作ショートカット拡張機能">便利な操作・ショートカット・拡張機能</a></li>
+</ol>
+<hr />
+<h2 id="1-docreview-studio">1. DocReview Studio の特徴・設計思想</h2>
+<p><img alt="全体レイアウト" src="./images/01_main_view.png" /></p>
+<h3 id="_2">🔒 サーバー通信ゼロ・完全ローカル完結</h3>
+<ul>
+<li><strong>File System Access API</strong> を採用し、PCローカルのフォルダやファイルをブラウザ内部メモリで直接読み込み・操作します。</li>
+<li>社外秘のドキュメントや未公開マニュアル、個人情報が含まれる文書であっても、外部サーバーへ一切送信されません。</li>
+</ul>
+<h3 id="_3">🚀 インストーラー不要・即座に起動</h3>
+<ul>
+<li>Chromium系ブラウザ（<strong>Google Chrome</strong>、<strong>Microsoft Edge</strong>、<strong>Brave</strong> 等）があれば、インストール作業や環境構築なしで即座に利用可能です。</li>
+</ul>
+<hr />
+<h2 id="2-ui">2. 画面構成（UIレイアウト）</h2>
+<p>DocReview Studio は、効率的な校正作業のために設計された<strong>3ペイン構造</strong>を採用しています。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">エリア</th>
+<th style="text-align: left;">名称</th>
+<th style="text-align: left;">主な役割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>ヘッダー</strong></td>
+<td style="text-align: left;">コントロールバー</td>
+<td style="text-align: left;">原本・退避フォルダ指定、JSON/MD保存、AI指示コピー、Diff検証切替</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>左ペイン</strong></td>
+<td style="text-align: left;">ファイルツリー</td>
+<td style="text-align: left;">対象フォルダ内のHTMLファイル一覧、指摘件数バッジ表示</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>中央ペイン</strong></td>
+<td style="text-align: left;">プレビュー / Diff検証</td>
+<td style="text-align: left;">HTML本文のリアルタイムレンダリング、左右並列差分比較</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>右ペイン</strong></td>
+<td style="text-align: left;">指摘一覧（Evidence）</td>
+<td style="text-align: left;">選択テキスト、概算行番号、指摘区分、指示入力カードの一覧管理</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-3">3. クイックスタート（3ステップで始める）</h2>
+<p><img alt="原本と退避の指定" src="./images/02_open_source.png" /></p>
+<h3 id="step-1">STEP 1: 原本フォルダを開く</h3>
+<ol>
+<li>ヘッダー左側の <strong>「📁 原本を開く」</strong> ボタンをクリックします。</li>
+<li>レビュー・校正対象のHTMLファイル群が含まれるローカルフォルダを選択し、アクセスを許可します。</li>
+<li>左ペインにHTMLファイル一覧が読み込まれます。</li>
+</ol>
+<h3 id="step-2">STEP 2: 退避先フォルダを指定する（原本バックアップ）</h3>
+<ol>
+<li>ヘッダーの <strong>「📂 退避先を指定」</strong> ボタンをクリックします。</li>
+<li>バックアップ用の空フォルダ（または既存の退避フォルダ）を選択します。</li>
+<li>原本ファイル群が自動的にミラー退避され、AI修正前の原本データとして保持されます。</li>
+</ol>
+<blockquote>
+<p><strong>💡 ヒント</strong>: 退避フォルダを指定しておくことで、AIによる修正後にワンクリックで「修正前 vs 修正後」の差分比較（Diff検証）を行えるようになります。</p>
+</blockquote>
+<h3 id="step-3">STEP 3: レビュー対象のファイルを選択</h3>
+<ul>
+<li>左側のファイル一覧からレビューしたいファイルをクリックすると、中央ペインにプレビューが表示されます。</li>
+</ul>
+<hr />
+<h2 id="4">4. 基本レビュー手順（指摘の記録・エビデンス管理）</h2>
+<p><img alt="テキスト選択と指摘カード" src="./images/03_evidence_input.png" /></p>
+<h3 id="1">1. 本文テキストを選択して指摘を追加</h3>
+<ol>
+<li>中央のプレビュー画面で、修正・指摘したいテキストをマウスでドラッグ選択します。</li>
+<li>プレビュー上部ツールバーの <strong>「📌 指摘リストに追加」</strong> ボタンをクリックします。</li>
+<li>右ペインに新しい指摘カードが自動生成され、入力欄にフォーカスが当たります。</li>
+</ol>
+<h3 id="2">2. 指摘カードの編集</h3>
+<p>各指摘カードには以下の情報が自動記録・設定されます：</p>
+<ul>
+<li><strong>対象ファイル &amp; 概算行番号</strong>: 原本HTML内のテキスト出現位置から <code>L.24付近</code> のように概算行を自動算出。</li>
+<li><strong>指摘区分（ラジオボタン）</strong>: <code>修正</code> / <code>追加</code> / <code>削除</code> / <code>質問</code> / <code>検討中</code> から選択。</li>
+<li><strong>対象テキスト（黄色ハイライト枠）</strong>: クリックすると本文プレビューの該当箇所へ自動スクロール＆点滅ハイライトします。</li>
+<li><strong>文脈（コンテキスト）</strong>: 対象テキストの前後文脈を自動抽出。</li>
+<li><strong>指示入力（テキストエリア）</strong>: AIや執筆者に伝えたい具体的な指示内容を入力します。</li>
+</ul>
+<h3 id="3">3. エビデンスのエクスポート・復元</h3>
+<p>ヘッダーの <strong>Evidence</strong> グループからレビュー結果を保存・共有できます。</p>
+<ul>
+<li><strong>💾 JSON</strong>: 指摘データ構造を完全保持したJSONファイルを出力。</li>
+<li><strong>📝 MD表</strong>: GitHub Issueやレビュー報告書にそのまま貼り付け可能なMarkdownテーブル形式で出力。</li>
+<li><strong>📂 読込</strong>: 以前保存したJSONファイルを読み込み、指摘カード群を完全復元。</li>
+</ul>
+<hr />
+<h2 id="5-aillm">5. AIプロンプト連携（LLM指示の一括生成）</h2>
+<p><img alt="AIプロンプトコピー機能" src="./images/04_ai_prompt.png" /></p>
+<p>蓄積した指摘データから、LLM（Claude, Gemini, ChatGPT 等）がそのまま解釈して正確にコード修正できる形式のプロンプトを一括生成します。</p>
+<h3 id="_4">指示プロンプトのコピー方法</h3>
+<ul>
+<li><strong>🤖 選択ファイル指示</strong>: 現在中央ペインに表示しているファイルに関する指摘のみを整形してクリップボードにコピー。</li>
+<li><strong>🤖 全ファイル指示</strong>: プロジェクト全体の全ファイルにまたがるすべての指摘を合算してクリップボードにコピー。</li>
+</ul>
+<h4 id="_5">生成されるプロンプト形式例</h4>
+<pre><code class="language-markdown">以下のドキュメントレビュー指摘に基づき、HTMLファイルを修正してください。
+
+【対象ファイル】01_intro.html
+---
+■ 指摘 1 [修正] (L.18付近)
+・対象テキスト: インメモリ全文検索: 数百ファイルのExcelデータをメモリ上に展開し、瞬時に結果を表示します。
+・文脈: ...主な特徴: インメモリ全文検索: 数百ファイルのExcelデータをメモリ上に展開し、瞬時に結果を表示します。 完全オフライン動作...
+・指示: 最新ベンチマークの数値（100ファイル約0.8秒）を追記し、速度メリットを具体化してください。
+
+■ 指摘 2 [追加] (L.24付近)
+・対象テキスト: 「検索実行」ボタン
+・文脈: ...2. 「検索実行」ボタンをクリックまたは Enter キーを押します。 3. 下部のリストに...
+・指示: 『（または Ctrl+Enter で即時実行）』の補足を太字で追記。
+</code></pre>
+<hr />
+<h2 id="6-winmerge-diff">6. WinMerge風 Diff差分検証機能</h2>
+<p><img alt="Diff検証画面" src="./images/05_diff_inspector.png" /></p>
+<p>AIやエディタによるHTML修正が完了したら、ヘッダー右側の <strong>「🔄 Diff検証」</strong> ボタンを押してビジュアル差分比較モードへ切り替えます。</p>
+<h3 id="diff-inspector">Diff Inspector の主な機能</h3>
+<ol>
+<li><strong>左右並列ブロック比較</strong>:</li>
+<li><strong>左ペイン</strong>: 修正前（退避フォルダの原本データ）</li>
+<li><strong>右ペイン</strong>: 修正後（作業フォルダの最新データ）</li>
+<li><strong>中央 Canvas ブリッジライン</strong>:</li>
+<li>左右の対応する差分ブロック間に美しい接続ブリッジラインを描画し、どこがどのように変更されたかを視覚的に把握できます。</li>
+<li><strong>スクロール自動同期</strong>:</li>
+<li>一方の画面をスクロールすると、もう一方も対応位置へスムーズに追従します。</li>
+<li><strong>🔄 原本再読込ボタン</strong>:</li>
+<li>AIがファイルを書き換えた際、アプリをリロードすることなくワンクリックで最新の作業ファイルを再読込して差分を即座に再評価します。</li>
+</ol>
+<hr />
+<h2 id="7">7. 便利な操作・ショートカット・拡張機能</h2>
+<p><img alt="サイドバー折りたたみ" src="./images/06_pane_toggle.png" /></p>
+<h3 id="_6">⌨️ キーボードショートカット</h3>
+<p>作業領域を広く使いたい場合、キーボード操作で瞬時にサイドバーの開閉が可能です。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">ショートカット</th>
+<th style="text-align: left;">機能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>Alt + 1</code></td>
+<td style="text-align: left;">左ペイン（ファイルツリー）の表示 / 非表示トグル</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>Alt + 2</code></td>
+<td style="text-align: left;">右ペイン（指摘一覧）の表示 / 非表示トグル</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>💡 UIステータス</strong>: ツールバーの <strong>「◧ ファイル」</strong> <strong>「◨ 指摘一覧」</strong> ボタンは、開いている時は<strong>鮮やかなブルー</strong>、閉じている時は<strong>ネオングリーン</strong>に発色し、状態が一目で分かります。</p>
+</blockquote>
+<h3 id="_7">🖥️ マルチディスプレイ向け「独立別窓」表示</h3>
+<p>ヘッダーツールバーのボタンから、原本や修正前ドキュメントをブラウザの<strong>独立別ウィンドウ</strong>としてポップアップ起動できます。</p>
+<ul>
+<li><strong>「別窓: 原本」</strong>: 現在選択中の原本HTMLを別ウィンドウで大きく表示。</li>
+<li><strong>「別窓: 修正前」</strong>: 退避フォルダの修正前HTMLを別ウィンドウで起動。</li>
+</ul>
+<p>マルチモニター環境で「左画面に原本」「右画面に修正後」を最大化して比較レビューを行う際に最適です。</p>
+    </main>
+  </div>
+
+  <!-- Back to top -->
+  <a href="#" class="back-to-top" title="先頭へ戻る">↑</a>
+
+</body>
+</html>
