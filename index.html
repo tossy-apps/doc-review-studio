@@ -1843,11 +1843,12 @@
             const isDel = ${isBackup ? 'true' : 'false'};
             const targetClass = isDel ? 'winmerge-del' : 'winmerge-add';
             
-            // Highlight direct content elements that differ
-            const candidates = document.body ? document.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre') : [];
+            // 子要素を持たない「末端のテキスト要素」のみを対象にして差分誤爆を防止
+            const candidates = document.body ? document.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, span, b, strong') : [];
             candidates.forEach(el => {
+              if (el.children.length > 0 && Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|DIV|TABLE)$/i.test(c.tagName))) return;
               const text = (el.innerText || "").trim();
-              if (text && !counterpartSet.has(text)) {
+              if (text && text.length > 1 && !counterpartSet.has(text)) {
                 el.classList.add(targetClass);
               }
             });
@@ -1884,24 +1885,35 @@
       const syncScript = `\n` + sTag + `
         (function() {
           let isSyncing = false;
-          window.addEventListener('scroll', () => {
+          
+          function getScrollableEl() {
+            return document.querySelector('.main-scroll-body') || document.scrollingElement || document.documentElement || document.body;
+          }
+
+          // キャプチャフェーズ(true)で内部コンテナのスクロールを確実に捕捉
+          document.addEventListener('scroll', (e) => {
             if (isSyncing) return;
-            const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-            const ratio = maxScroll > 0 ? (window.scrollY / maxScroll) : 0;
+            const target = e.target === document ? getScrollableEl() : e.target;
+            if (!target || !target.scrollHeight) return;
+            const maxScroll = target.scrollHeight - target.clientHeight;
+            if (maxScroll <= 0) return;
+            const ratio = target.scrollTop / maxScroll;
             window.parent.postMessage({
               type: 'DIFF_SCROLL_NOTIFY',
               source: '${role}',
-              scrollY: window.scrollY,
+              scrollY: target.scrollTop,
               scrollRatio: ratio
             }, '*');
-          });
+          }, true);
 
           window.addEventListener('message', (e) => {
             if (e.data && e.data.type === 'DIFF_APPLY_SCROLL' && e.data.target === '${role}') {
-              const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+              const target = getScrollableEl();
+              if (!target) return;
+              const maxScroll = target.scrollHeight - target.clientHeight;
               if (maxScroll <= 0) return;
               isSyncing = true;
-              window.scrollTo(0, Math.round(e.data.scrollRatio * maxScroll));
+              target.scrollTop = Math.round(e.data.scrollRatio * maxScroll);
               setTimeout(() => { isSyncing = false; }, 40);
             }
           });
