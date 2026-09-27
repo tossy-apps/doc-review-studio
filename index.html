@@ -787,8 +787,41 @@
 
     document.getElementById('addIssueFromParentBtn').onclick = function () {
       const frameEl = document.getElementById('mainPreview');
-      if (!frameEl || !frameEl.contentWindow) return;
-      frameEl.contentWindow.postMessage({ type: 'REQUEST_CURRENT_SELECTION' }, '*');
+      if (!frameEl) return;
+
+      // 1. 同一オリジン/srcdoc内のSelectionを直接即座に抽出
+      try {
+        if (frameEl.contentDocument && frameEl.contentWindow) {
+          const win = frameEl.contentWindow;
+          const sel = win.getSelection();
+          const text = sel ? sel.toString().trim() : "";
+          if (text) {
+            let context = "";
+            if (sel.rangeCount > 0) {
+              let parent = sel.getRangeAt(0).commonAncestorContainer;
+              if (parent.nodeType === 3) parent = parent.parentNode;
+              const fullText = (parent.innerText || "").replace(/\r?\n/g, " ");
+              const idx = fullText.indexOf(text);
+              if (idx !== -1) {
+                const start = Math.max(0, idx - 25);
+                const end = Math.min(fullText.length, idx + text.length + 25);
+                context = (start > 0 ? "..." : "") + fullText.substring(start, end).trim() + (end < fullText.length ? "..." : "");
+              }
+            }
+            processAddLog({
+              text: text,
+              context: context,
+              fileName: currentFileName
+            });
+            return;
+          }
+        }
+      } catch (err) {}
+
+      // 2. フォーカス喪失時などのフォールバック（iframe内部スクリプトのキャッシュから取得）
+      if (frameEl.contentWindow) {
+        frameEl.contentWindow.postMessage({ type: 'REQUEST_CURRENT_SELECTION' }, '*');
+      }
     };
 
     document.getElementById('openDirBtn').onclick = openWorkDirectory;
@@ -1079,6 +1112,28 @@
             padding: 1px 3px;
             display: inline;
           }
+          #ai-rv-float-btn {
+            position: absolute;
+            display: none;
+            z-index: 2147483647;
+            background: #16a34a;
+            color: #ffffff;
+            border: 1px solid #22c55e;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: bold;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease;
+            white-space: nowrap;
+            user-select: none;
+          }
+          #ai-rv-float-btn:hover {
+            background: #15803d;
+            transform: scale(1.05);
+          }
         </style>
       `;
 
@@ -1086,16 +1141,16 @@
       const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
 
       const injectedScript = `\n` + sTag + `
-          window.addEventListener('message', (e) => {
-            if (e.data && e.data.type === 'REQUEST_CURRENT_SELECTION') {
-              const sel = window.getSelection();
-              const text = sel ? sel.toString().trim() : "";
-              if (!text) {
-                alert("マニュアル本文のテキストを選択してください。");
-                return;
-              }
-              let context = "";
-              if (sel.rangeCount > 0) {
+          let lastSelectedText = "";
+          let lastSelectedContext = "";
+          let floatBtn = null;
+
+          function getSelectionInfo() {
+            const sel = window.getSelection();
+            const text = sel ? sel.toString().trim() : "";
+            let context = "";
+            if (text && sel.rangeCount > 0) {
+              try {
                 let parent = sel.getRangeAt(0).commonAncestorContainer;
                 if (parent.nodeType === 3) parent = parent.parentNode;
                 const fullText = (parent.innerText || "").replace(/\\r?\\n/g, " ");
@@ -1105,13 +1160,91 @@
                   const end = Math.min(fullText.length, idx + text.length + 25);
                   context = (start > 0 ? "..." : "") + fullText.substring(start, end).trim() + (end < fullText.length ? "..." : "");
                 }
-              }
-              window.parent.postMessage({
-                type: 'AI_REVIEW_ADD_LOG',
-                text: text,
-                context: context,
-                fileName: ${JSON.stringify(fileName)}
-              }, '*');
+              } catch (err) {}
+            }
+            return { text, context, sel };
+          }
+
+          function handleSelectionUpdate() {
+            const { text, context, sel } = getSelectionInfo();
+            if (text) {
+              lastSelectedText = text;
+              lastSelectedContext = context;
+              showFloatButton(sel);
+            } else {
+              hideFloatButton();
+            }
+          }
+
+          function showFloatButton(sel) {
+            if (!floatBtn) {
+              floatBtn = document.createElement('button');
+              floatBtn.id = 'ai-rv-float-btn';
+              floatBtn.innerHTML = '📌 指摘に追加';
+              floatBtn.onmousedown = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              };
+              floatBtn.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                sendAddLog(lastSelectedText, lastSelectedContext);
+                hideFloatButton();
+              };
+              document.body.appendChild(floatBtn);
+            }
+
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) {
+              hideFloatButton();
+              return;
+            }
+
+            const top = rect.top + window.scrollY - 36;
+            const left = Math.max(10, rect.left + window.scrollX + (rect.width / 2) - 45);
+
+            floatBtn.style.top = Math.max(5, top) + 'px';
+            floatBtn.style.left = left + 'px';
+            floatBtn.style.display = 'block';
+          }
+
+          function hideFloatButton() {
+            if (floatBtn) floatBtn.style.display = 'none';
+          }
+
+          function sendAddLog(targetText, context) {
+            if (!targetText) {
+              alert("マニュアル本文のテキストを選択してください。");
+              return;
+            }
+            window.parent.postMessage({
+              type: 'AI_REVIEW_ADD_LOG',
+              text: targetText,
+              context: context || "",
+              fileName: ${JSON.stringify(fileName)}
+            }, '*');
+          }
+
+          document.addEventListener('selectionchange', () => {
+            const sel = window.getSelection();
+            if (sel && sel.toString().trim()) {
+              const info = getSelectionInfo();
+              lastSelectedText = info.text;
+              lastSelectedContext = info.context;
+            }
+          });
+
+          document.addEventListener('mouseup', handleSelectionUpdate);
+          document.addEventListener('keyup', handleSelectionUpdate);
+
+          window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'REQUEST_CURRENT_SELECTION') {
+              const currentInfo = getSelectionInfo();
+              const textToSend = currentInfo.text || lastSelectedText;
+              const contextToSend = currentInfo.context || lastSelectedContext;
+              sendAddLog(textToSend, contextToSend);
             } else if (e.data && e.data.type === 'HIGHLIGHT_TARGET_TEXT') {
               highlightAndScrollTo(e.data.targetText);
             } else if (e.data && e.data.type === 'SCROLL_TO_HASH') {
@@ -1246,11 +1379,16 @@
     }
 
     function resolveResourceUrls(html, resourceMap) {
+      if (!html) return "";
       let res = html;
       const map = resourceMap || blobUrlMap;
-      for (const [key, blobUrl] of Object.entries(map)) {
+      const sortedKeys = Object.keys(map).sort((a, b) => b.length - a.length);
+
+      for (const key of sortedKeys) {
+        const blobUrl = map[key];
         const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const reg = new RegExp(`(["'=])([^"'=]*?${escaped})(["'\\s>])`, 'gi');
+        // Match src="./path/to/img.png", src="path/to/img.png", url('path/to/img.png'), etc.
+        const reg = new RegExp(`(["'=/(])(?:\\./|\\.\\./)*([^"'=/(]*?${escaped})(["'\\s)>])`, 'gi');
         res = res.replace(reg, `$1${blobUrl}$3`);
       }
       return res;
@@ -1418,15 +1556,41 @@
         </div>
         <div style="height:44px;"></div>
       ` + sTag + `
-          document.getElementById('detachedAddBtn').onclick = function() {
+          let lastSel = "";
+          let lastCtx = "";
+          function cacheSelection() {
             const sel = window.getSelection();
             const text = sel ? sel.toString().trim() : "";
+            if (text) {
+              lastSel = text;
+              if (sel.rangeCount > 0) {
+                let parent = sel.getRangeAt(0).commonAncestorContainer;
+                if (parent.nodeType === 3) parent = parent.parentNode;
+                const fullText = (parent.innerText || "").replace(/\\r?\\n/g, " ");
+                const idx = fullText.indexOf(text);
+                if (idx !== -1) {
+                  const start = Math.max(0, idx - 25);
+                  const end = Math.min(fullText.length, idx + text.length + 25);
+                  lastCtx = (start > 0 ? "..." : "") + fullText.substring(start, end).trim() + (end < fullText.length ? "..." : "");
+                }
+              }
+            }
+          }
+          document.addEventListener('selectionchange', cacheSelection);
+          document.addEventListener('mouseup', cacheSelection);
+          document.addEventListener('keyup', cacheSelection);
+
+          document.getElementById('detachedAddBtn').onclick = function() {
+            cacheSelection();
+            const sel = window.getSelection();
+            const text = (sel ? sel.toString().trim() : "") || lastSel;
+            const context = lastCtx;
             if (!text) { alert("マニュアル本文のテキストを選択してください。"); return; }
             if (window.opener && !window.opener.closed) {
               window.opener.postMessage({
                 type: 'AI_REVIEW_ADD_LOG',
                 text: text,
-                context: "",
+                context: context,
                 fileName: ${JSON.stringify(currentFileName)}
               }, '*');
               const btn = this;
@@ -1448,10 +1612,13 @@
         finalHtml = headerBar + finalHtml;
       }
 
-      const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
-      const blobUrl = URL.createObjectURL(blob);
-      detachedModifiedWin = window.open(blobUrl, "_blank", "width=1050,height=850,scrollbars=yes,resizable=yes");
+      if (!detachedModifiedWin || detachedModifiedWin.closed) {
+        detachedModifiedWin = window.open("about:blank", "_blank", "width=1050,height=850,scrollbars=yes,resizable=yes");
+      }
       if (detachedModifiedWin) {
+        detachedModifiedWin.document.open();
+        detachedModifiedWin.document.write(finalHtml);
+        detachedModifiedWin.document.close();
         detachedModifiedWin.focus();
       }
     }
@@ -1482,10 +1649,13 @@
         finalHtml = headerBar + finalHtml;
       }
 
-      const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
-      const blobUrl = URL.createObjectURL(blob);
-      detachedBackupWin = window.open(blobUrl, "_blank", "width=1050,height=850,scrollbars=yes,resizable=yes");
+      if (!detachedBackupWin || detachedBackupWin.closed) {
+        detachedBackupWin = window.open("about:blank", "_blank", "width=1050,height=850,scrollbars=yes,resizable=yes");
+      }
       if (detachedBackupWin) {
+        detachedBackupWin.document.open();
+        detachedBackupWin.document.write(finalHtml);
+        detachedBackupWin.document.close();
         detachedBackupWin.focus();
       }
     }
