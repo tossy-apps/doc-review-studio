@@ -1164,15 +1164,31 @@
             e.preventDefault();
             let cleanHref = href.replace(/^\.\//, '');
             let parts = cleanHref.split('#');
-            let targetFile = parts[0];
-            let hash = parts[1] || '';
+            let targetFile = parts[0] ? parts[0].trim() : '';
+            let hash = parts[1] ? parts[1].trim() : '';
 
-            if (!targetFile && hash) {
-              const targetEl = findAnchorEl(hash);
-              if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            const currentDocName = ${JSON.stringify(fileName)} || '';
+
+            // 3-1. 同一ファイル内のアンカーリンク（#sec-1 や manual.html#sec-1 など）
+            if (!targetFile || targetFile.toLowerCase() === currentDocName.toLowerCase()) {
+              if (hash) {
+                const targetEl = findAnchorEl(hash);
+                if (targetEl) {
+                  targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
               return;
             }
 
+            // 3-2. Webアプリ本体（index.html）への起動リンクや target="_blank" 指定のリンク
+            if (link.target === '_blank' || targetFile.toLowerCase() === 'index.html') {
+              window.open(href, '_blank', 'noopener,noreferrer');
+              return;
+            }
+
+            // 3-3. プロジェクト内の他ドキュメントファイルへの遷移
             window.parent.postMessage({
               type: 'NAVIGATE_TO_FILE',
               targetFile: targetFile,
