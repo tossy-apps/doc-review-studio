@@ -164,6 +164,18 @@
       height: 22px;
     }
 
+    .btn-manual { background: #4f46e5; color: #ffffff; border-color: #6366f1; text-decoration: none; }
+    .btn-manual:hover { background: #4338ca; border-color: #818cf8; color: #ffffff; }
+
+    .pane-files-footer {
+      padding: 8px 12px;
+      border-top: 1px solid var(--border-light);
+      font-size: 10px;
+      color: #6b7280;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
     /* サイドバー開閉用ボタンスタイル（通常時：蛍光ライトグリーン発色） */
     #toggleFilesBtn, #toggleLogsBtn {
       background: rgba(34, 197, 94, 0.2);
@@ -559,8 +571,11 @@
 
     <!-- グループ4: 差分検証 -->
     <div class="action-group" style="margin-left: auto;">
-      <div class="group-label">Inspection</div>
+      <div class="group-label">Inspection & Guide</div>
       <div class="group-buttons">
+        <a href="./manual.html" target="_blank" class="btn btn-manual" title="使い方マニュアルを開く">
+          📖 マニュアル
+        </a>
         <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダをブロック差分検証">
           🔄 Diff検証
         </button>
@@ -579,6 +594,9 @@
       <ul class="file-tree" id="fileTree">
         <li style="color: #9ca3af; cursor: default;">原本フォルダを開いてください</li>
       </ul>
+      <div class="pane-files-footer">
+        &copy; 2026 DocReview Studio
+      </div>
     </div>
 
     <!-- 中央：インラインプレビュー / WinMerge風Diff比較 -->
