@@ -29,9 +29,11 @@ A standalone, client-side HTML document review and visual diff inspection studio
 
 ## 🚀 クイックスタート (Getting Started)
 
+🌐 **Webアプリを開く**: [https://tossy-apps.github.io/doc-review-studio/](https://tossy-apps.github.io/doc-review-studio/)
+
 ### 利用手順
 
-1. 本リポジトリの GitHub Pages URL（またはローカルの `AI_Review_Suite.html`）を **Google Chrome** または **Microsoft Edge** で開きます。
+1. 上記の GitHub Pages URL（またはローカルの `docs/index.html`）を **Google Chrome** または **Microsoft Edge** で開きます。
 2. 上部ヘッダーの **「📁 原本を開く」** をクリックし、レビュー対象のHTMLファイル群が含まれるフォルダを選択します。
 3. **「📂 退避先を指定」** をクリックしてバックアップ用フォルダを選択すると、原本の高速ミラー退避（修正前の保持）が行われます。
 4. 中央プレビューでテキストを選択し、ツールバーの **「📌 指摘リストに追加」** を押してレビューを進めます。
@@ -42,10 +44,13 @@ A standalone, client-side HTML document review and visual diff inspection studio
 
 ---
 
-## 📁 ディレクトリ構成例
+## 📁 ディレクトリ構成
 
 ```text
 .
-├── index.html          # DocReview Studio 本体
+├── docs/
+│   ├── index.html      # DocReview Studio 本体 (GitHub Pages 公開用)
+│   └── robots.txt      # クローラー向け設定
 ├── README.md           # 本ドキュメント
 └── LICENSE             # ライセンスファイル
+```
