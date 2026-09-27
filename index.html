@@ -1112,7 +1112,7 @@
       `;
 
       if (finalHtml.includes("<body")) {
-        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, "$1" + injectedScript);
+        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (match) => match + injectedScript);
       } else {
         finalHtml = injectedScript + finalHtml;
       }
@@ -1283,46 +1283,63 @@
 
     // 1. 原本（修正後）の独立別窓起動
     function openDetachedModified() {
-      if (!currentFileName) return;
-      detachedModifiedWin = window.open("", "_blank", "width=1000,height=850,scrollbars=yes,resizable=yes");
-      loadIntoDetachedModified();
-    }
-
-    function loadIntoDetachedModified() {
-      if (!detachedModifiedWin || detachedModifiedWin.closed) return;
+      if (!currentFileName || !rawHtmlMap[currentFileName]) {
+        alert("ファイルが選択されていないか、内容が読み込まれていません。");
+        return;
+      }
       let finalHtml = resolveResourceUrls(rawHtmlMap[currentFileName], blobUrlMap);
-      const injectedScript = `
-        <div style="position:fixed;top:0;left:0;width:100%;height:36px;background:#18191c;color:#fff;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999999;font-family:sans-serif;font-size:12px;border-bottom:1px solid #34373c;">
-          <span style="color:#60a5fa; font-weight:bold;">[原本] ${escapeHtml(currentFileName)}</span>
-          <button id="detachedAddBtn" style="background:#16a34a;color:#fff;border:none;border-radius:4px;padding:4px 12px;font-weight:bold;cursor:pointer;">
+      const headerBar = `
+        <div style="position:fixed;top:0;left:0;width:100%;height:38px;background:#18191c;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:9999999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;border-bottom:1px solid #374151;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
+          <span style="color:#60a5fa; font-weight:bold; font-size:13px;">📄 [原本] ${escapeHtml(currentFileName)}</span>
+          <button id="detachedAddBtn" style="background:#16a34a;color:#fff;border:1px solid #22c55e;border-radius:4px;padding:4px 12px;font-weight:bold;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
             📌 選択テキストを指摘に追加
           </button>
         </div>
-        <div style="height:38px;"></div>
+        <div style="height:44px;"></div>
         <script>
           document.getElementById('detachedAddBtn').onclick = function() {
             const sel = window.getSelection();
             const text = sel ? sel.toString().trim() : "";
-            if (!text) { alert("テキストを選択してください"); return; }
-            window.opener.postMessage({
-              type: 'AI_REVIEW_ADD_LOG',
-              text: text,
-              context: "",
-              fileName: ${JSON.stringify(currentFileName)}
-            }, '*');
-            const btn = this;
-            btn.innerText = "✓ 追加完了";
-            setTimeout(() => { btn.innerText = "📌 選択テキストを指摘に追加"; }, 1000);
+            if (!text) { alert("マニュアル本文のテキストを選択してください。"); return; }
+            if (window.opener && !window.opener.closed) {
+              window.opener.postMessage({
+                type: 'AI_REVIEW_ADD_LOG',
+                text: text,
+                context: "",
+                fileName: ${JSON.stringify(currentFileName)}
+              }, '*');
+              const btn = this;
+              btn.innerText = "✓ 追加完了";
+              btn.style.background = "#2563eb";
+              setTimeout(() => { 
+                btn.innerText = "📌 選択テキストを指摘に追加";
+                btn.style.background = "#16a34a";
+              }, 1200);
+            } else {
+              alert("メインウィンドウが見つかりません。");
+            }
           };
         <\/script>
       `;
-      finalHtml = finalHtml.replace(/(<body[^>]*>)/i, "$1" + injectedScript);
 
-      const doc = detachedModifiedWin.document;
-      doc.open();
-      doc.write(finalHtml);
-      doc.close();
-      detachedModifiedWin.document.title = "[原本] " + currentFileName;
+      if (finalHtml.includes("<body")) {
+        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (match) => match + headerBar);
+      } else {
+        finalHtml = headerBar + finalHtml;
+      }
+
+      const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      detachedModifiedWin = window.open(blobUrl, "_blank", "width=1050,height=850,scrollbars=yes,resizable=yes");
+      if (detachedModifiedWin) {
+        detachedModifiedWin.focus();
+      }
+    }
+
+    function loadIntoDetachedModified() {
+      if (detachedModifiedWin && !detachedModifiedWin.closed) {
+        openDetachedModified();
+      }
     }
 
     // 1. 修正前（退避バックアップ）の独立別窓起動
@@ -1331,27 +1348,32 @@
         alert("退避フォルダ内に該当ファイルが存在しません。");
         return;
       }
-      detachedBackupWin = window.open("", "_blank", "width=1000,height=850,scrollbars=yes,resizable=yes");
-      loadIntoDetachedBackup();
+      let finalHtml = resolveResourceUrls(backupHtmlMap[currentFileName], backupBlobUrlMap);
+      const headerBar = `
+        <div style="position:fixed;top:0;left:0;width:100%;height:38px;background:#374151;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:9999999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;border-bottom:1px solid #4b5563;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
+          <span style="color:#f87171; font-weight:bold; font-size:13px;">📄 [修正前/退避原本] ${escapeHtml(currentFileName)}</span>
+          <span style="color:#d1d5db; font-size:11px;">(参照専用)</span>
+        </div>
+        <div style="height:44px;"></div>
+      `;
+      if (finalHtml.includes("<body")) {
+        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (match) => match + headerBar);
+      } else {
+        finalHtml = headerBar + finalHtml;
+      }
+
+      const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(blob);
+      detachedBackupWin = window.open(blobUrl, "_blank", "width=1050,height=850,scrollbars=yes,resizable=yes");
+      if (detachedBackupWin) {
+        detachedBackupWin.focus();
+      }
     }
 
     function loadIntoDetachedBackup() {
-      if (!detachedBackupWin || detachedBackupWin.closed) return;
-      let finalHtml = resolveResourceUrls(backupHtmlMap[currentFileName], backupBlobUrlMap);
-      const headerBar = `
-        <div style="position:fixed;top:0;left:0;width:100%;height:36px;background:#374151;color:#fff;display:flex;align-items:center;justify-content:center;gap:12px;z-index:9999999;font-family:sans-serif;font-size:12px;border-bottom:1px solid #4b5563;">
-          <span style="color:#f87171; font-weight:bold;">[修正前/退避原本] ${escapeHtml(currentFileName)}</span>
-          <span style="color:#d1d5db; font-size:11px;">(参照専用)</span>
-        </div>
-        <div style="height:38px;"></div>
-      `;
-      finalHtml = finalHtml.replace(/(<body[^>]*>)/i, "$1" + headerBar);
-
-      const doc = detachedBackupWin.document;
-      doc.open();
-      doc.write(finalHtml);
-      doc.close();
-      detachedBackupWin.document.title = "[修正前] " + currentFileName;
+      if (detachedBackupWin && !detachedBackupWin.closed) {
+        openDetachedBackup();
+      }
     }
 
     function copyCurrentPrompt() {
