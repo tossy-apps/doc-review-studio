@@ -704,6 +704,24 @@
         processAddLog(e.data);
       } else if (e.data && e.data.type === 'DIFF_SCROLL_NOTIFY') {
         handleDiffScrollNotify(e.data);
+      } else if (e.data && e.data.type === 'NAVIGATE_TO_FILE') {
+        const { targetFile, hash } = e.data;
+        if (!targetFile) return;
+        const matched = htmlFileNames.find(f => f.toLowerCase() === targetFile.toLowerCase()) ||
+                        htmlFileNames.find(f => f.toLowerCase().endsWith('/' + targetFile.toLowerCase()) || f.toLowerCase().endsWith(targetFile.toLowerCase()));
+        if (matched) {
+          selectFile(matched);
+          if (hash) {
+            setTimeout(() => {
+              const frameEl = document.getElementById('mainPreview');
+              if (frameEl && frameEl.contentWindow) {
+                frameEl.contentWindow.postMessage({ type: 'SCROLL_TO_HASH', hash: hash }, '*');
+              }
+            }, 300);
+          }
+        } else {
+          console.log("リンク先ファイルが原本フォルダ内に見つかりません:", targetFile);
+        }
       }
     });
 
@@ -1096,8 +1114,71 @@
               }, '*');
             } else if (e.data && e.data.type === 'HIGHLIGHT_TARGET_TEXT') {
               highlightAndScrollTo(e.data.targetText);
+            } else if (e.data && e.data.type === 'SCROLL_TO_HASH') {
+              const targetEl = findAnchorEl(e.data.hash);
+              if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
           });
+
+          function findAnchorEl(id) {
+            if (!id) return null;
+            const byId = document.getElementById(id);
+            if (byId) return byId;
+            try {
+              return document.querySelector('[name="' + id.replace(/"/g, '\\"') + '"]');
+            } catch(e) {
+              return null;
+            }
+          }
+
+          // リンククリックの安全なハンドリング（srcdoc内ナビゲーションによる親の初期化・画面喪失を防止）
+          document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const href = link.getAttribute('href');
+            if (!href || href === '#' || href.startsWith('javascript:')) {
+              if (href === '#') e.preventDefault();
+              return;
+            }
+
+            // 1. ページ内アンカーリンク (#section-id)
+            if (href.startsWith('#')) {
+              e.preventDefault();
+              const targetId = href.substring(1);
+              const targetEl = findAnchorEl(targetId);
+              if (targetEl) {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+              return;
+            }
+
+            // 2. 外部リンク (http, https, mailto, etc)
+            if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//') || href.startsWith('mailto:')) {
+              e.preventDefault();
+              window.open(href, '_blank', 'noopener,noreferrer');
+              return;
+            }
+
+            // 3. 相対パス/同一ディレクトリ内のHTMLリンク (例: index.html, ./manual.html#sec-1, doc.html)
+            e.preventDefault();
+            let cleanHref = href.replace(/^\.\//, '');
+            let parts = cleanHref.split('#');
+            let targetFile = parts[0];
+            let hash = parts[1] || '';
+
+            if (!targetFile && hash) {
+              const targetEl = findAnchorEl(hash);
+              if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              return;
+            }
+
+            window.parent.postMessage({
+              type: 'NAVIGATE_TO_FILE',
+              targetFile: targetFile,
+              hash: hash
+            }, '*');
+          }, true);
 
           function highlightAndScrollTo(text) {
             if (!text) return;
@@ -1596,6 +1677,24 @@
               setTimeout(() => { isSyncing = false; }, 40);
             }
           });
+
+          document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+            const href = link.getAttribute('href');
+            if (!href || href === '#' || href.startsWith('javascript:')) {
+              if (href === '#') e.preventDefault();
+              return;
+            }
+            if (href.startsWith('#')) {
+              e.preventDefault();
+              const targetId = href.substring(1);
+              const targetEl = document.getElementById(targetId);
+              if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+              e.preventDefault();
+            }
+          }, true);
         })();
       ` + eTag + `\n`;
       if (finalHtml.includes("<body")) {
