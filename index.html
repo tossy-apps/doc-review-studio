@@ -1143,6 +1143,7 @@
       const injectedScript = `\n` + sTag + `
           let lastSelectedText = "";
           let lastSelectedContext = "";
+          let lastClickedImage = null;
           let floatBtn = null;
 
           function getSelectionInfo() {
@@ -1151,15 +1152,27 @@
             let context = "";
             if (text && sel.rangeCount > 0) {
               try {
-                let parent = sel.getRangeAt(0).commonAncestorContainer;
-                if (parent.nodeType === 3) parent = parent.parentNode;
-                const fullText = (parent.innerText || "").replace(/\\r?\\n/g, " ");
-                const idx = fullText.indexOf(text);
-                if (idx !== -1) {
-                  const start = Math.max(0, idx - 25);
-                  const end = Math.min(fullText.length, idx + text.length + 25);
-                  context = (start > 0 ? "..." : "") + fullText.substring(start, end).trim() + (end < fullText.length ? "..." : "");
+                const range = sel.getRangeAt(0);
+                let el = range.commonAncestorContainer;
+                if (el.nodeType === 3) el = el.parentNode;
+
+                // 直近の章見出し（h2, h3, h1）を遡ってパンくず文脈を生成
+                let headings = [];
+                let curr = el;
+                while (curr && curr !== document.body) {
+                  let prev = curr.previousElementSibling;
+                  while (prev) {
+                    if (/^H[1-4]$/i.test(prev.tagName)) {
+                      headings.unshift(prev.innerText.replace(/[\r\n]+/g, ' ').trim());
+                      break;
+                    }
+                    prev = prev.previousElementSibling;
+                  }
+                  curr = curr.parentElement;
                 }
+                const headingPath = headings.slice(-2).join(' ➔ ');
+                const parentText = (el.innerText || "").replace(/[\r\n]+/g, ' ').trim();
+                context = (headingPath ? `[セクション: ${headingPath}] ` : "") + (parentText.length > 80 ? parentText.substring(0, 80) + '...' : parentText);
               } catch (err) {}
             }
             return { text, context, sel };
@@ -1239,12 +1252,41 @@
           document.addEventListener('mouseup', handleSelectionUpdate);
           document.addEventListener('keyup', handleSelectionUpdate);
 
+          document.addEventListener('contextmenu', (e) => {
+            const img = e.target.closest('img');
+            if (img) {
+              lastClickedImage = img;
+              window.parent.postMessage({ type: 'NOTIFY_IMAGE_RIGHT_CLICK' }, '*');
+            }
+          }, true);
+
           window.addEventListener('message', (e) => {
             if (e.data && e.data.type === 'REQUEST_CURRENT_SELECTION') {
               const currentInfo = getSelectionInfo();
               const textToSend = currentInfo.text || lastSelectedText;
               const contextToSend = currentInfo.context || lastSelectedContext;
               sendAddLog(textToSend, contextToSend);
+            } else if (e.data && e.data.type === 'REQUEST_IMAGE_SELECTION') {
+              // 画像への指摘用ハンドラ
+              const img = lastClickedImage;
+              if (!img) return;
+              const srcName = img.getAttribute('src') || '';
+              const altText = img.getAttribute('alt') || '';
+              let targetLabel = `[画像] ${srcName.split('/').pop()}`;
+              if (altText) targetLabel += ` (${altText})`;
+              
+              let heading = "";
+              let prev = img.closest('.img-box, .manual-img-container, p') || img;
+              while (prev) {
+                if (/^H[1-4]$/i.test(prev.tagName)) { heading = prev.innerText.trim(); break; }
+                prev = prev.previousElementSibling;
+              }
+              window.parent.postMessage({
+                type: 'AI_REVIEW_ADD_LOG',
+                text: targetLabel,
+                context: heading ? `[セクション: ${heading}]` : `画像パス: ${srcName}`,
+                fileName: ${JSON.stringify(fileName)}
+              }, '*');
             } else if (e.data && e.data.type === 'HIGHLIGHT_TARGET_TEXT') {
               highlightAndScrollTo(e.data.targetText);
             } else if (e.data && e.data.type === 'SCROLL_TO_HASH') {
