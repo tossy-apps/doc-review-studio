@@ -11,18 +11,21 @@
   
   <style>
     :root {
-      --bg-main: #111214;
-      --bg-card: #1e1f24;
-      --bg-surface: #2b2d35;
-      --border: #374151;
-      --border-focus: #3b82f6;
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --accent: #2563eb;
-      --accent-hover: #1d4ed8;
-      --accent-light: #60a5fa;
-      --success: #10b981;
-      --warning: #f59e0b;
+      --bg-main: #0f1013;
+      --bg-card: #181a1f;
+      --bg-surface: #22252c;
+      --border: #383c47;
+      --border-light: #4b5263;
+      --text-main: #f8fafc;
+      --text-sub: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+      --accent-bg: rgba(56, 189, 248, 0.12);
+      --link: #38bdf8;
+      --link-hover: #7dd3fc;
+      --success: #22c55e;
+      --warning: #facc15;
     }
 
     * {
@@ -35,19 +38,20 @@
       font-family: 'BIZ UDPGothic', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background-color: var(--bg-main);
       color: var(--text-main);
-      line-height: 1.8;
+      line-height: 1.85;
       -webkit-font-smoothing: antialiased;
-      padding: 32px 20px 80px;
+      padding: 36px 20px 100px;
     }
 
+    /* Container: 15% larger (920px -> 1060px) */
     .doc-container {
-      max-width: 920px;
+      max-width: 1060px;
       margin: 0 auto;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 40px 48px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border-radius: 14px;
+      padding: 44px 56px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
     }
 
     @media (max-width: 768px) {
@@ -65,8 +69,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
+      margin-bottom: 28px;
+      padding-bottom: 18px;
       border-bottom: 1px solid var(--border);
       flex-wrap: wrap;
       gap: 12px;
@@ -76,12 +80,12 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(37, 99, 235, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.35);
-      color: var(--accent-light);
-      padding: 4px 10px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent);
+      padding: 5px 12px;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
     }
 
@@ -89,75 +93,95 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: var(--accent);
-      color: #ffffff;
+      background: #2563eb;
+      color: #ffffff !important;
       text-decoration: none;
       font-weight: 700;
-      font-size: 12px;
-      padding: 6px 14px;
+      font-size: 13px;
+      padding: 7px 16px;
       border-radius: 6px;
-      transition: background 0.15s ease;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
     }
 
     .launch-link:hover {
-      background: var(--accent-hover);
+      background: #1d4ed8;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.6);
+      transform: translateY(-1px);
     }
 
-    /* Headings */
+    /* Headings (+2pt / 2px larger, pure white, high contrast) */
     h1 {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 800;
       letter-spacing: -0.3px;
       color: #ffffff;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
       line-height: 1.4;
     }
 
     h2 {
-      font-size: 18px;
+      font-size: 21px;
       font-weight: 700;
-      margin-top: 40px;
-      margin-bottom: 16px;
-      color: #f8fafc;
-      border-left: 4px solid var(--accent);
-      padding-left: 12px;
+      margin-top: 48px;
+      margin-bottom: 18px;
+      color: #ffffff;
+      border-left: 5px solid var(--accent);
+      padding-left: 14px;
       line-height: 1.4;
     }
 
     h3 {
-      font-size: 15px;
+      font-size: 17px;
       font-weight: 700;
-      margin-top: 24px;
-      margin-bottom: 12px;
-      color: #e2e8f0;
+      margin-top: 28px;
+      margin-bottom: 14px;
+      color: #f1f5f9;
     }
 
+    /* Paragraphs (+2pt / 16px font-size, high visibility white text) */
     p {
-      margin-bottom: 16px;
-      color: #d1d5db;
-      font-size: 14px;
+      margin-bottom: 18px;
+      color: var(--text-main);
+      font-size: 16px;
+      line-height: 1.85;
     }
 
     hr {
       border: none;
       border-top: 1px solid var(--border);
-      margin: 32px 0;
+      margin: 36px 0;
     }
 
-    /* Lists */
+    /* Links: High contrast bright sky-blue (#38bdf8) with hover effect */
+    a {
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease, text-decoration 0.15s ease;
+    }
+
+    a:hover {
+      color: var(--link-hover);
+      text-decoration: underline;
+    }
+
+    /* Lists (+2pt / 16px) */
     ul, ol {
-      margin-bottom: 18px;
-      padding-left: 24px;
-      color: #d1d5db;
-      font-size: 14px;
+      margin-bottom: 20px;
+      padding-left: 28px;
+      color: var(--text-main);
+      font-size: 16px;
     }
 
     li {
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+      line-height: 1.8;
     }
 
     li strong {
       color: #ffffff;
+      font-weight: 700;
     }
 
     /* Images */
@@ -165,38 +189,38 @@
       max-width: 100%;
       height: auto;
       border-radius: 8px;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-      margin: 16px 0 24px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+      margin: 18px 0 28px;
       display: block;
       background: #111214;
     }
 
-    /* Tables */
+    /* Tables (+2pt / 15px) */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin: 18px 0 24px;
+      margin: 20px 0 28px;
       background: var(--bg-surface);
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border);
-      font-size: 13px;
+      font-size: 15px;
     }
 
     th {
-      background: #23252b;
-      color: #f1f5f9;
+      background: #2b2f38;
+      color: #ffffff;
       font-weight: 700;
       text-align: left;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-bottom: 1px solid var(--border);
     }
 
     td {
-      padding: 8px 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      color: #cbd5e1;
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
     }
 
     tr:last-child td {
@@ -205,26 +229,26 @@
 
     /* Code Blocks */
     pre {
-      background: #0b0c0e;
+      background: #0d0e11;
       border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 12px 16px;
-      margin: 16px 0 20px;
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 18px 0 24px;
       overflow-x: auto;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12.5px;
-      line-height: 1.6;
-      color: #93c5fd;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #7dd3fc;
     }
 
     code {
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      padding: 2px 6px;
+      font-size: 13.5px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 2px 7px;
       border-radius: 4px;
-      color: #93c5fd;
+      color: #7dd3fc;
     }
 
     pre code {
@@ -236,18 +260,19 @@
 
     /* Callout Boxes (Blockquotes) */
     blockquote {
-      background: rgba(37, 99, 235, 0.1);
-      border-left: 4px solid var(--accent-light);
-      border-radius: 0 6px 6px 0;
-      padding: 12px 16px;
-      margin: 18px 0;
-      color: #bfdbfe;
-      font-size: 13.5px;
+      background: var(--accent-bg);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 20px 0;
+      color: #e0f2fe;
+      font-size: 15px;
     }
 
     blockquote p {
       margin-bottom: 0;
       color: inherit;
+      font-size: 15px;
     }
 
     /* Back to top button */
@@ -256,26 +281,28 @@
       bottom: 24px;
       right: 24px;
       background: var(--bg-surface);
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-light);
       color: #fff;
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       text-decoration: none;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
       transition: all 0.2s ease;
-      font-size: 16px;
+      font-size: 18px;
       z-index: 40;
     }
 
     .back-to-top:hover {
-      background: var(--accent);
-      border-color: var(--accent-light);
+      background: #2563eb;
+      border-color: var(--accent);
+      color: #fff !important;
       transform: translateY(-2px);
+      text-decoration: none;
     }
   </style>
 </head>
@@ -293,33 +320,31 @@
     </div>
 
     <!-- Document Body -->
-    <h1 id="docreview-studio">DocReview Studio ユーザーズマニュアル</h1>
+    <h1>DocReview Studio ユーザーズマニュアル</h1>
 <p>DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアルや技術仕様書を読み込み、直感的なレビュー指摘の記録、AI修正指示プロンプトの自動生成、WinMerge風の左右Diff差分検証を行える<strong>完全クライアントサイド型ドキュメント校正スタジオ</strong>です。</p>
 <hr />
-<h2 id="_1">📑 目次</h2>
-<ol>
-<li><a href="#1-docreview-studio-の特徴設計思想">DocReview Studio の特徴・設計思想</a></li>
-<li><a href="#2-画面構成uiレイアウト">画面構成（UIレイアウト）</a></li>
-<li><a href="#3-クイックスタート3ステップで始める">クイックスタート（3ステップで始める）</a></li>
-<li><a href="#4-基本レビュー手順指摘の記録エビデンス管理">基本レビュー手順（指摘の記録・エビデンス管理）</a></li>
-<li><a href="#5-aiプロンプト連携llm指示の一括生成">AIプロンプト連携（LLM指示の一括生成）</a></li>
-<li><a href="#6-winmerge風-diff差分検証機能">WinMerge風 Diff差分検証機能</a></li>
-<li><a href="#7-便利な操作ショートカット拡張機能">便利な操作・ショートカット・拡張機能</a></li>
-</ol>
+<h2 id="sec-toc">📑 目次</h2>
+<p><a href="#sec-features">1. DocReview Studio の特徴・設計思想</a><br />
+<a href="#sec-layout">2. 画面構成（UIレイアウト）</a><br />
+<a href="#sec-quickstart">3. クイックスタート（3ステップで始める）</a><br />
+<a href="#sec-review">4. 基本レビュー手順（指摘の記録・エビデンス管理）</a><br />
+<a href="#sec-aiprompt">5. AIプロンプト連携（LLM指示の一括生成）</a><br />
+<a href="#sec-diff">6. WinMerge風 Diff差分検証機能</a><br />
+<a href="#sec-shortcuts">7. 便利な操作・ショートカット・拡張機能</a></p>
 <hr />
-<h2 id="1-docreview-studio">1. DocReview Studio の特徴・設計思想</h2>
+<h2 id="sec-features">1. DocReview Studio の特徴・設計思想</h2>
 <p><img alt="全体レイアウト" src="./images/01_main_view.png" /></p>
-<h3 id="_2">🔒 サーバー通信ゼロ・完全ローカル完結</h3>
+<h3>🔒 サーバー通信ゼロ・完全ローカル完結</h3>
 <ul>
 <li><strong>File System Access API</strong> を採用し、PCローカルのフォルダやファイルをブラウザ内部メモリで直接読み込み・操作します。</li>
 <li>社外秘のドキュメントや未公開マニュアル、個人情報が含まれる文書であっても、外部サーバーへ一切送信されません。</li>
 </ul>
-<h3 id="_3">🚀 インストーラー不要・即座に起動</h3>
+<h3>🚀 インストーラー不要・即座に起動</h3>
 <ul>
 <li>Chromium系ブラウザ（<strong>Google Chrome</strong>、<strong>Microsoft Edge</strong>、<strong>Brave</strong> 等）があれば、インストール作業や環境構築なしで即座に利用可能です。</li>
 </ul>
 <hr />
-<h2 id="2-ui">2. 画面構成（UIレイアウト）</h2>
+<h2 id="sec-layout">2. 画面構成（UIレイアウト）</h2>
 <p>DocReview Studio は、効率的な校正作業のために設計された<strong>3ペイン構造</strong>を採用しています。</p>
 <table>
 <thead>
@@ -353,15 +378,15 @@
 </tbody>
 </table>
 <hr />
-<h2 id="3-3">3. クイックスタート（3ステップで始める）</h2>
+<h2 id="sec-quickstart">3. クイックスタート（3ステップで始める）</h2>
 <p><img alt="原本と退避の指定" src="./images/02_open_source.png" /></p>
-<h3 id="step-1">STEP 1: 原本フォルダを開く</h3>
+<h3>STEP 1: 原本フォルダを開く</h3>
 <ol>
 <li>ヘッダー左側の <strong>「📁 原本を開く」</strong> ボタンをクリックします。</li>
 <li>レビュー・校正対象のHTMLファイル群が含まれるローカルフォルダを選択し、アクセスを許可します。</li>
 <li>左ペインにHTMLファイル一覧が読み込まれます。</li>
 </ol>
-<h3 id="step-2">STEP 2: 退避先フォルダを指定する（原本バックアップ）</h3>
+<h3>STEP 2: 退避先フォルダを指定する（原本バックアップ）</h3>
 <ol>
 <li>ヘッダーの <strong>「📂 退避先を指定」</strong> ボタンをクリックします。</li>
 <li>バックアップ用の空フォルダ（または既存の退避フォルダ）を選択します。</li>
@@ -370,20 +395,20 @@
 <blockquote>
 <p><strong>💡 ヒント</strong>: 退避フォルダを指定しておくことで、AIによる修正後にワンクリックで「修正前 vs 修正後」の差分比較（Diff検証）を行えるようになります。</p>
 </blockquote>
-<h3 id="step-3">STEP 3: レビュー対象のファイルを選択</h3>
+<h3>STEP 3: レビュー対象のファイルを選択</h3>
 <ul>
 <li>左側のファイル一覧からレビューしたいファイルをクリックすると、中央ペインにプレビューが表示されます。</li>
 </ul>
 <hr />
-<h2 id="4">4. 基本レビュー手順（指摘の記録・エビデンス管理）</h2>
+<h2 id="sec-review">4. 基本レビュー手順（指摘の記録・エビデンス管理）</h2>
 <p><img alt="テキスト選択と指摘カード" src="./images/03_evidence_input.png" /></p>
-<h3 id="1">1. 本文テキストを選択して指摘を追加</h3>
+<h3>1. 本文テキストを選択して指摘を追加</h3>
 <ol>
 <li>中央のプレビュー画面で、修正・指摘したいテキストをマウスでドラッグ選択します。</li>
 <li>プレビュー上部ツールバーの <strong>「📌 指摘リストに追加」</strong> ボタンをクリックします。</li>
 <li>右ペインに新しい指摘カードが自動生成され、入力欄にフォーカスが当たります。</li>
 </ol>
-<h3 id="2">2. 指摘カードの編集</h3>
+<h3>2. 指摘カードの編集</h3>
 <p>各指摘カードには以下の情報が自動記録・設定されます：</p>
 <ul>
 <li><strong>対象ファイル &amp; 概算行番号</strong>: 原本HTML内のテキスト出現位置から <code>L.24付近</code> のように概算行を自動算出。</li>
@@ -392,7 +417,7 @@
 <li><strong>文脈（コンテキスト）</strong>: 対象テキストの前後文脈を自動抽出。</li>
 <li><strong>指示入力（テキストエリア）</strong>: AIや執筆者に伝えたい具体的な指示内容を入力します。</li>
 </ul>
-<h3 id="3">3. エビデンスのエクスポート・復元</h3>
+<h3>3. エビデンスのエクスポート・復元</h3>
 <p>ヘッダーの <strong>Evidence</strong> グループからレビュー結果を保存・共有できます。</p>
 <ul>
 <li><strong>💾 JSON</strong>: 指摘データ構造を完全保持したJSONファイルを出力。</li>
@@ -400,15 +425,15 @@
 <li><strong>📂 読込</strong>: 以前保存したJSONファイルを読み込み、指摘カード群を完全復元。</li>
 </ul>
 <hr />
-<h2 id="5-aillm">5. AIプロンプト連携（LLM指示の一括生成）</h2>
+<h2 id="sec-aiprompt">5. AIプロンプト連携（LLM指示の一括生成）</h2>
 <p><img alt="AIプロンプトコピー機能" src="./images/04_ai_prompt.png" /></p>
 <p>蓄積した指摘データから、LLM（Claude, Gemini, ChatGPT 等）がそのまま解釈して正確にコード修正できる形式のプロンプトを一括生成します。</p>
-<h3 id="_4">指示プロンプトのコピー方法</h3>
+<h3>指示プロンプトのコピー方法</h3>
 <ul>
 <li><strong>🤖 選択ファイル指示</strong>: 現在中央ペインに表示しているファイルに関する指摘のみを整形してクリップボードにコピー。</li>
 <li><strong>🤖 全ファイル指示</strong>: プロジェクト全体の全ファイルにまたがるすべての指摘を合算してクリップボードにコピー。</li>
 </ul>
-<h4 id="_5">生成されるプロンプト形式例</h4>
+<h4>生成されるプロンプト形式例</h4>
 <pre><code class="language-markdown">以下のドキュメントレビュー指摘に基づき、HTMLファイルを修正してください。
 
 【対象ファイル】01_intro.html
@@ -424,10 +449,10 @@
 ・指示: 『（または Ctrl+Enter で即時実行）』の補足を太字で追記。
 </code></pre>
 <hr />
-<h2 id="6-winmerge-diff">6. WinMerge風 Diff差分検証機能</h2>
+<h2 id="sec-diff">6. WinMerge風 Diff差分検証機能</h2>
 <p><img alt="Diff検証画面" src="./images/05_diff_inspector.png" /></p>
 <p>AIやエディタによるHTML修正が完了したら、ヘッダー右側の <strong>「🔄 Diff検証」</strong> ボタンを押してビジュアル差分比較モードへ切り替えます。</p>
-<h3 id="diff-inspector">Diff Inspector の主な機能</h3>
+<h3>Diff Inspector の主な機能</h3>
 <ol>
 <li><strong>左右並列ブロック比較</strong>:</li>
 <li><strong>左ペイン</strong>: 修正前（退避フォルダの原本データ）</li>
@@ -440,9 +465,9 @@
 <li>AIがファイルを書き換えた際、アプリをリロードすることなくワンクリックで最新の作業ファイルを再読込して差分を即座に再評価します。</li>
 </ol>
 <hr />
-<h2 id="7">7. 便利な操作・ショートカット・拡張機能</h2>
+<h2 id="sec-shortcuts">7. 便利な操作・ショートカット・拡張機能</h2>
 <p><img alt="サイドバー折りたたみ" src="./images/06_pane_toggle.png" /></p>
-<h3 id="_6">⌨️ キーボードショートカット</h3>
+<h3>⌨️ キーボードショートカット</h3>
 <p>作業領域を広く使いたい場合、キーボード操作で瞬時にサイドバーの開閉が可能です。</p>
 <table>
 <thead>
@@ -465,7 +490,7 @@
 <blockquote>
 <p><strong>💡 UIステータス</strong>: ツールバーの <strong>「◧ ファイル」</strong> <strong>「◨ 指摘一覧」</strong> ボタンは、開いている時は<strong>鮮やかなブルー</strong>、閉じている時は<strong>ネオングリーン</strong>に発色し、状態が一目で分かります。</p>
 </blockquote>
-<h3 id="_7">🖥️ マルチディスプレイ向け「独立別窓」表示</h3>
+<h3>🖥️ マルチディスプレイ向け「独立別窓」表示</h3>
 <p>ヘッダーツールバーのボタンから、原本や修正前ドキュメントをブラウザの<strong>独立別ウィンドウ</strong>としてポップアップ起動できます。</p>
 <ul>
 <li><strong>「別窓: 原本」</strong>: 現在選択中の原本HTMLを別ウィンドウで大きく表示。</li>
