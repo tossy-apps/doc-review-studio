@@ -893,9 +893,17 @@
       alert(`退避フォルダ「${backupDirHandle.name}」の同期が完了しました！`);
     }
 
+    function shouldIgnoreEntry(name) {
+      if (!name) return true;
+      if (name === '.git' || name.startsWith('.git/')) return true;
+      if (name === '.svn' || name === '.hg' || name === 'node_modules' || name === '.DS_Store' || name === '.vscode') return true;
+      if (name.includes('_backup')) return true;
+      return false;
+    }
+
     async function collectAllFiles(srcDirH, destDirH, taskList) {
       for await (const entry of srcDirH.values()) {
-        if (entry.name.includes('_backup')) continue;
+        if (shouldIgnoreEntry(entry.name)) continue;
         if (entry.kind === 'file') {
           taskList.push({
             name: entry.name,
@@ -915,7 +923,7 @@
       htmlFileNames = [];
 
       for await (const entry of workDirHandle.values()) {
-        if (entry.name.includes('_backup')) continue;
+        if (shouldIgnoreEntry(entry.name)) continue;
 
         if (entry.kind === 'file') {
           const file = await entry.getFile();
@@ -947,6 +955,8 @@
       backupBlobUrlMap = {};
 
       for await (const entry of backupDirHandle.values()) {
+        if (shouldIgnoreEntry(entry.name)) continue;
+
         if (entry.kind === 'file') {
           const file = await entry.getFile();
           if (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')) {
@@ -962,6 +972,7 @@
 
     async function scanResourcesOnly(dirH, pathPrefix, targetMap) {
       for await (const entry of dirH.values()) {
+        if (shouldIgnoreEntry(entry.name)) continue;
         const fullRel = pathPrefix ? `${pathPrefix}/${entry.name}` : entry.name;
         if (entry.kind === 'file') {
           const file = await entry.getFile();
