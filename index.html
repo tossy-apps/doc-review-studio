@@ -1046,7 +1046,7 @@
       if (!rawHtml) return;
       let finalHtml = resolveResourceUrls(rawHtml, resourceMap);
 
-      const injectedScript = `
+      const injectedStyles = `
         <style>
           @keyframes pulseHighlight {
             0% { background-color: #facc15; box-shadow: 0 0 10px #facc15; }
@@ -1062,7 +1062,12 @@
             display: inline;
           }
         </style>
-        <script>
+      `;
+
+      const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
+      const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
+
+      const injectedScript = `\n` + sTag + `
           window.addEventListener('message', (e) => {
             if (e.data && e.data.type === 'REQUEST_CURRENT_SELECTION') {
               const sel = window.getSelection();
@@ -1119,8 +1124,13 @@
               }
             }
           }
-        <\/script>
-      `;
+      ` + eTag + `\n`;
+
+      if (finalHtml.includes("<head")) {
+        finalHtml = finalHtml.replace(/(<head[^>]*>)/i, (match) => match + injectedStyles);
+      } else {
+        finalHtml = injectedStyles + finalHtml;
+      }
 
       if (finalHtml.includes("<body")) {
         finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (match) => match + injectedScript);
@@ -1299,6 +1309,9 @@
         return;
       }
       let finalHtml = resolveResourceUrls(rawHtmlMap[currentFileName], blobUrlMap);
+      const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
+      const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
+
       const headerBar = `
         <div style="position:fixed;top:0;left:0;width:100%;height:38px;background:#18191c;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:9999999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;border-bottom:1px solid #374151;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
           <span style="color:#60a5fa; font-weight:bold; font-size:13px;">📄 [原本] ${escapeHtml(currentFileName)}</span>
@@ -1307,7 +1320,7 @@
           </button>
         </div>
         <div style="height:44px;"></div>
-        <script>
+      ` + sTag + `
           document.getElementById('detachedAddBtn').onclick = function() {
             const sel = window.getSelection();
             const text = sel ? sel.toString().trim() : "";
@@ -1330,8 +1343,7 @@
               alert("メインウィンドウが見つかりません。");
             }
           };
-        <\/script>
-      `;
+      ` + eTag + `\n`;
 
       if (finalHtml.includes("<body")) {
         finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (match) => match + headerBar);
@@ -1441,71 +1453,127 @@
       const beforeHtml = backupHtmlMap[currentFileName] || "";
       const afterHtml = rawHtmlMap[currentFileName] || "";
 
-      const { decoratedBefore, decoratedAfter } = buildWinMergeDecoratedHtml(beforeHtml, afterHtml);
+      const decoratedBefore = buildWinMergeDecoratedHtml(beforeHtml, afterHtml, true);
+      const decoratedAfter = buildWinMergeDecoratedHtml(afterHtml, beforeHtml, false);
 
       loadDiffDecoratedFrame(document.getElementById('diffBefore'), decoratedBefore, 'DIFF_LEFT', backupBlobUrlMap);
       loadDiffDecoratedFrame(document.getElementById('diffAfter'), decoratedAfter, 'DIFF_RIGHT', blobUrlMap);
 
-      setTimeout(renderDiffBridgeLines, 300);
+      setTimeout(renderDiffBridgeLines, 400);
     }
 
-    function buildWinMergeDecoratedHtml(beforeHtml, afterHtml) {
-      if (!beforeHtml || !afterHtml) {
-        return { decoratedBefore: beforeHtml, decoratedAfter: afterHtml };
+    function buildWinMergeDecoratedHtml(targetHtml, counterpartHtml, isBackup) {
+      if (!targetHtml) {
+        if (isBackup) {
+          return `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="UTF-8">
+              <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #18191c; color: #9ca3af; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; text-align: center; padding: 24px; box-sizing: border-box; }
+                .icon { font-size: 48px; margin-bottom: 16px; }
+                .title { font-size: 16px; font-weight: bold; color: #f87171; margin-bottom: 8px; }
+                .desc { font-size: 13px; max-width: 380px; line-height: 1.6; color: #cbd5e1; }
+              </style>
+            </head>
+            <body>
+              <div class="icon">📂</div>
+              <div class="title">退避フォルダ（修正前）が未設定です</div>
+              <div class="desc">ヘッダーの「<strong>📂 退避先を指定</strong>」からバックアップフォルダを選択すると、修正前と修正後の差分比較（Diff）が表示されます。</div>
+            </body>
+            </html>
+          `;
+        }
+        return "";
       }
 
-      const linesBefore = beforeHtml.split('\n');
-      const linesAfter = afterHtml.split('\n');
-
-      let diffIdx = 0;
-      const decoratedBeforeLines = linesBefore.map(line => {
-        const trimmed = line.trim();
-        if (trimmed && !linesAfter.some(al => al.trim() === trimmed)) {
-          return `<div class="winmerge-diff-line winmerge-del" data-diff-id="${diffIdx++}">${line || '&nbsp;'}</div>`;
+      // Collect text segments from counterpart for comparison
+      let counterpartTexts = [];
+      if (counterpartHtml) {
+        try {
+          const doc = new DOMParser().parseFromString(counterpartHtml, 'text/html');
+          const elements = doc.body ? doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, div, span') : [];
+          counterpartTexts = Array.from(elements)
+            .map(el => (el.innerText || "").trim())
+            .filter(t => t.length > 0);
+        } catch (e) {
+          console.error("Diff parse error:", e);
         }
-        return line;
-      });
-
-      diffIdx = 0;
-      const decoratedAfterLines = linesAfter.map(line => {
-        const trimmed = line.trim();
-        if (trimmed && !linesBefore.some(bl => bl.trim() === trimmed)) {
-          return `<div class="winmerge-diff-line winmerge-add" data-diff-id="${diffIdx++}">${line || '&nbsp;'}</div>`;
-        }
-        return line;
-      });
+      }
 
       const diffStyles = `
         <style>
-          .winmerge-diff-line {
-            position: relative;
-            box-sizing: border-box;
-          }
           .winmerge-del {
             background-color: #fee2e2 !important;
-            border-top: 1px dashed #ef4444 !important;
-            border-bottom: 1px dashed #ef4444 !important;
+            border-left: 4px solid #ef4444 !important;
             color: #991b1b !important;
+            padding: 2px 4px !important;
+            border-radius: 2px !important;
+            box-shadow: 0 0 6px rgba(239, 68, 68, 0.25) !important;
           }
           .winmerge-add {
             background-color: #dcfce7 !important;
-            border-top: 1px dashed #22c55e !important;
-            border-bottom: 1px dashed #22c55e !important;
+            border-left: 4px solid #22c55e !important;
             color: #166534 !important;
+            padding: 2px 4px !important;
+            border-radius: 2px !important;
+            box-shadow: 0 0 6px rgba(34, 197, 94, 0.25) !important;
           }
         </style>
       `;
 
-      return {
-        decoratedBefore: diffStyles + decoratedBeforeLines.join('\n'),
-        decoratedAfter: diffStyles + decoratedAfterLines.join('\n')
-      };
+      const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
+      const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
+      const counterpartJson = JSON.stringify(counterpartTexts).replace(/</g, '\\u003c');
+
+      const diffMarkerScript = `\n` + sTag + `
+        (function() {
+          function markDiffs() {
+            const counterpartSet = new Set(${counterpartJson});
+            const isDel = ${isBackup ? 'true' : 'false'};
+            const targetClass = isDel ? 'winmerge-del' : 'winmerge-add';
+            
+            // Highlight direct content elements that differ
+            const candidates = document.body ? document.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre') : [];
+            candidates.forEach(el => {
+              const text = (el.innerText || "").trim();
+              if (text && !counterpartSet.has(text)) {
+                el.classList.add(targetClass);
+              }
+            });
+          }
+          if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', markDiffs);
+          } else {
+            markDiffs();
+          }
+        })();
+      ` + eTag + `\n`;
+
+      let finalHtml = targetHtml;
+      if (finalHtml.includes("<head")) {
+        finalHtml = finalHtml.replace(/(<head[^>]*>)/i, (m) => m + diffStyles);
+      } else {
+        finalHtml = diffStyles + finalHtml;
+      }
+
+      if (finalHtml.includes("<body")) {
+        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (m) => m + diffMarkerScript);
+      } else {
+        finalHtml = diffMarkerScript + finalHtml;
+      }
+
+      return finalHtml;
     }
 
     function loadDiffDecoratedFrame(frameEl, html, role, resourceMap) {
       let finalHtml = resolveResourceUrls(html, resourceMap);
-      const script = `
-        <script>
+      const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
+      const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
+
+      const syncScript = `\n` + sTag + `
+        (function() {
           let isSyncing = false;
           window.addEventListener('scroll', () => {
             if (isSyncing) return;
@@ -1528,12 +1596,12 @@
               setTimeout(() => { isSyncing = false; }, 40);
             }
           });
-        <\/script>
-      `;
+        })();
+      ` + eTag + `\n`;
       if (finalHtml.includes("<body")) {
-        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, "$1" + script);
+        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (m) => m + syncScript);
       } else {
-        finalHtml = script + finalHtml;
+        finalHtml = syncScript + finalHtml;
       }
       frameEl.srcdoc = finalHtml;
     }
