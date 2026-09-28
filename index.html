@@ -1172,7 +1172,7 @@
                 }
                 const headingPath = headings.slice(-2).join(' ➔ ');
                 const parentText = (el.innerText || "").replace(/[\r\n]+/g, ' ').trim();
-                context = (headingPath ? `[セクション: ${headingPath}] ` : "") + (parentText.length > 80 ? parentText.substring(0, 80) + '...' : parentText);
+                context = (headingPath ? "[セクション: " + headingPath + "] " : "") + (parentText.length > 80 ? parentText.substring(0, 80) + '...' : parentText);
               } catch (err) {}
             }
             return { text, context, sel };
@@ -1272,8 +1272,8 @@
               if (!img) return;
               const srcName = img.getAttribute('src') || '';
               const altText = img.getAttribute('alt') || '';
-              let targetLabel = `[画像] ${srcName.split('/').pop()}`;
-              if (altText) targetLabel += ` (${altText})`;
+              let targetLabel = "[画像] " + srcName.split('/').pop();
+              if (altText) targetLabel += " (" + altText + ")";
               
               let heading = "";
               let prev = img.closest('.img-box, .manual-img-container, p') || img;
@@ -1284,7 +1284,7 @@
               window.parent.postMessage({
                 type: 'AI_REVIEW_ADD_LOG',
                 text: targetLabel,
-                context: heading ? `[セクション: ${heading}]` : `画像パス: ${srcName}`,
+                context: heading ? "[セクション: " + heading + "]" : "画像パス: " + srcName,
                 fileName: ${JSON.stringify(fileName)}
               }, '*');
             } else if (e.data && e.data.type === 'HIGHLIGHT_TARGET_TEXT') {
