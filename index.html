@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="robots" content="index, follow">
-  <meta name="description" content="DocReview Studio - 完全クライアントサイドで動作するHTMLマニュアル・技術文書レビュー＆WinMerge風Diff差分検証ツール。機密を漏らさずローカル完結。">
+  <meta name="description"
+    content="DocReview Studio - 完全クライアントサイドで動作するHTMLマニュアル・技術文書レビュー＆WinMerge風Diff差分検証ツール。機密を漏らさずローカル完結。">
   <meta name="keywords" content="DocReview, HTMLレビュー, WinMerge, 差分比較, Diff, 技術文書, マニュアル校正">
   <meta property="og:title" content="DocReview Studio - 完全クライアントサイドHTML文書レビューツール">
   <meta property="og:description" content="ブラウザ単体でローカルのHTML文書を読み込み、レビュー指摘の記録、AI指示生成、左右ブロック差分検証を行えるWebツール。">
@@ -164,8 +165,18 @@
       height: 22px;
     }
 
-    .btn-manual { background: #4f46e5; color: #ffffff; border-color: #6366f1; text-decoration: none; }
-    .btn-manual:hover { background: #4338ca; border-color: #818cf8; color: #ffffff; }
+    .btn-manual {
+      background: #4f46e5;
+      color: #ffffff;
+      border-color: #6366f1;
+      text-decoration: none;
+    }
+
+    .btn-manual:hover {
+      background: #4338ca;
+      border-color: #818cf8;
+      color: #ffffff;
+    }
 
     .pane-files-footer {
       padding: 8px 12px;
@@ -177,7 +188,8 @@
     }
 
     /* サイドバー開閉用ボタンスタイル（通常時：蛍光ライトグリーン発色） */
-    #toggleFilesBtn, #toggleLogsBtn {
+    #toggleFilesBtn,
+    #toggleLogsBtn {
       background: rgba(34, 197, 94, 0.2);
       border-color: #22c55e;
       color: #4ade80;
@@ -603,7 +615,6 @@
     <div class="pane-center">
       <div class="pane-center-toolbar">
         <div class="toolbar-left-area">
-          <!-- 2. 左サイドバー開閉トグルボタン -->
           <button class="btn btn-toggle-active" id="toggleFilesBtn" title="ファイルツリーの表示/非表示を切り替え (Alt+1)">
             ◧ ファイル
           </button>
@@ -621,7 +632,6 @@
             📌 指摘リストに追加
           </button>
 
-          <!-- 1. 別窓で開く：原本と修正前を個別に起動可能に拡張 -->
           <button class="btn" style="padding: 2px 8px; font-size: 11px;" id="openDetachedModifiedBtn"
             title="原本（修正後作業中）を独立別ウィンドウで開く">
             別窓: 原本
@@ -631,7 +641,6 @@
             別窓: 修正前
           </button>
 
-          <!-- 2. 右サイドバー開閉トグルボタン -->
           <button class="btn btn-toggle-active" id="toggleLogsBtn" title="指摘エビデンス欄の表示/非表示を切り替え (Alt+2)">
             ◨ 指摘一覧
           </button>
@@ -689,7 +698,6 @@
     let currentFileName = "";
     let reviewLogs = [];
 
-    // 1. 個別管理用ウィンドウハンドル
     let detachedModifiedWin = null;
     let detachedBackupWin = null;
 
@@ -708,7 +716,7 @@
         const { targetFile, hash } = e.data;
         if (!targetFile) return;
         const matched = htmlFileNames.find(f => f.toLowerCase() === targetFile.toLowerCase()) ||
-                        htmlFileNames.find(f => f.toLowerCase().endsWith('/' + targetFile.toLowerCase()) || f.toLowerCase().endsWith(targetFile.toLowerCase()));
+          htmlFileNames.find(f => f.toLowerCase().endsWith('/' + targetFile.toLowerCase()) || f.toLowerCase().endsWith(targetFile.toLowerCase()));
         if (matched) {
           selectFile(matched);
           if (hash) {
@@ -754,7 +762,6 @@
       }, 50);
     }
 
-    // 2. サイドバー表示切替機能（VS Code風）
     document.getElementById('toggleFilesBtn').onclick = toggleFilesPane;
     document.getElementById('toggleLogsBtn').onclick = toggleLogsPane;
 
@@ -774,7 +781,6 @@
       btn.classList.toggle('btn-toggle-active', isLogsVisible);
     }
 
-    // ショートカットキー (Alt+1 でファイル、Alt+2 で指摘一覧)
     window.addEventListener('keydown', (e) => {
       if (e.altKey && e.key === '1') {
         e.preventDefault();
@@ -789,7 +795,6 @@
       const frameEl = document.getElementById('mainPreview');
       if (!frameEl) return;
 
-      // 1. 同一オリジン/srcdoc内のSelectionを直接即座に抽出
       try {
         if (frameEl.contentDocument && frameEl.contentWindow) {
           const win = frameEl.contentWindow;
@@ -816,9 +821,8 @@
             return;
           }
         }
-      } catch (err) {}
+      } catch (err) { }
 
-      // 2. フォーカス喪失時などのフォールバック（iframe内部スクリプトのキャッシュから取得）
       if (frameEl.contentWindow) {
         frameEl.contentWindow.postMessage({ type: 'REQUEST_CURRENT_SELECTION' }, '*');
       }
@@ -830,7 +834,6 @@
     document.getElementById('copyAllBtn').onclick = copyAllPrompt;
     document.getElementById('toggleDiffBtn').onclick = toggleDiffMode;
 
-    // 1. 個別別窓起動ボタンのハンドラ登録
     document.getElementById('openDetachedModifiedBtn').onclick = openDetachedModified;
     document.getElementById('openDetachedBackupBtn').onclick = openDetachedBackup;
 
@@ -937,7 +940,7 @@
       }
 
       document.getElementById('diffBeforeLabel').innerText = `修正前 (${backupDirHandle.name})`;
-      document.getElementById('openDetachedBackupBtn').style.display = 'inline-flex'; // 修正前別窓ボタンを表示
+      document.getElementById('openDetachedBackupBtn').style.display = 'inline-flex';
       await loadBackupFolder();
 
       if (isDiffMode) refreshDiffFrames();
@@ -1156,14 +1159,13 @@
                 let el = range.commonAncestorContainer;
                 if (el.nodeType === 3) el = el.parentNode;
 
-                // 直近の章見出し（h2, h3, h1）を遡ってパンくず文脈を生成
                 let headings = [];
                 let curr = el;
                 while (curr && curr !== document.body) {
                   let prev = curr.previousElementSibling;
                   while (prev) {
                     if (/^H[1-4]$/i.test(prev.tagName)) {
-                      headings.unshift(prev.innerText.replace(/[\r\n]+/g, ' ').trim());
+                      headings.unshift(prev.innerText.replace(/[\\r\\n]+/g, ' ').trim());
                       break;
                     }
                     prev = prev.previousElementSibling;
@@ -1171,7 +1173,7 @@
                   curr = curr.parentElement;
                 }
                 const headingPath = headings.slice(-2).join(' ➔ ');
-                const parentText = (el.innerText || "").replace(/[\r\n]+/g, ' ').trim();
+                const parentText = (el.innerText || "").replace(/[\\r\\n]+/g, ' ').trim();
                 context = (headingPath ? "[セクション: " + headingPath + "] " : "") + (parentText.length > 80 ? parentText.substring(0, 80) + '...' : parentText);
               } catch (err) {}
             }
@@ -1198,14 +1200,15 @@
                 e.preventDefault();
                 e.stopPropagation();
               };
-              floatBtn.onclick = (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                sendAddLog(lastSelectedText, lastSelectedContext);
-                hideFloatButton();
-              };
               document.body.appendChild(floatBtn);
             }
+
+            floatBtn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              sendAddLog(lastSelectedText, lastSelectedContext);
+              hideFloatButton();
+            };
 
             if (!sel || sel.rangeCount === 0) return;
             const range = sel.getRangeAt(0);
@@ -1221,6 +1224,63 @@
             floatBtn.style.top = Math.max(5, top) + 'px';
             floatBtn.style.left = left + 'px';
             floatBtn.style.display = 'block';
+          }
+
+          function extractImageInfo(targetEl) {
+            if (!targetEl) return null;
+            const img = targetEl.tagName === 'IMG' ? targetEl : targetEl.querySelector('img') || targetEl.closest('.manual-img-container, .img-box')?.querySelector('img');
+            if (!img) return null;
+            
+            const rawSrc = img.getAttribute('src') || '';
+            const fileName = rawSrc.split('?')[0].split('#')[0].split('/').pop();
+            const altText = (img.getAttribute('alt') || '').trim();
+            
+            // キャプションの探索（前後の .img-caption, .slide-caption, figcaption）
+            let caption = '';
+            const container = img.closest('.manual-img-container, .img-box, figure, .slide-item');
+            if (container) {
+              const capEl = container.querySelector('.img-caption, .slide-caption, figcaption');
+              if (capEl) caption = (capEl.innerText || '').trim();
+            }
+
+            // 親リンク（a href）
+            const parentLink = img.closest('a');
+            const linkHref = parentLink ? parentLink.getAttribute('href') : '';
+
+            let targetLabel = '[画像] ' + fileName;
+            if (caption) {
+              targetLabel += ' (' + (caption.length > 40 ? caption.substring(0, 40) + '...' : caption) + ')';
+            } else if (altText) {
+              targetLabel += ' (' + (altText.length > 40 ? altText.substring(0, 40) + '...' : altText) + ')';
+            }
+            if (linkHref && !linkHref.startsWith('#') && !linkHref.startsWith('javascript:')) {
+              targetLabel += ' ➔ リンク: ' + linkHref;
+            }
+            return { img, fileName, targetLabel, rawSrc };
+          }
+
+          function showFloatButtonForImage(img) {
+            if (!floatBtn) {
+              floatBtn = document.createElement('button');
+              floatBtn.id = 'ai-rv-float-btn';
+              floatBtn.innerHTML = '📌 指摘に追加';
+              floatBtn.onmousedown = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              };
+              document.body.appendChild(floatBtn);
+            }
+            lastClickedImage = img;
+            const rect = img.getBoundingClientRect();
+            floatBtn.style.top = Math.max(5, rect.top + window.scrollY + 8) + 'px';
+            floatBtn.style.left = Math.max(10, rect.left + window.scrollX + rect.width - 110) + 'px';
+            floatBtn.style.display = 'block';
+            floatBtn.onclick = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              sendImageReview(img);
+              hideFloatButton();
+            };
           }
 
           function hideFloatButton() {
@@ -1240,6 +1300,29 @@
             }, '*');
           }
 
+          function sendImageReview(img) {
+            const imgInfo = extractImageInfo(img);
+            if (!imgInfo) return;
+            
+            let heading = "";
+            let curr = imgInfo.img.closest('.manual-chapter, section, article') || imgInfo.img.parentElement;
+            while (curr && curr !== document.body) {
+              let prev = curr.previousElementSibling || curr.firstElementChild;
+              while (prev) {
+                if (/^H[1-4]$/i.test(prev.tagName)) { heading = prev.innerText.trim(); break; }
+                prev = prev.previousElementSibling;
+              }
+              if (heading) break;
+              curr = curr.parentElement;
+            }
+            window.parent.postMessage({
+              type: 'AI_REVIEW_ADD_LOG',
+              text: imgInfo.targetLabel,
+              context: (heading ? '[セクション: ' + heading + '] ' : '') + '画像パス: ' + imgInfo.rawSrc,
+              fileName: ${JSON.stringify(fileName)}
+            }, '*');
+          }
+
           document.addEventListener('selectionchange', () => {
             const sel = window.getSelection();
             if (sel && sel.toString().trim()) {
@@ -1252,11 +1335,47 @@
           document.addEventListener('mouseup', handleSelectionUpdate);
           document.addEventListener('keyup', handleSelectionUpdate);
 
-          document.addEventListener('contextmenu', (e) => {
+          // キャプチャフェーズで画像クリックを捕捉（拡大スクリプトの停止をすり抜ける）
+          document.addEventListener('click', (e) => {
             const img = e.target.closest('img');
             if (img) {
-              lastClickedImage = img;
-              window.parent.postMessage({ type: 'NOTIFY_IMAGE_RIGHT_CLICK' }, '*');
+              showFloatButtonForImage(img);
+            }
+          }, true);
+
+          // 画像の右クリックをツール優先で完全捕捉
+          document.addEventListener('contextmenu', (e) => {
+            const target = e.target;
+            const imgInfo = extractImageInfo(target);
+            if (imgInfo) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // 選択視覚フィードバック
+              const origOutline = imgInfo.img.style.outline;
+              imgInfo.img.style.outline = '3px solid #22c55e';
+              setTimeout(() => { imgInfo.img.style.outline = origOutline; }, 800);
+
+              // セクション見出しの逆引き
+              let heading = '';
+              let curr = imgInfo.img.closest('.manual-chapter, section, article') || imgInfo.img.parentElement;
+              while (curr && curr !== document.body) {
+                let prev = curr.previousElementSibling || curr.firstElementChild;
+                while (prev) {
+                  if (/^H[1-4]$/i.test(prev.tagName)) { heading = prev.innerText.trim(); break; }
+                  prev = prev.previousElementSibling;
+                }
+                if (heading) break;
+                curr = curr.parentElement;
+              }
+
+              // メインウィンドウへ指摘を即座に追加
+              window.parent.postMessage({
+                type: 'AI_REVIEW_ADD_LOG',
+                text: imgInfo.targetLabel,
+                context: (heading ? '[セクション: ' + heading + '] ' : '') + 'ファイルパス: ' + imgInfo.rawSrc,
+                fileName: ${JSON.stringify(fileName)}
+              }, '*');
             }
           }, true);
 
@@ -1267,26 +1386,7 @@
               const contextToSend = currentInfo.context || lastSelectedContext;
               sendAddLog(textToSend, contextToSend);
             } else if (e.data && e.data.type === 'REQUEST_IMAGE_SELECTION') {
-              // 画像への指摘用ハンドラ
-              const img = lastClickedImage;
-              if (!img) return;
-              const srcName = img.getAttribute('src') || '';
-              const altText = img.getAttribute('alt') || '';
-              let targetLabel = "[画像] " + srcName.split('/').pop();
-              if (altText) targetLabel += " (" + altText + ")";
-              
-              let heading = "";
-              let prev = img.closest('.img-box, .manual-img-container, p') || img;
-              while (prev) {
-                if (/^H[1-4]$/i.test(prev.tagName)) { heading = prev.innerText.trim(); break; }
-                prev = prev.previousElementSibling;
-              }
-              window.parent.postMessage({
-                type: 'AI_REVIEW_ADD_LOG',
-                text: targetLabel,
-                context: heading ? "[セクション: " + heading + "]" : "画像パス: " + srcName,
-                fileName: ${JSON.stringify(fileName)}
-              }, '*');
+              sendImageReview(lastClickedImage);
             } else if (e.data && e.data.type === 'HIGHLIGHT_TARGET_TEXT') {
               highlightAndScrollTo(e.data.targetText);
             } else if (e.data && e.data.type === 'SCROLL_TO_HASH') {
@@ -1306,7 +1406,6 @@
             }
           }
 
-          // リンククリックの安全なハンドリング（srcdoc内ナビゲーションによる親の初期化・画面喪失を防止）
           document.addEventListener('click', (e) => {
             const link = e.target.closest('a');
             if (!link) return;
@@ -1317,7 +1416,6 @@
               return;
             }
 
-            // 1. ページ内アンカーリンク (#section-id)
             if (href.startsWith('#')) {
               e.preventDefault();
               const targetId = href.substring(1);
@@ -1328,23 +1426,20 @@
               return;
             }
 
-            // 2. 外部リンク (http, https, mailto, etc)
             if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//') || href.startsWith('mailto:')) {
               e.preventDefault();
               window.open(href, '_blank', 'noopener,noreferrer');
               return;
             }
 
-            // 3. 相対パス/同一ディレクトリ内のHTMLリンク (例: index.html, ./manual.html#sec-1, doc.html)
             e.preventDefault();
-            let cleanHref = href.replace(/^\.\//, '');
+            let cleanHref = href.replace(/^\\.\\//, '');
             let parts = cleanHref.split('#');
             let targetFile = parts[0] ? parts[0].trim() : '';
             let hash = parts[1] ? parts[1].trim() : '';
 
             const currentDocName = ${JSON.stringify(fileName)} || '';
 
-            // 3-1. 同一ファイル内のアンカーリンク（#sec-1 や manual.html#sec-1 など）
             if (!targetFile || targetFile.toLowerCase() === currentDocName.toLowerCase()) {
               if (hash) {
                 const targetEl = findAnchorEl(hash);
@@ -1357,13 +1452,11 @@
               return;
             }
 
-            // 3-2. Webアプリ本体（index.html）への起動リンクや target="_blank" 指定のリンク
             if (link.target === '_blank' || targetFile.toLowerCase() === 'index.html') {
               window.open(href, '_blank', 'noopener,noreferrer');
               return;
             }
 
-            // 3-3. プロジェクト内の他ドキュメントファイルへの遷移
             window.parent.postMessage({
               type: 'NAVIGATE_TO_FILE',
               targetFile: targetFile,
@@ -1429,7 +1522,6 @@
       for (const key of sortedKeys) {
         const blobUrl = map[key];
         const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        // Match src="./path/to/img.png", src="path/to/img.png", url('path/to/img.png'), etc.
         const reg = new RegExp(`(["'=/(])(?:\\./|\\.\\./)*([^"'=/(]*?${escaped})(["'\\s)>])`, 'gi');
         res = res.replace(reg, `$1${blobUrl}$3`);
       }
@@ -1579,7 +1671,6 @@
 
     function pad(n) { return n < 10 ? '0' + n : n; }
 
-    // 1. 原本（修正後）の独立別窓起動
     function openDetachedModified() {
       if (!currentFileName || !rawHtmlMap[currentFileName]) {
         alert("ファイルが選択されていないか、内容が読み込まれていません。");
@@ -1671,7 +1762,6 @@
       }
     }
 
-    // 1. 修正前（退避バックアップ）の独立別窓起動
     function openDetachedBackup() {
       if (!currentFileName || !backupHtmlMap[currentFileName]) {
         alert("退避フォルダ内に該当ファイルが存在しません。");
@@ -1771,6 +1861,15 @@
       setTimeout(renderDiffBridgeLines, 400);
     }
 
+    // テキスト比較用ユーティリティ: 空白・改行・不可視文字を統一
+    function normalizeDiffText(str) {
+      if (!str) return "";
+      return str
+        .replace(/[\u200B-\u200D\uFEFF]/g, '') // ゼロ幅スペース等を除去
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
     function buildWinMergeDecoratedHtml(targetHtml, counterpartHtml, isBackup) {
       if (!targetHtml) {
         if (isBackup) {
@@ -1797,15 +1896,31 @@
         return "";
       }
 
-      // Collect text segments from counterpart for comparison
+      // 【判定1】元ソースからタグや余白を除いた純粋テキストが同一なら差分なしとして早期リターン
+      const targetPureText = normalizeDiffText(targetHtml.replace(/<[^>]*>/g, ' '));
+      const counterpartPureText = normalizeDiffText(counterpartHtml.replace(/<[^>]*>/g, ' '));
+      if (targetPureText === counterpartPureText) {
+        return targetHtml;
+      }
+
+      // 比較対象の要素セレクタ（抽出側と判定側で完全統一）
+      const DIFF_SELECTORS = 'p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, dt, dd, figcaption';
+
+      // 相手側の要素テキストを正規化してSet化
       let counterpartTexts = [];
       if (counterpartHtml) {
         try {
           const doc = new DOMParser().parseFromString(counterpartHtml, 'text/html');
-          const elements = doc.body ? doc.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, div, span') : [];
-          counterpartTexts = Array.from(elements)
-            .map(el => (el.innerText || "").trim())
-            .filter(t => t.length > 0);
+          if (doc.body) {
+            const elements = doc.body.querySelectorAll(DIFF_SELECTORS);
+            counterpartTexts = Array.from(elements)
+              .filter(el => {
+                // 子要素に別のブロック要素を持つ親要素はスキップ
+                return !Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName));
+              })
+              .map(el => normalizeDiffText(el.textContent || ""))
+              .filter(t => t.length > 1);
+          }
         } catch (e) {
           console.error("Diff parse error:", e);
         }
@@ -1838,21 +1953,27 @@
 
       const diffMarkerScript = `\n` + sTag + `
         (function() {
+          function norm(s) {
+            if (!s) return "";
+            return s.replace(/[\\u200B-\\u200D\\uFEFF]/g, '').replace(/\\s+/g, ' ').trim();
+          }
+
           function markDiffs() {
             const counterpartSet = new Set(${counterpartJson});
             const isDel = ${isBackup ? 'true' : 'false'};
             const targetClass = isDel ? 'winmerge-del' : 'winmerge-add';
             
-            // 子要素を持たない「末端のテキスト要素」のみを対象にして差分誤爆を防止
-            const candidates = document.body ? document.body.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, span, b, strong') : [];
+            const candidates = document.body ? document.body.querySelectorAll('${DIFF_SELECTORS}') : [];
             candidates.forEach(el => {
-              if (el.children.length > 0 && Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|DIV|TABLE)$/i.test(c.tagName))) return;
-              const text = (el.innerText || "").trim();
+              if (Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName))) return;
+              
+              const text = norm(el.textContent || "");
               if (text && text.length > 1 && !counterpartSet.has(text)) {
                 el.classList.add(targetClass);
               }
             });
           }
+
           if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', markDiffs);
           } else {
@@ -1890,7 +2011,6 @@
             return document.querySelector('.main-scroll-body') || document.scrollingElement || document.documentElement || document.body;
           }
 
-          // キャプチャフェーズ(true)で内部コンテナのスクロールを確実に捕捉
           document.addEventListener('scroll', (e) => {
             if (isSyncing) return;
             const target = e.target === document ? getScrollableEl() : e.target;
