@@ -649,6 +649,7 @@
       <div class="group-label">Source & Backup</div>
       <div class="group-buttons">
         <button class="btn" id="openDirBtn">📁 原本を開く</button>
+        <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
         <button class="btn" id="openBackupDirBtn" title="退避フォルダを指定し原本をバックアップ">📂 退避先を指定</button>
       </div>
     </div>
@@ -1020,6 +1021,7 @@
     document.getElementById('exportJsonBtn').onclick = exportAsJson;
     document.getElementById('exportMdBtn').onclick = exportAsMarkdown;
     document.getElementById('importJsonBtn').onclick = () => document.getElementById('importJsonInput').click();
+    document.getElementById('reloadWorkBtn').onclick = reloadWorkDirectory;
     document.getElementById('reloadDiffAfterBtn').onclick = reloadWorkDirectory;
 
     async function openWorkDirectory() {
@@ -1405,10 +1407,12 @@
           rawHtmlMap[name] = await f.text();
         } catch (e) { }
       }
+      // 通常プレビューを常に最新データで再読込
+      if (currentFileName && rawHtmlMap[currentFileName]) {
+        loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+      }
       if (isDiffMode) {
         refreshDiffFrames();
-      } else {
-        loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
       }
       if (detachedModifiedWin && !detachedModifiedWin.closed) {
         loadIntoDetachedModified();
@@ -2241,6 +2245,11 @@
         diff.style.display = 'none';
         btn.innerText = "🔄 Diff検証";
         btn.style.background = "var(--success)";
+
+        // Diffを閉じて通常モードに戻った際、最新の原本データでプレビューを確実に再読込
+        if (currentFileName && rawHtmlMap[currentFileName]) {
+          loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+        }
       }
     }
 
