@@ -2366,22 +2366,6 @@
         finalHtml = injectedScript + finalHtml;
       }
 
-      frameEl.srcdoc = finalHtml;
-    }
-
-      if (finalHtml.includes("<head")) {
-        finalHtml = finalHtml.replace(/(<head[^>]*>)/i, (match) => match + injectedStyles);
-      } else {
-        finalHtml = injectedStyles + finalHtml;
-      }
-
-      if (finalHtml.includes("<body")) {
-        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (match) => match + injectedScript);
-      } else {
-        finalHtml = injectedScript + finalHtml;
-      }
-
-      frameEl.srcdoc = finalHtml;
     }
 
     function calculateApproxLine(rawText, targetText) {
