@@ -216,18 +216,62 @@
     /* 左ペイン: ファイルツリー（表示切替対応） */
     .pane-files {
       width: 240px;
+      min-width: 160px;
+      max-width: 600px;
       background: var(--sidebar-bg);
       color: #ffffff;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--border-light);
       flex-shrink: 0;
-      transition: width 0.2s ease, margin-left 0.2s ease;
     }
 
     .pane-files.collapsed {
-      margin-left: -240px;
-      visibility: hidden;
+      display: none !important;
+    }
+
+    /* ペイン境界のリサイズバー（ドラッグ伸縮用） */
+    .resizer {
+      width: 6px;
+      cursor: col-resize;
+      background: transparent;
+      position: relative;
+      flex-shrink: 0;
+      z-index: 50;
+      transition: background 0.15s ease;
+      user-select: none;
+    }
+
+    .resizer::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 2px;
+      width: 1px;
+      background: var(--border-light);
+      transition: background 0.15s ease, width 0.15s ease, left 0.15s ease;
+    }
+
+    .resizer:hover,
+    .resizer.is-dragging {
+      background: rgba(59, 130, 246, 0.25);
+    }
+
+    .resizer:hover::after,
+    .resizer.is-dragging::after {
+      background: #3b82f6;
+      width: 3px;
+      left: 1px;
+    }
+
+    /* ドラッグ中はテキスト選択を無効化し、iframeのイベント吸い取りを防止 */
+    body.is-resizing {
+      user-select: none !important;
+      cursor: col-resize !important;
+    }
+
+    body.is-resizing iframe {
+      pointer-events: none !important;
     }
 
     .pane-files-header {
@@ -459,17 +503,16 @@
     /* 右ペイン: 指摘ログ一覧（表示切替対応） */
     .pane-logs {
       width: 360px;
+      min-width: 260px;
+      max-width: 800px;
       background: #1e1f22;
       display: flex;
       flex-direction: column;
-      border-left: 1px solid var(--border-light);
       flex-shrink: 0;
-      transition: width 0.2s ease, margin-right 0.2s ease;
     }
 
     .pane-logs.collapsed {
-      margin-right: -360px;
-      visibility: hidden;
+      display: none !important;
     }
 
     .pane-logs-header {
@@ -667,8 +710,11 @@
       </div>
     </div>
 
+    <!-- 左リサイザー（ドラッグ伸縮） -->
+    <div class="resizer resizer-left" id="resizerLeft" title="ドラッグしてファイルツリーの幅を変更"></div>
+
     <!-- 中央：インラインプレビュー / WinMerge風Diff比較 -->
-    <div class="pane-center">
+    <div class="pane-center" id="paneCenter">
       <div class="pane-center-toolbar">
         <div class="toolbar-left-area">
           <button class="btn btn-toggle-active" id="toggleFilesBtn" title="ファイルツリーの表示/非表示を切り替え (Alt+1)">
@@ -727,6 +773,9 @@
         </div>
       </div>
     </div>
+
+    <!-- 右リサイザー（ドラッグ伸縮） -->
+    <div class="resizer resizer-right" id="resizerRight" title="ドラッグして指摘一覧の幅を変更"></div>
 
     <!-- 右：指摘ログ一覧 -->
     <div class="pane-logs" id="paneLogs">
@@ -824,18 +873,92 @@
     function toggleFilesPane() {
       isFilesVisible = !isFilesVisible;
       const el = document.getElementById('paneFiles');
+      const resizer = document.getElementById('resizerLeft');
       const btn = document.getElementById('toggleFilesBtn');
       el.classList.toggle('collapsed', !isFilesVisible);
+      if (resizer) resizer.style.display = isFilesVisible ? '' : 'none';
       btn.classList.toggle('btn-toggle-active', isFilesVisible);
+      if (isDiffMode) setTimeout(renderDiffBridgeLines, 150);
     }
 
     function toggleLogsPane() {
       isLogsVisible = !isLogsVisible;
       const el = document.getElementById('paneLogs');
+      const resizer = document.getElementById('resizerRight');
       const btn = document.getElementById('toggleLogsBtn');
       el.classList.toggle('collapsed', !isLogsVisible);
+      if (resizer) resizer.style.display = isLogsVisible ? '' : 'none';
       btn.classList.toggle('btn-toggle-active', isLogsVisible);
+      if (isDiffMode) setTimeout(renderDiffBridgeLines, 150);
     }
+
+    // ペインのリサイズ（ドラッグ伸縮）制御
+    function initPaneResizers() {
+      const paneFiles = document.getElementById('paneFiles');
+      const paneLogs = document.getElementById('paneLogs');
+      const resizerLeft = document.getElementById('resizerLeft');
+      const resizerRight = document.getElementById('resizerRight');
+
+      let currentResizer = null;
+      let startX = 0;
+      let startFilesWidth = 0;
+      let startLogsWidth = 0;
+
+      // 左リサイザーのマウスダウン
+      if (resizerLeft) {
+        resizerLeft.addEventListener('mousedown', (e) => {
+          if (!isFilesVisible) return;
+          currentResizer = 'left';
+          startX = e.clientX;
+          startFilesWidth = paneFiles.getBoundingClientRect().width;
+          document.body.classList.add('is-resizing');
+          resizerLeft.classList.add('is-dragging');
+          e.preventDefault();
+        });
+      }
+
+      // 右リサイザーのマウスダウン
+      if (resizerRight) {
+        resizerRight.addEventListener('mousedown', (e) => {
+          if (!isLogsVisible) return;
+          currentResizer = 'right';
+          startX = e.clientX;
+          startLogsWidth = paneLogs.getBoundingClientRect().width;
+          document.body.classList.add('is-resizing');
+          resizerRight.classList.add('is-dragging');
+          e.preventDefault();
+        });
+      }
+
+      // マウス移動時の幅計算
+      window.addEventListener('mousemove', (e) => {
+        if (!currentResizer) return;
+
+        if (currentResizer === 'left') {
+          const deltaX = e.clientX - startX;
+          const newWidth = Math.max(160, Math.min(650, startFilesWidth + deltaX));
+          paneFiles.style.width = `${newWidth}px`;
+        } else if (currentResizer === 'right') {
+          const deltaX = startX - e.clientX;
+          const newWidth = Math.max(260, Math.min(850, startLogsWidth + deltaX));
+          paneLogs.style.width = `${newWidth}px`;
+        }
+      });
+
+      // マウスアップでリサイズ終了
+      window.addEventListener('mouseup', () => {
+        if (!currentResizer) return;
+        currentResizer = null;
+        document.body.classList.remove('is-resizing');
+        if (resizerLeft) resizerLeft.classList.remove('is-dragging');
+        if (resizerRight) resizerRight.classList.remove('is-dragging');
+        if (isDiffMode) {
+          setTimeout(renderDiffBridgeLines, 100);
+        }
+      });
+    }
+
+    initPaneResizers();
 
     window.addEventListener('keydown', (e) => {
       if (e.altKey && e.key === '1') {
