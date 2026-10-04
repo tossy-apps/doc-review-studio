@@ -868,6 +868,16 @@
         </div>
 
         <div class="toolbar-right-area">
+          <button class="btn btn-accent" id="reloadCurrentFileBtn" style="font-weight: bold;"
+            title="現在開いているこのファイルのみをディスクから高速再読込 (原本全体の走査なし)">
+            🔄 このファイルを再読込
+          </button>
+
+          <button class="btn" id="toggleInlineDiffBtn" style="font-weight: bold;"
+            title="通常プレビュー内で修正前（退避データ）との差分ハイライトをON/OFF">
+            🎨 差分ハイライト: OFF
+          </button>
+
           <button class="btn btn-success" id="addIssueFromParentBtn" style="font-weight: bold;"
             title="本文で選択したテキストを指摘リストへ追加">
             📌 指摘リストに追加
@@ -1200,6 +1210,8 @@
     document.getElementById('importJsonBtn').onclick = () => document.getElementById('importJsonInput').click();
     document.getElementById('reloadWorkBtn').onclick = reloadWorkDirectory;
     document.getElementById('reloadDiffAfterBtn').onclick = reloadWorkDirectory;
+    document.getElementById('reloadCurrentFileBtn').onclick = reloadCurrentFileOnly;
+    document.getElementById('toggleInlineDiffBtn').onclick = toggleInlineDiffMode;
 
     async function openWorkDirectory() {
       try {
@@ -1693,13 +1705,150 @@
       }
     }
 
+    let isInlineDiffMode = false;
+
+    function toggleInlineDiffMode() {
+      isInlineDiffMode = !isInlineDiffMode;
+      const btn = document.getElementById('toggleInlineDiffBtn');
+      if (btn) {
+        if (isInlineDiffMode) {
+          btn.innerHTML = "🎨 差分ハイライト: <span style='color:#4ade80;'>ON</span>";
+          btn.style.background = "rgba(34, 197, 94, 0.25)";
+          btn.style.borderColor = "#22c55e";
+          btn.style.color = "#4ade80";
+        } else {
+          btn.innerHTML = "🎨 差分ハイライト: OFF";
+          btn.style.background = "";
+          btn.style.borderColor = "";
+          btn.style.color = "";
+        }
+      }
+      if (currentFileName) {
+        loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+      }
+    }
+
+    async function reloadCurrentFileOnly() {
+      if (!workDirHandle || !currentFileName) {
+        alert("ファイルが選択されていません。");
+        return;
+      }
+      try {
+        const fh = await workDirHandle.getFileHandle(currentFileName);
+        const f = await fh.getFile();
+        rawHtmlMap[currentFileName] = await f.text();
+
+        loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+        if (isDiffMode) refreshDiffFrames();
+        if (detachedModifiedWin && !detachedModifiedWin.closed) loadIntoDetachedModified();
+
+        const btn = document.getElementById('reloadCurrentFileBtn');
+        if (btn) {
+          const origText = btn.innerHTML;
+          btn.innerHTML = "✓ 再読込完了";
+          btn.style.background = "#2563eb";
+          setTimeout(() => {
+            btn.innerHTML = origText;
+            btn.style.background = "";
+          }, 1000);
+        }
+      } catch (err) {
+        alert(`ファイル「${currentFileName}」の再読込エラー: ` + err.message);
+      }
+    }
+
+    // 単一ファイル用のインライン差分（成型結果に色付け）HTML生成
+    function buildInlineDiffHtml(currentRawText, backupRawText, fileName) {
+      const currentHtml = getRenderableHtml(fileName, currentRawText);
+      if (!backupRawText) {
+        const infoBar = `
+          <div style="background:#1e293b; border-bottom:1px solid #38bdf8; color:#93c5fd; padding:6px 14px; font-size:12px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:99999;">
+            <span>💡 <strong>差分ハイライト</strong>: ヘッダーの「📂 退避先を指定」で修正前バックアップを選択すると、差分箇所がインライン色分け表示されます。</span>
+          </div>
+        `;
+        if (currentHtml.includes("<body")) return currentHtml.replace(/(<body[^>]*>)/i, `$1${infoBar}`);
+        return infoBar + currentHtml;
+      }
+
+      const backupHtml = getRenderableHtml(fileName, backupRawText);
+      const targetPureText = normalizeDiffText(currentHtml.replace(/<[^>]*>/g, ' '));
+      const counterpartPureText = normalizeDiffText(backupHtml.replace(/<[^>]*>/g, ' '));
+
+      if (targetPureText === counterpartPureText) {
+        const infoBar = `
+          <div style="background:#064e3b; border-bottom:1px solid #22c55e; color:#a7f3d0; padding:6px 14px; font-size:12px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; position:sticky; top:0; z-index:99999;">
+            ✓ <strong>差分なし</strong>: 退避フォルダ（修正前）のデータと完全一致しています。
+          </div>
+        `;
+        if (currentHtml.includes("<body")) return currentHtml.replace(/(<body[^>]*>)/i, `$1${infoBar}`);
+        return infoBar + currentHtml;
+      }
+
+      const DIFF_SELECTORS = 'p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, dt, dd, figcaption';
+      let counterpartTexts = [];
+      try {
+        const doc = new DOMParser().parseFromString(backupHtml, 'text/html');
+        if (doc.body) {
+          const elements = doc.body.querySelectorAll(DIFF_SELECTORS);
+          counterpartTexts = Array.from(elements)
+            .filter(el => !Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName)))
+            .map(el => normalizeDiffText(el.textContent || ""))
+            .filter(t => t.length > 1);
+        }
+      } catch (e) {
+        console.error("Diff parse error:", e);
+      }
+
+      let decoratedHtml = currentHtml;
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(currentHtml, 'text/html');
+        if (doc.body) {
+          const elements = doc.body.querySelectorAll(DIFF_SELECTORS);
+          elements.forEach(el => {
+            if (Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName))) return;
+            const text = normalizeDiffText(el.textContent || "");
+            if (text.length <= 1) return;
+            if (!counterpartTexts.includes(text)) {
+              el.classList.add('winmerge-add');
+            }
+          });
+
+          const infoBar = `
+            <div style="background:#18191c; border-bottom:1px solid #22c55e; color:#e2e8f0; padding:6px 14px; font-size:12px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:99999; box-shadow:0 2px 8px rgba(0,0,0,0.4);">
+              <span>🎨 <strong>差分ハイライト中</strong>: <span style="background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:4px;">緑 = 修正・追加された箇所</span></span>
+              <span style="font-size:11px;color:#9ca3af;">（ツールバーでいつでもOFF可能）</span>
+            </div>
+          `;
+          decoratedHtml = `<!DOCTYPE html><html>${doc.documentElement.innerHTML}</html>`;
+          if (decoratedHtml.includes("<body")) decoratedHtml = decoratedHtml.replace(/(<body[^>]*>)/i, `$1${infoBar}`);
+          else decoratedHtml = infoBar + decoratedHtml;
+        }
+      } catch (err) {
+        console.error("Inline diff decoration error:", err);
+      }
+
+      return decoratedHtml;
+    }
+
     function loadIntoFrame(frameEl, rawHtml, fileName, resourceMap) {
       if (!rawHtml) return;
-      const baseHtml = getRenderableHtml(fileName, rawHtml);
+      let baseHtml;
+      if (isInlineDiffMode && frameEl && frameEl.id === 'mainPreview') {
+        baseHtml = buildInlineDiffHtml(rawHtml, backupHtmlMap[fileName], fileName);
+      } else {
+        baseHtml = getRenderableHtml(fileName, rawHtml);
+      }
       let finalHtml = resolveResourceUrls(baseHtml, resourceMap);
 
       const injectedStyles = `
         <style>
+          .winmerge-add {
+            background-color: rgba(34, 197, 94, 0.22) !important;
+            border-left: 4px solid #22c55e !important;
+            padding-left: 6px !important;
+            border-radius: 2px !important;
+          }
           @keyframes pulseHighlight {
             0% { background-color: #facc15; box-shadow: 0 0 10px #facc15; }
             50% { background-color: #fef08a; box-shadow: none; }
@@ -1712,6 +1861,36 @@
             border-radius: 2px;
             padding: 1px 3px;
             display: inline;
+          }
+          @keyframes boxPulseOutline {
+            0% { outline: 3px solid #eab308; background-color: rgba(234, 179, 8, 0.15); box-shadow: 0 0 8px rgba(234, 179, 8, 0.4); }
+            100% { outline: 3px solid #facc15; background-color: rgba(250, 204, 21, 0.3); box-shadow: 0 0 20px rgba(250, 204, 21, 0.8); }
+          }
+          .ai-rv-box-highlight {
+            animation: boxPulseOutline 1s infinite alternate !important;
+            border-radius: 4px !important;
+            transition: all 0.2s ease !important;
+          }
+          .ai-rv-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #64748b;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            z-index: 2147483647;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+            animation: fadeInOut 2.6s forwards;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          }
+          @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(10px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-10px); }
           }
           #ai-rv-float-btn {
             position: absolute;
@@ -1986,7 +2165,7 @@
             } else if (e.data && e.data.type === 'REQUEST_IMAGE_SELECTION') {
               sendImageReview(lastClickedImage);
             } else if (e.data && e.data.type === 'HIGHLIGHT_TARGET_TEXT') {
-              highlightAndScrollTo(e.data.targetText);
+              highlightAndScrollTo(e.data.targetText, e.data.targetContext);
             } else if (e.data && e.data.type === 'SCROLL_TO_HASH') {
               const targetEl = findAnchorEl(e.data.hash);
               if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2062,32 +2241,133 @@
             }, '*');
           }, true);
 
-          function highlightAndScrollTo(text) {
-            if (!text) return;
+          function highlightAndScrollTo(targetText, targetContext) {
+            if (!targetText) return;
+            
+            // 既存ハイライトのクリア
             document.querySelectorAll('.ai-rv-search-highlight').forEach(el => {
               const parent = el.parentNode;
-              parent.replaceChild(document.createTextNode(el.innerText), el);
-              parent.normalize();
+              if (parent) {
+                parent.replaceChild(document.createTextNode(el.innerText), el);
+                parent.normalize();
+              }
+            });
+            document.querySelectorAll('.ai-rv-box-highlight').forEach(el => {
+              el.classList.remove('ai-rv-box-highlight');
             });
 
+            // 1. 画像指摘の場合 [画像] filename.png ...
+            if (targetText.startsWith('[画像]')) {
+              const match = targetText.match(/\\[画像\\]\\s*([^\\s(]+)/);
+              const imgFileName = match ? match[1].trim() : '';
+              if (imgFileName) {
+                const imgs = Array.from(document.querySelectorAll('img'));
+                const matchedImg = imgs.find(img => {
+                  const src = img.getAttribute('src') || '';
+                  return src.includes(imgFileName);
+                });
+                if (matchedImg) {
+                  const targetBox = matchedImg.closest('.manual-img-container, .img-box, figure, .slide-item') || matchedImg;
+                  targetBox.classList.add('ai-rv-box-highlight');
+                  targetBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  return;
+                }
+              }
+            }
+
+            // 2. ブロック要素での直接検索（複数行・マークダウンタグ跨ぎに対応）
+            const norm = (s) => (s || '').replace(/[\\r\\n\\t\\s]+/g, ' ').trim();
+            const cleanTarget = norm(targetText);
+            if (!cleanTarget) return;
+
+            const BLOCKS = 'p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, code, dt, dd, div.markdown-alert, .card, tr, div';
+            const allElements = Array.from(document.body.querySelectorAll(BLOCKS));
+
+            // 完全一致または内包要素の探索 (最深の要素を優先)
+            let candidates = allElements.filter(el => {
+              const elText = norm(el.textContent);
+              return elText.includes(cleanTarget);
+            });
+
+            if (candidates.length > 0) {
+              candidates.sort((a, b) => a.textContent.length - b.textContent.length);
+              const bestEl = candidates[0];
+              bestEl.classList.add('ai-rv-box-highlight');
+              bestEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              return;
+            }
+
+            // 3. 部分一致検索（先頭25文字 または 15文字）
+            const subLen = Math.min(25, cleanTarget.length);
+            if (subLen >= 8) {
+              const prefix = cleanTarget.substring(0, subLen);
+              let partialCandidates = allElements.filter(el => norm(el.textContent).includes(prefix));
+              if (partialCandidates.length > 0) {
+                partialCandidates.sort((a, b) => a.textContent.length - b.textContent.length);
+                const bestEl = partialCandidates[0];
+                bestEl.classList.add('ai-rv-box-highlight');
+                bestEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+              }
+            }
+
+            // 4. セクション名（targetContextの [セクション: ...]）でのジャンプフォールバック
+            if (targetContext) {
+              const secMatch = targetContext.match(/\\[セクション:\\s*([^\\]]+)\\]/);
+              if (secMatch) {
+                const secName = secMatch[1].split('➔').pop().trim();
+                const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'));
+                const matchedHeading = headings.find(h => norm(h.textContent).includes(secName));
+                if (matchedHeading) {
+                  matchedHeading.classList.add('ai-rv-box-highlight');
+                  matchedHeading.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  return;
+                }
+              }
+            }
+
+            // 5. TreeWalkerによるテキストノード精密マッチ
             const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
             let node;
             while (node = walker.nextNode()) {
-              const idx = node.nodeValue.indexOf(text);
+              const idx = node.nodeValue.indexOf(targetText);
               if (idx !== -1) {
-                const range = document.createRange();
-                range.setStart(node, idx);
-                range.setEnd(node, idx + text.length);
-
-                const span = document.createElement('span');
-                span.className = 'ai-rv-search-highlight';
-                range.surroundContents(span);
-                span.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                break;
+                try {
+                  const range = document.createRange();
+                  range.setStart(node, idx);
+                  range.setEnd(node, idx + targetText.length);
+                  const span = document.createElement('span');
+                  span.className = 'ai-rv-search-highlight';
+                  range.surroundContents(span);
+                  span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  return;
+                } catch(e) {}
               }
             }
+
+            // 6. 見つからなかった場合のトースト通知
+            const toast = document.createElement('div');
+            toast.className = 'ai-rv-toast';
+            toast.innerText = '💡 指摘箇所が見つかりませんでした (文書が更新された可能性があります)';
+            document.body.appendChild(toast);
+            setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 2600);
           }
       ` + eTag + `\n`;
+
+      if (finalHtml.includes("<head")) {
+        finalHtml = finalHtml.replace(/(<head[^>]*>)/i, (match) => match + injectedStyles);
+      } else {
+        finalHtml = injectedStyles + finalHtml;
+      }
+
+      if (finalHtml.includes("<body")) {
+        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (match) => match + injectedScript);
+      } else {
+        finalHtml = injectedScript + finalHtml;
+      }
+
+      frameEl.srcdoc = finalHtml;
+    }
 
       if (finalHtml.includes("<head")) {
         finalHtml = finalHtml.replace(/(<head[^>]*>)/i, (match) => match + injectedStyles);
@@ -2176,7 +2456,8 @@
         c.classList.toggle('highlighted', i === idx);
       });
 
-      if (item.file !== currentFileName) {
+      const needFileSwitch = (item.file && item.file !== currentFileName);
+      if (needFileSwitch) {
         selectFile(item.file);
       }
 
@@ -2185,10 +2466,11 @@
         if (targetFrame && targetFrame.contentWindow) {
           targetFrame.contentWindow.postMessage({
             type: 'HIGHLIGHT_TARGET_TEXT',
-            targetText: item.target
+            targetText: item.target,
+            targetContext: item.context
           }, '*');
         }
-      }, 150);
+      }, needFileSwitch ? 300 : 50);
     };
 
     window.updateType = function (idx, val) { reviewLogs[idx].type = val; };
