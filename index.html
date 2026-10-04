@@ -633,6 +633,144 @@
       padding: 40px 10px;
       font-size: 12px;
     }
+
+    /* 退避先選択モーダル */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: modalFadeIn 0.15s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-card {
+      background: #1e1e24;
+      border: 1px solid #3f4248;
+      border-radius: 10px;
+      width: 560px;
+      max-width: 90vw;
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      background: #2b2d35;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #374151;
+    }
+
+    .modal-title {
+      font-weight: 700;
+      font-size: 13px;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0 4px;
+    }
+
+    .modal-close-btn:hover {
+      color: #ffffff;
+    }
+
+    .modal-body {
+      padding: 20px 20px 16px;
+    }
+
+    .modal-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .modal-opt-btn {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 16px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #282a30;
+      color: #ffffff;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+
+    .modal-opt-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-opt-use-existing:hover {
+      background: #1e293b;
+      border-color: #38bdf8;
+    }
+
+    .btn-opt-overwrite:hover {
+      background: #362f12;
+      border-color: #facc15;
+    }
+
+    .opt-icon {
+      font-size: 26px;
+      flex-shrink: 0;
+      line-height: 1.2;
+    }
+
+    .opt-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .btn-opt-use-existing .opt-title {
+      color: #38bdf8;
+    }
+
+    .btn-opt-overwrite .opt-title {
+      color: #facc15;
+    }
+
+    .opt-desc {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+
+    .modal-footer {
+      padding: 10px 16px;
+      background: #18191c;
+      border-top: 1px solid #2b2d35;
+      display: flex;
+      justify-content: flex-end;
+    }
   </style>
 </head>
 
@@ -789,6 +927,45 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- 退避先フォルダ選択時の確認モーダル -->
+  <div class="modal-overlay" id="backupChoiceModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span class="modal-title">📂 退避先フォルダの取り扱い確認</span>
+        <button class="modal-close-btn" id="modalCloseBtn" title="閉じる">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom: 8px; color: #f8fafc; font-size: 13px;">
+          選択した退避先「<strong id="modalBackupFolderName" style="color: #60a5fa;"></strong>」には既にファイルが存在します。
+        </p>
+        <p style="margin-bottom: 14px; color: #94a3b8; font-size: 12px; line-height: 1.5;">
+          実行したい操作を選択してください：
+        </p>
+
+        <div class="modal-options">
+          <button class="modal-opt-btn btn-opt-use-existing" id="modalOptUseExisting">
+            <div class="opt-icon">📂</div>
+            <div class="opt-text">
+              <div class="opt-title">既存のバックアップをそのまま使う（Diff比較）</div>
+              <div class="opt-desc">退避先ファイルを上書きせず、保存済みの修正前原本データと現在の原本の差分を検証します。</div>
+            </div>
+          </button>
+
+          <button class="modal-opt-btn btn-opt-overwrite" id="modalOptOverwrite">
+            <div class="opt-icon">🔄</div>
+            <div class="opt-text">
+              <div class="opt-title">現在の原本データで上書き退避する（新規退避）</div>
+              <div class="opt-desc">現在の原本フォルダ全体を退避先へコピーし、退避データを最新状態に置き換えます。</div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="modalOptCancel">✖ 処理を中止する</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -1039,6 +1216,34 @@
       await loadWorkFolder();
     }
 
+    function showBackupChoiceModal(folderName) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('backupChoiceModal');
+        document.getElementById('modalBackupFolderName').innerText = folderName;
+
+        let resolved = false;
+        const cleanup = (choice) => {
+          if (resolved) return;
+          resolved = true;
+          modal.style.display = 'none';
+          document.removeEventListener('keydown', onKeyDown);
+          resolve(choice);
+        };
+
+        const onKeyDown = (e) => {
+          if (e.key === 'Escape') cleanup('cancel');
+        };
+        document.addEventListener('keydown', onKeyDown);
+
+        document.getElementById('modalOptUseExisting').onclick = () => cleanup('use_existing');
+        document.getElementById('modalOptOverwrite').onclick = () => cleanup('overwrite');
+        document.getElementById('modalOptCancel').onclick = () => cleanup('cancel');
+        document.getElementById('modalCloseBtn').onclick = () => cleanup('cancel');
+
+        modal.style.display = 'flex';
+      });
+    }
+
     async function openBackupDirectoryExplicit() {
       if (!workDirHandle) {
         alert("先に「📁 原本を開く」で原本フォルダを選択してください。");
@@ -1063,12 +1268,11 @@
 
       let doCopy = true;
       if (hasFiles) {
-        const choice = confirm(
-          `退避フォルダ「${backupDirHandle.name}」には既にファイルが存在します。\n\n` +
-          `【OK】➔ 既存のバックアップファイルをそのまま差分比較に使用する\n` +
-          `【キャンセル】➔ 現在の原本データで退避先を上書きコピー退避する`
-        );
-        doCopy = !choice;
+        const choice = await showBackupChoiceModal(backupDirHandle.name);
+        if (choice === 'cancel') {
+          return; // キャンセル時は何もしない
+        }
+        doCopy = (choice === 'overwrite');
       }
 
       const badge = document.getElementById('backupProgressBadge');
