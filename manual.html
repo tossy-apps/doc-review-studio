@@ -321,7 +321,7 @@
 
     <!-- Document Body -->
     <h1>DocReview Studio ユーザーズマニュアル</h1>
-<p>DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアルや技術仕様書を読み込み、直感的なレビュー指摘の記録、AI修正指示プロンプトの自動生成、WinMerge風の左右Diff差分検証を行える<strong>完全クライアントサイド型ドキュメント校正スタジオ</strong>です。</p>
+<p>DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアルやMarkdownドキュメント（.md / .markdown）を読み込み、直感的なレビュー指摘の記録、AI修正指示プロンプトの自動生成、WinMerge風の左右Diff差分検証を行える<strong>完全クライアントサイド型ドキュメント校正スタジオ</strong>です。</p>
 <hr />
 <h2 id="sec-toc">📑 目次</h2>
 <p><a href="#sec-features">1. DocReview Studio の特徴・設計思想</a><br />
@@ -338,6 +338,11 @@
 <ul>
 <li><strong>File System Access API</strong> を採用し、PCローカルのフォルダやファイルをブラウザ内部メモリで直接読み込み・操作します。</li>
 <li>社外秘のドキュメントや未公開マニュアル、個人情報が含まれる文書であっても、外部サーバーへ一切送信されません。</li>
+</ul>
+<h3>📝 HTML & Markdown（.md）の高速プレビュー</h3>
+<ul>
+<li>HTMLファイルだけでなく、Markdownドキュメント（.md / .markdown）も自動でGitHub風スタイル付きHTMLに高速変換してプレビュー表示・差分検証できます。</li>
+<li>オフラインでも動作するローカル内蔵パーサー（<code>marked.min.js</code>）を同梱。</li>
 </ul>
 <h3>🚀 インストーラー不要・即座に起動</h3>
 <ul>
@@ -363,12 +368,12 @@
 <tr>
 <td style="text-align: left;"><strong>左ペイン</strong></td>
 <td style="text-align: left;">ファイルツリー</td>
-<td style="text-align: left;">対象フォルダ内のHTMLファイル一覧、指摘件数バッジ表示</td>
+<td style="text-align: left;">対象フォルダ内のHTML/Markdownファイル一覧（検索フィルタ・種別バッジ付）</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>中央ペイン</strong></td>
 <td style="text-align: left;">プレビュー / Diff検証</td>
-<td style="text-align: left;">HTML本文のリアルタイムレンダリング、左右並列差分比較</td>
+<td style="text-align: left;">HTML/Markdown本文のリアルタイムレンダリング、左右並列差分比較</td>
 </tr>
 <tr>
 <td style="text-align: left;"><strong>右ペイン</strong></td>
@@ -383,8 +388,8 @@
 <h3>STEP 1: 原本フォルダを開く</h3>
 <ol>
 <li>ヘッダー左側の <strong>「📁 原本を開く」</strong> ボタンをクリックします。</li>
-<li>レビュー・校正対象のHTMLファイル群が含まれるローカルフォルダを選択し、アクセスを許可します。</li>
-<li>左ペインにHTMLファイル一覧が読み込まれます。</li>
+<li>レビュー・校正対象のHTMLまたはMarkdownファイル群が含まれるローカルフォルダを選択し、アクセスを許可します。</li>
+<li>左ペインにファイル一覧が読み込まれます（上部の検索ボックスで絞り込みも可能）。</li>
 </ol>
 <h3>STEP 2: 退避先フォルダを指定する（原本バックアップ）</h3>
 <ol>

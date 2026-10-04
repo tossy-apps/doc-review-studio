@@ -5,11 +5,12 @@
   <meta charset="UTF-8">
   <meta name="robots" content="index, follow">
   <meta name="description"
-    content="DocReview Studio - 完全クライアントサイドで動作するHTMLマニュアル・技術文書レビュー＆WinMerge風Diff差分検証ツール。機密を漏らさずローカル完結。">
-  <meta name="keywords" content="DocReview, HTMLレビュー, WinMerge, 差分比較, Diff, 技術文書, マニュアル校正">
-  <meta property="og:title" content="DocReview Studio - 完全クライアントサイドHTML文書レビューツール">
-  <meta property="og:description" content="ブラウザ単体でローカルのHTML文書を読み込み、レビュー指摘の記録、AI指示生成、左右ブロック差分検証を行えるWebツール。">
+    content="DocReview Studio - 完全クライアントサイドで動作するHTML & Markdownマニュアル・技術文書レビュー＆WinMerge風Diff差分検証ツール。機密を漏らさずローカル完結。">
+  <meta name="keywords" content="DocReview, HTMLレビュー, Markdownレビュー, WinMerge, 差分比較, Diff, 技術文書, マニュアル校正">
+  <meta property="og:title" content="DocReview Studio - 完全クライアントサイドHTML & Markdown文書レビューツール">
+  <meta property="og:description" content="ブラウザ単体でローカルのHTML/Markdown文書を読み込み、レビュー指摘の記録、AI指示生成、左右ブロック差分検証を行えるWebツール。">
   <title>DocReview Studio & Diff Inspector</title>
+  <script src="marked.min.js"></script>
   <style>
     :root {
       --bg-header: #1e1e24;
@@ -214,7 +215,7 @@
 
     /* 左ペイン: ファイルツリー（表示切替対応） */
     .pane-files {
-      width: 230px;
+      width: 240px;
       background: var(--sidebar-bg);
       color: #ffffff;
       display: flex;
@@ -225,7 +226,7 @@
     }
 
     .pane-files.collapsed {
-      margin-left: -230px;
+      margin-left: -240px;
       visibility: hidden;
     }
 
@@ -240,6 +241,58 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .pane-files-search {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border-light);
+      background: #18191c;
+    }
+
+    .file-search-input {
+      width: 100%;
+      background: #2b2d31;
+      border: 1px solid #3f4248;
+      border-radius: 4px;
+      color: #e5e7eb;
+      font-size: 11px;
+      padding: 5px 8px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .file-search-input:focus {
+      border-color: #60a5fa;
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2);
+    }
+
+    .file-search-input::placeholder {
+      color: #9ca3af;
+      font-size: 10.5px;
+    }
+
+    .file-type-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-right: 5px;
+      display: inline-block;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+    }
+
+    .badge-md {
+      background: rgba(8, 145, 178, 0.25);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .badge-html {
+      background: rgba(234, 88, 12, 0.25);
+      color: #fb923c;
+      border: 1px solid rgba(251, 146, 60, 0.4);
     }
 
     .file-tree {
@@ -602,6 +655,9 @@
       <div class="pane-files-header">
         <span>Files</span>
         <span id="fileTotalCount" style="color: #60a5fa; font-weight: bold;">0</span>
+      </div>
+      <div class="pane-files-search">
+        <input type="text" id="fileFilterInput" class="file-search-input" placeholder="🔍 ファイル検索 (HTML / MD)..." />
       </div>
       <ul class="file-tree" id="fileTree">
         <li style="color: #9ca3af; cursor: default;">原本フォルダを開いてください</li>
@@ -971,6 +1027,186 @@
       }
     }
 
+    // ドキュメント種別判定
+    function isMarkdownFile(name) {
+      return /\.(md|markdown)$/i.test(name || '');
+    }
+
+    function isDocFile(name) {
+      return /\.(html|htm|md|markdown)$/i.test(name || '');
+    }
+
+    // Markdown ➔ HTML 変換（GitHub風スタイル同梱）
+    function convertMarkdownToHtml(rawMd, title = "") {
+      let contentHtml = "";
+      if (typeof marked !== 'undefined' && marked.parse) {
+        try {
+          contentHtml = marked.parse(rawMd || "");
+        } catch (e) {
+          console.error("Markdown parse error:", e);
+          contentHtml = escapeHtml(rawMd || "").replace(/\n/g, '<br>');
+        }
+      } else {
+        contentHtml = escapeHtml(rawMd || "").replace(/\n/g, '<br>');
+      }
+
+      return `<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(title)}</title>
+  <style>
+    :root {
+      --color-canvas-default: #ffffff;
+      --color-fg-default: #1f2328;
+      --color-fg-muted: #656d76;
+      --color-border-default: #d0d7de;
+      --color-border-muted: #d8dee4;
+      --color-canvas-subtle: #f6f8fa;
+      --color-accent-fg: #0969da;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--color-fg-default);
+      background-color: var(--color-canvas-default);
+      word-wrap: break-word;
+      margin: 0;
+      padding: 32px 40px;
+      box-sizing: border-box;
+      max-width: 980px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 24px;
+      margin-bottom: 16px;
+      font-weight: 600;
+      line-height: 1.25;
+      color: #0f172a;
+    }
+    h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--color-border-muted); }
+    h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid var(--color-border-muted); }
+    h3 { font-size: 1.25em; }
+    h4 { font-size: 1em; }
+    p, blockquote, ul, ol, dl, table, pre, details {
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    hr {
+      height: 0.25em;
+      padding: 0;
+      margin: 24px 0;
+      background-color: var(--color-border-default);
+      border: 0;
+    }
+    blockquote {
+      padding: 0 1em;
+      color: var(--color-fg-muted);
+      border-left: 0.25em solid var(--color-border-default);
+      margin: 1em 0;
+    }
+    ul, ol {
+      padding-left: 2em;
+    }
+    li + li {
+      margin-top: 0.25em;
+    }
+    code {
+      padding: 0.2em 0.4em;
+      margin: 0;
+      font-size: 85%;
+      white-space: break-spaces;
+      background-color: rgba(175, 184, 193, 0.2);
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    pre {
+      padding: 16px;
+      overflow: auto;
+      font-size: 85%;
+      line-height: 1.45;
+      background-color: var(--color-canvas-subtle);
+      border-radius: 6px;
+      border: 1px solid var(--color-border-default);
+    }
+    pre code {
+      padding: 0;
+      margin: 0;
+      background: transparent;
+      border: 0;
+      word-break: normal;
+      white-space: pre;
+    }
+    table {
+      border-spacing: 0;
+      border-collapse: collapse;
+      display: block;
+      width: max-content;
+      max-width: 100%;
+      overflow: auto;
+      margin-bottom: 16px;
+    }
+    table th, table td {
+      padding: 6px 13px;
+      border: 1px solid var(--color-border-default);
+    }
+    table tr {
+      background-color: var(--color-canvas-default);
+      border-top: 1px solid var(--color-border-muted);
+    }
+    table tr:nth-child(2n) {
+      background-color: var(--color-canvas-subtle);
+    }
+    table th {
+      font-weight: 600;
+      background-color: var(--color-canvas-subtle);
+    }
+    img {
+      max-width: 100%;
+      box-sizing: content-box;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    a {
+      color: var(--color-accent-fg);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    input[type="checkbox"] {
+      margin-right: 0.5em;
+    }
+  </style>
+</head>
+<body>
+  <article class="markdown-body">
+    ${contentHtml}
+  </article>
+</body>
+</html>`;
+    }
+
+    function getRenderableHtml(fileName, rawText) {
+      if (!rawText) return "";
+      if (isMarkdownFile(fileName)) {
+        return convertMarkdownToHtml(rawText, fileName);
+      }
+      return rawText;
+    }
+
+    let fileSearchQuery = "";
+    const fileFilterInput = document.getElementById('fileFilterInput');
+    if (fileFilterInput) {
+      fileFilterInput.addEventListener('input', (e) => {
+        fileSearchQuery = e.target.value.toLowerCase().trim();
+        renderFileTree();
+      });
+    }
+
     async function loadWorkFolder() {
       rawHtmlMap = {};
       blobUrlMap = {};
@@ -981,8 +1217,7 @@
 
         if (entry.kind === 'file') {
           const file = await entry.getFile();
-          const isHtml = file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm');
-          if (isHtml) {
+          if (isDocFile(file.name)) {
             rawHtmlMap[file.name] = await file.text();
             htmlFileNames.push(file.name);
           } else {
@@ -994,11 +1229,10 @@
       }
 
       if (htmlFileNames.length === 0) {
-        alert("選択した原本フォルダ内にHTMLファイルが見つかりませんでした。");
+        alert("選択した原本フォルダ内にドキュメントファイル (HTML / Markdown) が見つかりませんでした。");
         return;
       }
 
-      document.getElementById('fileTotalCount').innerText = htmlFileNames.length;
       renderFileTree();
       selectFile(htmlFileNames[0]);
     }
@@ -1013,7 +1247,7 @@
 
         if (entry.kind === 'file') {
           const file = await entry.getFile();
-          if (file.name.toLowerCase().endsWith('.html') || file.name.toLowerCase().endsWith('.htm')) {
+          if (isDocFile(file.name)) {
             backupHtmlMap[file.name] = await file.text();
           } else {
             backupBlobUrlMap[file.name] = URL.createObjectURL(file);
@@ -1063,13 +1297,43 @@
       const ul = document.getElementById('fileTree');
       ul.innerHTML = "";
 
-      htmlFileNames.forEach(name => {
+      const filtered = htmlFileNames.filter(name => {
+        if (!fileSearchQuery) return true;
+        return name.toLowerCase().includes(fileSearchQuery);
+      });
+
+      const totalLabel = document.getElementById('fileTotalCount');
+      if (totalLabel) {
+        if (fileSearchQuery) {
+          totalLabel.innerText = `${filtered.length}/${htmlFileNames.length}`;
+        } else {
+          totalLabel.innerText = htmlFileNames.length;
+        }
+      }
+
+      if (filtered.length === 0) {
+        const emptyLi = document.createElement('li');
+        emptyLi.style.color = '#9ca3af';
+        emptyLi.style.cursor = 'default';
+        emptyLi.innerText = htmlFileNames.length === 0 ? '原本フォルダを開いてください' : '一致するファイルがありません';
+        ul.appendChild(emptyLi);
+        return;
+      }
+
+      filtered.forEach(name => {
         const count = reviewLogs.filter(l => l.file === name).length;
+        const isMd = isMarkdownFile(name);
+        const badgeHtml = isMd
+          ? '<span class="file-type-badge badge-md">MD</span>'
+          : '<span class="file-type-badge badge-html">HTML</span>';
+
         const li = document.createElement('li');
         if (name === currentFileName) li.classList.add('active');
 
         li.innerHTML = `
-          <span class="file-name" title="${escapeHtml(name)}">📄 ${escapeHtml(name)}</span>
+          <span class="file-name" title="${escapeHtml(name)}">
+            ${badgeHtml}${escapeHtml(name)}
+          </span>
           ${count > 0 ? `<span class="file-badge">${count}</span>` : ''}
         `;
 
@@ -1081,7 +1345,9 @@
     function selectFile(name) {
       currentFileName = name;
       renderFileTree();
-      document.getElementById('currentViewLabel').innerHTML = `表示中: <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
+      const isMd = isMarkdownFile(name);
+      const icon = isMd ? '📝' : '📄';
+      document.getElementById('currentViewLabel').innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
       loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[name], name, blobUrlMap);
 
       if (isDiffMode) {
@@ -1098,7 +1364,8 @@
 
     function loadIntoFrame(frameEl, rawHtml, fileName, resourceMap) {
       if (!rawHtml) return;
-      let finalHtml = resolveResourceUrls(rawHtml, resourceMap);
+      const baseHtml = getRenderableHtml(fileName, rawHtml);
+      let finalHtml = resolveResourceUrls(baseHtml, resourceMap);
 
       const injectedStyles = `
         <style>
@@ -1676,13 +1943,16 @@
         alert("ファイルが選択されていないか、内容が読み込まれていません。");
         return;
       }
-      let finalHtml = resolveResourceUrls(rawHtmlMap[currentFileName], blobUrlMap);
+      const isMd = isMarkdownFile(currentFileName);
+      const icon = isMd ? '📝' : '📄';
+      const baseHtml = getRenderableHtml(currentFileName, rawHtmlMap[currentFileName]);
+      let finalHtml = resolveResourceUrls(baseHtml, blobUrlMap);
       const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
       const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
 
       const headerBar = `
         <div style="position:fixed;top:0;left:0;width:100%;height:38px;background:#18191c;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:9999999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;border-bottom:1px solid #374151;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
-          <span style="color:#60a5fa; font-weight:bold; font-size:13px;">📄 [原本] ${escapeHtml(currentFileName)}</span>
+          <span style="color:#60a5fa; font-weight:bold; font-size:13px;">${icon} [原本] ${escapeHtml(currentFileName)}</span>
           <button id="detachedAddBtn" style="background:#16a34a;color:#fff;border:1px solid #22c55e;border-radius:4px;padding:4px 12px;font-weight:bold;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
             📌 選択テキストを指摘に追加
           </button>
@@ -1718,7 +1988,7 @@
             const sel = window.getSelection();
             const text = (sel ? sel.toString().trim() : "") || lastSel;
             const context = lastCtx;
-            if (!text) { alert("マニュアル本文のテキストを選択してください。"); return; }
+            if (!text) { alert("本文のテキストを選択してください。"); return; }
             if (window.opener && !window.opener.closed) {
               window.opener.postMessage({
                 type: 'AI_REVIEW_ADD_LOG',
@@ -1767,10 +2037,13 @@
         alert("退避フォルダ内に該当ファイルが存在しません。");
         return;
       }
-      let finalHtml = resolveResourceUrls(backupHtmlMap[currentFileName], backupBlobUrlMap);
+      const isMd = isMarkdownFile(currentFileName);
+      const icon = isMd ? '📝' : '📄';
+      const baseHtml = getRenderableHtml(currentFileName, backupHtmlMap[currentFileName]);
+      let finalHtml = resolveResourceUrls(baseHtml, backupBlobUrlMap);
       const headerBar = `
         <div style="position:fixed;top:0;left:0;width:100%;height:38px;background:#374151;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:9999999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;border-bottom:1px solid #4b5563;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
-          <span style="color:#f87171; font-weight:bold; font-size:13px;">📄 [修正前/退避原本] ${escapeHtml(currentFileName)}</span>
+          <span style="color:#f87171; font-weight:bold; font-size:13px;">${icon} [修正前/退避原本] ${escapeHtml(currentFileName)}</span>
           <span style="color:#d1d5db; font-size:11px;">(参照専用)</span>
         </div>
         <div style="height:44px;"></div>
@@ -1810,7 +2083,7 @@
 
     function generatePrompt(logs, titleHeader) {
       if (logs.length === 0) { alert("指摘が登録されていません。"); return; }
-      let out = `${titleHeader}\n以下のHTMLマニュアルの指定箇所について、指摘内容を反映してください。\n`;
+      let out = `${titleHeader}\n以下のドキュメント（HTML / Markdown）の指定箇所について、指摘内容を反映してください。\n`;
       out += "※指示のない既存のタグ構造、属性、クラス名、前後の文言は一切変更しないこと。\n\n";
 
       logs.forEach((item, idx) => {
@@ -1849,8 +2122,11 @@
     }
 
     function refreshDiffFrames() {
-      const beforeHtml = backupHtmlMap[currentFileName] || "";
-      const afterHtml = rawHtmlMap[currentFileName] || "";
+      const beforeRaw = backupHtmlMap[currentFileName] || "";
+      const afterRaw = rawHtmlMap[currentFileName] || "";
+
+      const beforeHtml = getRenderableHtml(currentFileName, beforeRaw);
+      const afterHtml = getRenderableHtml(currentFileName, afterRaw);
 
       const decoratedBefore = buildWinMergeDecoratedHtml(beforeHtml, afterHtml, true);
       const decoratedAfter = buildWinMergeDecoratedHtml(afterHtml, beforeHtml, false);

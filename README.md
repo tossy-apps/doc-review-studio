@@ -1,8 +1,8 @@
 # DocReview Studio
 
-A standalone, client-side HTML document review and visual diff inspection studio designed for technical writers, reviewers, and AI-assisted workflows.
+A standalone, client-side HTML & Markdown document review and visual diff inspection studio designed for technical writers, reviewers, and AI-assisted workflows.
 
-ブラウザ単体でローカルのHTMLマニュアルやドキュメントを読み込み、レビュー指摘の記録、AI修正指示プロンプトの生成、WinMerge風の左右ブロック差分検証を行える完全クライアントサイド型レビュー環境です。
+ブラウザ単体でローカルのHTMLマニュアルやMarkdownドキュメント（.md / .markdown）を読み込み、レビュー指摘の記録、AI修正指示プロンプトの生成、WinMerge風の左右ブロック差分検証を行える完全クライアントサイド型レビュー環境です。
 
 ---
 
@@ -10,9 +10,15 @@ A standalone, client-side HTML document review and visual diff inspection studio
 
 - **完全クライアントサイド実行 (100% Client-Side)**
   - サーバー通信なし。File System Access API を用いてローカルファイルを直接読み込み・退避コピー。
-  - 機密文書や社内マニュアルも外部へ送信されることなく安全に扱えます。
+  - 機密文書や社内マニュアル、未公開ドキュメントも外部へ送信されることなく安全に扱えます。
+- **HTML & Markdown（.md）の高速レンダリング**
+  - HTMLファイルに加え、Markdownファイル（.md / .markdown）も自動パースし、美しくプレビュー表示。
+  - オフライン・ローカル単体でも動作する内蔵パーサー（`marked.min.js`）を同梱。
+- **ファイルツリー & リアルタイム検索フィルタ**
+  - HTML/Markdownの種別バッジ（HTML / MD）付きファイル一覧。
+  - インクリメンタル検索ボックスで素早く目的のファイルを絞り込み可能。
 - **直感的なレビュー & 指摘エビデンス管理**
-  - マニュアル本文のテキストを選択し、ワンクリックで指摘リストへ登録。
+  - ドキュメント本文のテキストを選択し、ワンクリックで指摘リストへ登録。
   - 指摘区分（修正 / 追加 / 削除 / 質問 / 検討中）の設定、指示入力、該当箇所への自動ジャンプ。
   - レビュー結果を **JSON** または **Markdownテーブル** としてエクスポート・インポート可能。
 - **AIプロンプト自動生成**
@@ -35,7 +41,7 @@ A standalone, client-side HTML document review and visual diff inspection studio
 ### 利用手順
 
 1. 上記の GitHub Pages URL（またはローカルの `index.html`）を **Google Chrome** または **Microsoft Edge** で開きます。
-2. 上部ヘッダーの **「📁 原本を開く」** をクリックし、レビュー対象のHTMLファイル群が含まれるフォルダを選択します。
+2. 上部ヘッダーの **「📁 原本を開く」** をクリックし、レビュー対象のHTML / Markdownファイル群が含まれるフォルダを選択します。
 3. **「📂 退避先を指定」** をクリックしてバックアップ用フォルダを選択すると、原本の高速ミラー退避（修正前の保持）が行われます。
 4. 中央プレビューでテキストを選択し、ツールバーの **「📌 指摘リストに追加」** を押してレビューを進めます。
 5. AIによる修正完了後、**「🔄 Diff検証」** または **「🔄 原本再読込」** で変更差分を検証します。
@@ -57,6 +63,7 @@ A standalone, client-side HTML document review and visual diff inspection studio
 │   ├── 05_diff_inspector.png
 │   └── 06_pane_toggle.png
 ├── index.html          # DocReview Studio 本体 (GitHub Pages / ローカル実行用)
+├── marked.min.js       # Markdownパース用ライブラリ (ローカル完結・MITライセンス)
 ├── manual.html         # 公開用操作マニュアル (単体閲覧可能HTML)
 ├── manual.md           # 操作マニュアル原稿 (Markdown)
 ├── robots.txt          # クローラー向け設定
