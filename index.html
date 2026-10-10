@@ -13,6 +13,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" href="favicon.png">
   <script src="marked.min.js"></script>
+  <link rel="stylesheet" href="onboarding-guide.css">
   <style>
     :root {
       --bg-header: #1e1e24;
@@ -869,6 +870,45 @@
       display: flex;
       justify-content: flex-end;
     }
+
+    /* 中央空状態のシンプルな待機プレースホルダー */
+    .empty-center-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      color: #94a3b8;
+      background: #141518;
+      z-index: 5;
+    }
+
+    .empty-center-icon {
+      font-size: 42px;
+      opacity: 0.8;
+    }
+
+    .empty-center-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    .empty-center-desc {
+      font-size: 12px;
+      color: #64748b;
+      max-width: 420px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .empty-center-btns {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
   </style>
 </head>
 
@@ -949,7 +989,10 @@
       <div class="action-group" style="margin-left: auto;">
         <div class="group-label">Guide & Diff</div>
         <div class="group-buttons">
-          <a href="./manual.html" target="_blank" class="btn btn-manual" title="使い方マニュアルを開く">
+          <button class="btn" id="showGuideBtn" title="3ステップの動く使い方ガイドを表示">
+            💡 ガイド
+          </button>
+          <a href="./manual.html" target="_blank" class="btn btn-manual" title="詳細な使い方マニュアルを開く">
             📖 マニュアル
           </a>
           <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダをブロック差分検証">
@@ -1008,6 +1051,24 @@
       </div>
 
       <div class="preview-container" id="normalContainer">
+        <!-- ファイル未選択時の中央プレースホルダー -->
+        <div class="empty-center-placeholder" id="emptyPlaceholder">
+          <div class="empty-center-icon">📄</div>
+          <div class="empty-center-title">ドキュメントが選択されていません</div>
+          <div class="empty-center-desc">
+            左側のファイルツリーからHTMLまたはMarkdownを選択してください。<br>
+            まだ原本を開いていない場合は、以下のボタンまたはヘッダーから開始できます。
+          </div>
+          <div class="empty-center-btns">
+            <button class="btn btn-accent" id="placeholderOpenDirBtn" style="font-weight: 700; padding: 6px 14px;">
+              📁 原本を開く
+            </button>
+            <button class="btn btn-manual" id="placeholderGuideBtn" style="font-weight: 700; padding: 6px 14px;">
+              💡 使い方ガイド
+            </button>
+          </div>
+        </div>
+
         <iframe id="mainPreview" class="preview-frame"></iframe>
       </div>
 
@@ -1306,6 +1367,25 @@
     };
 
     document.getElementById('openDirBtn').onclick = openWorkDirectory;
+    
+    // 待機プレースホルダーのボタン連動
+    const phOpenBtn = document.getElementById('placeholderOpenDirBtn');
+    if (phOpenBtn) phOpenBtn.onclick = openWorkDirectory;
+
+    const phGuideBtn = document.getElementById('placeholderGuideBtn');
+    if (phGuideBtn) {
+      phGuideBtn.onclick = () => {
+        if (window.DocReviewGuide) window.DocReviewGuide.open();
+      };
+    }
+
+    const showGuideBtn = document.getElementById('showGuideBtn');
+    if (showGuideBtn) {
+      showGuideBtn.onclick = () => {
+        if (window.DocReviewGuide) window.DocReviewGuide.open();
+      };
+    }
+
     document.getElementById('openBackupDirBtn').onclick = openBackupDirectoryExplicit;
     document.getElementById('copyCurrentBtn').onclick = copyCurrentPrompt;
     document.getElementById('copyAllBtn').onclick = copyAllPrompt;
@@ -1801,7 +1881,13 @@
       const isMd = isMarkdownFile(name);
       const icon = isMd ? '📝' : '📄';
       document.getElementById('currentViewLabel').innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
-      loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[name], name, blobUrlMap);
+      
+      const placeholderEl = document.getElementById('emptyPlaceholder');
+      if (placeholderEl) placeholderEl.style.display = 'none';
+      const previewEl = document.getElementById('mainPreview');
+      if (previewEl) previewEl.style.display = 'block';
+
+      loadIntoFrame(previewEl, rawHtmlMap[name], name, blobUrlMap);
 
       if (isDiffMode) {
         refreshDiffFrames();
@@ -3122,6 +3208,7 @@
       return (str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m]);
     }
   </script>
+  <script src="onboarding-guide.js"></script>
 </body>
 
 </html>
