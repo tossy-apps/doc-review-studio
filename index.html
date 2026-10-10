@@ -77,12 +77,22 @@
       flex-shrink: 0;
     }
 
+    .brand-header-block {
+      display: inline-flex;
+      flex-direction: column;
+      width: fit-content;
+      max-width: 100%;
+      align-self: flex-start;
+      gap: 3px;
+    }
+
     .sidebar-brand-box .brand-title {
       font-size: 20px;
       font-weight: 800;
       letter-spacing: 0.5px;
       color: #ffffff;
       line-height: 1.2;
+      text-align: left;
     }
 
     .sidebar-brand-box .brand-subtitle {
@@ -92,11 +102,18 @@
       letter-spacing: 0.3px;
       margin-top: -3px;
       margin-bottom: 2px;
+      text-align: left;
+    }
+
+    .brand-btn-row {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 2px;
     }
 
     .btn-portal-wide {
       display: inline-flex;
-      align-self: flex-start;
       align-items: center;
       gap: 5px;
       background: #0284c7;
@@ -111,6 +128,7 @@
       transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       white-space: nowrap;
+      width: fit-content;
     }
 
     .btn-portal-wide:hover {
@@ -918,11 +936,15 @@
   <div class="pane-files" id="paneFiles">
     <!-- 最上部: ブランド・ポータル・原本ステータス -->
     <div class="sidebar-brand-box">
-      <div class="brand-title">DocReview Studio</div>
-      <div class="brand-subtitle">HTML &amp; Markdown AIレビュー支援</div>
-      <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="btn-portal-wide" title="tossy-apps 公式ポータルへ">
-        🏠 公式ポータル
-      </a>
+      <div class="brand-header-block">
+        <div class="brand-title">DocReview Studio</div>
+        <div class="brand-subtitle">HTML &amp; Markdown AIレビュー支援</div>
+        <div class="brand-btn-row">
+          <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="btn-portal-wide" title="tossy-apps 公式ポータルへ">
+            🏠 公式ポータル
+          </a>
+        </div>
+      </div>
       <div class="folder-status-box" id="folderLabel">[原本未選択]</div>
     </div>
 
