@@ -225,43 +225,36 @@
       icon: '📁'
     },
     {
+      id: 'openBackupDirBtn',
+      name: '📂 退避先を指定',
+      location: 'ヘッダー左',
+      desc: '【AI修正後との比較用バックアップ】AIに修正させる前に原本を退避保存。修正後に「何が変わったか」を左右Diffで並列比較するために使います。',
+      icon: '📂'
+    },
+    {
       id: 'addIssueFromParentBtn',
       name: '📌 指摘リストに追加',
       location: '中央ツールバー',
       desc: '【校正指示の登録】本文で選択中のテキストを行番号・前後の文脈付きで指摘データとして記録し、AI指示の材料にします。',
       icon: '📌'
     },
-    {
-      id: 'fileFilterInput',
-      name: '🔍 ファイル検索',
-      location: '左サイドバー',
-      desc: '【目的文書の素早い探索】大量のドキュメント群から、確認したいHTML/Markdownをファイル名で瞬時にインクリメンタル検索します。',
-      icon: '🔍'
-    },
     // ★ 選択指示 & 全指示の合体デュアルセル（2列スパン）
     {
       isDual: true,
       name: '🤖 AI指示プロンプト生成',
       location: 'ヘッダー中央',
-      hint: '（用途に合わせて2種類の指示プロンプトを取得）',
+      desc: '【クリップボードに即コピー】蓄積した指摘をAI修正命令文へワンクリック変換。ChatGPTやClaude、Cursor等のチャット欄に貼り付ける（Ctrl+V）だけで修正を依頼できます。',
       icon: '🤖',
       left: {
         id: 'copyCurrentBtn',
         title: '📄 選択ファイル指示',
-        desc: '【表示中ファイルのみ】開いている文書の指摘だけをAIに修正依頼'
+        desc: '開いている文書の指摘のみコピー'
       },
       right: {
         id: 'copyAllBtn',
         title: '📚 全ファイル指示',
-        desc: '【プロジェクト全件】すべての文書の指摘を合算してAIに修正依頼'
+        desc: 'プロジェクト全指摘を合算コピー'
       }
-    },
-    {
-      id: 'manualHeaderLink',
-      name: '📖 詳細マニュアル',
-      location: 'ヘッダー右',
-      desc: '【仕様・操作方法の確認】全機能の詳細な使い方、便利なショートカットキー一覧を別タブで確認します。',
-      icon: '📖'
     }
   ];
 
@@ -334,19 +327,37 @@
       desc: '【待ち時間ゼロの同期】開いている1ファイルだけを高速再読込し、大規模フォルダでも一瞬で最新化します。',
       icon: '🔄'
     },
+    // ★ 別窓：原本 ／ 別窓：修正前の合体デュアルセル（2列スパン）
     {
-      id: 'openDetachedModifiedBtn',
-      name: '🪟 別窓: 原本',
+      isDual: true,
+      name: '🪟 別窓：原本 ／ 別窓：修正前',
       location: '中央ツールバー',
-      desc: '【マルチモニタ活用】作業中の原本プレビューを別ウィンドウで開き、サブディスプレイで常時閲覧します。',
-      icon: '🪟'
+      desc: '【マルチモニタ独立表示】原本プレビューや修正前プレビューを別ウィンドウとして分離ポップアップ。サブモニターに並べて大画面で並列作業できます。',
+      icon: '🪟',
+      left: {
+        id: 'openDetachedModifiedBtn',
+        title: '🪟 別窓: 原本',
+        desc: '作業中の最新原本を別窓表示'
+      },
+      right: {
+        id: 'openDetachedBackupBtn',
+        title: '🪟 別窓: 修正前',
+        desc: '退避データ(ビフォー)を別窓表示'
+      }
     },
     {
-      id: 'openDetachedBackupBtn',
-      name: '🪟 別窓: 修正前',
-      location: '中央ツールバー',
-      desc: '【ビフォー原本の並列表示】退避データ（修正前原本）を別ウィンドウで開き、別画面で常に比較参照します。',
-      icon: '🪟'
+      id: 'fileFilterInput',
+      name: '🔍 ファイル検索',
+      location: '左サイドバー',
+      desc: '【目的文書の素早い探索】大量のドキュメント群から、確認したいHTML/Markdownをファイル名で瞬時にインクリメンタル検索します。',
+      icon: '🔍'
+    },
+    {
+      id: 'manualHeaderLink',
+      name: '📖 詳細マニュアル',
+      location: 'ヘッダー右',
+      desc: '【仕様・操作方法の確認】全機能の詳細な使い方、便利なショートカットキー一覧を別タブで確認します。',
+      icon: '📖'
     },
     {
       id: 'btnPortalWide',
@@ -598,7 +609,7 @@
   }
 
   function createItemHtml(item) {
-    // 合体デュアルセルの場合（選択指示 & 全指示）
+    // 合体デュアルセルの場合（選択指示 & 全指示 / 別窓 原本 & 修正前）
     if (item.isDual) {
       return `
         <div class="btn-guide-card btn-guide-dual-card">
@@ -607,10 +618,10 @@
             <div class="dual-header">
               <span class="btn-guide-name">${item.name}</span>
               <span class="btn-guide-location-tag">${item.location}</span>
-              <span class="dual-hint">${item.hint}</span>
             </div>
+            ${item.desc ? `<div class="dual-desc-text">${item.desc}</div>` : ''}
             <div class="dual-actions-row">
-              <div class="dual-action-box" data-target-id="${item.left.id}" title="クリックでヘッダーの実物を案内">
+              <div class="dual-action-box" data-target-id="${item.left.id}" title="クリックでヘッダー/ツールバーの実物を案内">
                 <div class="dual-action-texts">
                   <div class="dual-action-title">${item.left.title}</div>
                   <div class="dual-action-desc">${item.left.desc}</div>
@@ -618,7 +629,7 @@
                 <button class="dual-pointer-btn">案内 ➔</button>
               </div>
               <div class="dual-action-divider"></div>
-              <div class="dual-action-box" data-target-id="${item.right.id}" title="クリックでヘッダーの実物を案内">
+              <div class="dual-action-box" data-target-id="${item.right.id}" title="クリックでヘッダー/ツールバーの実物を案内">
                 <div class="dual-action-texts">
                   <div class="dual-action-title">${item.right.title}</div>
                   <div class="dual-action-desc">${item.right.desc}</div>
