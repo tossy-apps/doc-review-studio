@@ -977,7 +977,7 @@
       <div class="action-group">
         <div class="group-label">Source & Backup</div>
         <div class="group-buttons">
-          <button class="btn" id="openDirBtn">📁 原本を開く</button>
+          <button class="btn" id="openDirBtn" title="レビュー・校正したいHTML/Markdownが入った作業フォルダを開く">📁 原本を開く</button>
           <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
           <button class="btn" id="openBackupDirBtn" title="退避フォルダを指定し原本をバックアップ">📂 退避先を指定</button>
         </div>
@@ -1078,15 +1078,15 @@
           <div class="empty-center-icon">📄</div>
           <div class="empty-center-title">ドキュメントが選択されていません</div>
           <div class="empty-center-desc">
-            左側のファイルツリーからHTMLまたはMarkdownを選択してください。<br>
-            まだ原本を開いていない場合は、以下のボタンまたはヘッダーから開始できます。
+            校正・レビューしたいHTMLやMarkdownが格納された作業フォルダを「原本フォルダを開く」から指定してください。<br>
+            完全ローカル完結のため社外秘ドキュメントも安全に読み込め、ツリーから自由に選択・AI指示作成できます。
           </div>
           <div class="empty-center-btns">
             <button class="btn btn-accent" id="placeholderOpenDirBtn" style="font-weight: 700; padding: 6px 14px;">
-              📁 原本を開く
+              📁 原本フォルダを開く
             </button>
             <button class="btn btn-manual" id="placeholderGuideBtn" style="font-weight: 700; padding: 6px 14px;">
-              💡 使い方ガイド
+              💡 スタジオガイド (使い方)
             </button>
           </div>
         </div>
@@ -1437,6 +1437,7 @@
       }
 
       document.getElementById('folderLabel').innerText = `[原本: ${workDirHandle.name}]`;
+      if (window.DocReviewGuide) window.DocReviewGuide.close();
       await loadWorkFolder();
     }
 

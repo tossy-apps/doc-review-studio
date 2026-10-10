@@ -26,8 +26,8 @@
           index: 0,
           targetId: 'openDirBtn',
           pill: 'STEP 01',
-          title: '📁 原本を開く / 展開',
-          desc: '左上の「原本を開く」からフォルダを選択。ファイルツリーが瞬時に展開されます。（カードクリックで場所案内）',
+          title: '📁 原本フォルダを開く【レビュー対象の一括読込】',
+          desc: '校正したいHTMLやMarkdownが入った作業フォルダを指定します。フォルダ構成が瞬時に左ツリーへ展開され、完全ローカル完結のため社外秘ファイルも安全に読み込めます。',
           previewHtml: `
             <div class="anim-box-step1">
               <div class="anim-folder-pulse">📁</div>
@@ -43,8 +43,8 @@
           index: 1,
           targetId: 'addIssueFromParentBtn',
           pill: 'STEP 02',
-          title: '📌 選択して指摘作成',
-          desc: 'プレビュー内の文章を選択して「指摘リストに追加」を押すだけ。行番号や文脈を自動解析します。',
+          title: '📌 選択して指摘作成【校正箇所の自動抽出】',
+          desc: 'プレビュー内の直したいテキストをドラッグ選択して「指摘リストに追加」を押すだけ。対象行・前後の文脈・ファイル名を自動解析し、AIへ渡す指示エビデンスとして蓄積します。',
           previewHtml: `
             <div class="anim-box-step2">
               <div class="doc-text-sample">
@@ -63,8 +63,8 @@
           index: 2,
           targetId: 'copyCurrentBtn',
           pill: 'STEP 03',
-          title: '🤖 AI指示プロンプト生成',
-          desc: '「選択ファイル指示」で開いているファイルの指摘をAIに即コピペ。全ファイル合算指示もワンクリック！',
+          title: '🤖 AI指示プロンプト生成【1クリック修正依頼】',
+          desc: '溜まった指摘を、ChatGPTやClaude、Cursor等のAIにそのまま貼り付けられる「精密な修正命令プロンプト」へワンクリック変換。AI指示出しの手間をゼロにします。',
           previewHtml: `
             <div class="anim-box-step3">
               <div class="ai-copy-chip">
@@ -95,8 +95,8 @@
           index: 0,
           targetId: 'openBackupDirBtn',
           pill: 'STEP 01',
-          title: '📂 退避先を指定 (原本保護)',
-          desc: 'AI修正を行う前に、修正前の原本を安全にキープする退避フォルダを作成・指定します。',
+          title: '📂 退避先を指定【AI作業前の原本バックアップ保護】',
+          desc: 'AIにファイルを修正・上書きさせる前に、修正前の原本を別フォルダへ安全バックアップ。いつでも元の状態と比較・復元できるセーフティネットを作ります。',
           previewHtml: `
             <div class="anim-box-step1">
               <div class="anim-folder-pulse" style="animation: folderPulse 1.8s infinite ease-in-out;">📂</div>
@@ -112,8 +112,8 @@
           index: 1,
           targetId: 'reloadWorkBtn',
           pill: 'STEP 02',
-          title: '🔄 原本を最新再読込',
-          desc: 'AI修正後の最新ファイルをF5リロード不要で瞬時に画面へ反映。作業の手を止めません。',
+          title: '🔄 原本を最新再読込【AI修正後の即時画面反映】',
+          desc: 'AIがファイルを編集・保存した後、画面をF5リロード不要で最新内容に瞬時更新。AIが正しく修正してくれたかを待機時間ゼロで確認できます。',
           previewHtml: `
             <div class="anim-box-step1">
               <div class="anim-folder-pulse" style="animation: folderPulse 1.8s infinite ease-in-out;">🔄</div>
@@ -129,8 +129,8 @@
           index: 2,
           targetId: 'toggleDiffBtn',
           pill: 'STEP 03',
-          title: '🔄 左右2画面でDiff検証',
-          desc: '「Diff検証」で退避原本とAI修正原本をWinMerge風に左右2画面で並列比較。ブロック差分を視覚化します。',
+          title: '🔄 左右2画面でDiff検証【AI誤修正の防止・検収比較】',
+          desc: '「修正前の退避原本」と「AI修正後の原本」をWinMerge風に左右2画面で並列比較。AIによる意図しない行削除や崩れがないかをブロック差分で厳密にチェックします。',
           previewHtml: `
             <div class="anim-box-step3" style="width: 90%;">
               <div class="ai-copy-chip" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
@@ -160,8 +160,8 @@
           index: 0,
           targetId: 'toggleFilesBtn',
           pill: 'STEP 01',
-          title: '◧ ◨ ペーン開閉で画面広々',
-          desc: '「Alt+1」でファイルツリー、「Alt+2」で指摘一覧をパタパタ閉じてプレビューを最大化！',
+          title: '◧ ◨ ペイン開閉【ドキュメント閲覧領域の最大化】',
+          desc: '「Alt+1」でファイルツリー、「Alt+2」で指摘一覧をワンタッチ開閉。長文マニュアルや表組みの閲覧時に、中央のプレビュー領域をディスプレイいっぱいに広げて確認できます。',
           previewHtml: `
             <div class="anim-box-step1">
               <div class="anim-folder-pulse" style="font-size: 34px;">🖥️</div>
@@ -177,8 +177,8 @@
           index: 1,
           targetId: 'openDetachedModifiedBtn',
           pill: 'STEP 02',
-          title: '🪟 マルチモニタ別窓表示',
-          desc: '「別窓: 原本」「別窓: 修正前」で独立したウィンドウとして分離表示し、複数画面で快適レビュー。',
+          title: '🪟 マルチモニタ別窓表示【2画面での快適レビュー】',
+          desc: '原本プレビューや修正前プレビューを独立ウィンドウとして分離ポップアップ。サブディスプレイに配置することで、マルチモニター環境での並列作業効率が跳ね上がります。',
           previewHtml: `
             <div class="anim-box-step3" style="width: 88%;">
               <div class="ai-copy-chip" style="background: linear-gradient(135deg, #475569, #1e293b);">
@@ -194,8 +194,8 @@
           index: 2,
           targetId: 'reloadCurrentFileBtn',
           pill: 'STEP 03',
-          title: '🔄 現在ファイルのみ高速更新',
-          desc: '大規模なフォルダでも、「このファイルを再読込」なら開いているファイルだけを0秒で同期。',
+          title: '🔄 現在ファイルのみ高速更新【大規模プロジェクトの即時同期】',
+          desc: 'ファイル数が膨大なプロジェクトでも、今開いている1ファイルだけをピンポイントで0秒再読込。フォルダ全体の走査待ちをなくし、リズムを崩さずレビューを継続できます。',
           previewHtml: `
             <div class="anim-box-step1">
               <div class="anim-folder-pulse">⚡</div>
@@ -219,23 +219,23 @@
   const REVIEW_CREATION_ITEMS = [
     {
       id: 'openDirBtn',
-      name: '📁 原本を開く',
+      name: '📁 原本フォルダを開く',
       location: 'ヘッダー左',
-      desc: '作業対象となるHTMLやMarkdownの親フォルダを選択。ツリーが瞬時に展開されます。',
+      desc: '【レビュー対象フォルダの一括指定】校正したいHTML/Markdownが入ったフォルダを指定。全ドキュメントが左ツリーに読み込まれます。',
       icon: '📁'
     },
     {
       id: 'addIssueFromParentBtn',
       name: '📌 指摘リストに追加',
       location: '中央ツールバー',
-      desc: '本文プレビューで選択したテキストを行番号・文脈ごと即座に指摘登録。',
+      desc: '【校正指示の登録】本文で選択中のテキストを行番号・前後の文脈付きで指摘データとして記録し、AI指示の材料にします。',
       icon: '📌'
     },
     {
       id: 'fileFilterInput',
       name: '🔍 ファイル検索',
       location: '左サイドバー',
-      desc: '大量のドキュメントから目的のHTMLやMarkdownをインクリメンタル検索。',
+      desc: '【目的文書の素早い探索】大量のドキュメント群から、確認したいHTML/Markdownをファイル名で瞬時にインクリメンタル検索します。',
       icon: '🔍'
     },
     // ★ 選択指示 & 全指示の合体デュアルセル（2列スパン）
@@ -248,19 +248,19 @@
       left: {
         id: 'copyCurrentBtn',
         title: '📄 選択ファイル指示',
-        desc: '開いている文書の指摘のみコピー'
+        desc: '【表示中ファイルのみ】開いている文書の指摘だけをAIに修正依頼'
       },
       right: {
         id: 'copyAllBtn',
         title: '📚 全ファイル指示',
-        desc: 'プロジェクト全指摘を合算コピー'
+        desc: '【プロジェクト全件】すべての文書の指摘を合算してAIに修正依頼'
       }
     },
     {
       id: 'manualHeaderLink',
       name: '📖 詳細マニュアル',
       location: 'ヘッダー右',
-      desc: '全機能の詳しい使い方やキーボードショートカット一覧を別タブで確認。',
+      desc: '【仕様・操作方法の確認】全機能の詳細な使い方、便利なショートカットキー一覧を別タブで確認します。',
       icon: '📖'
     }
   ];
@@ -271,42 +271,42 @@
       id: 'openBackupDirBtn',
       name: '📂 退避先を指定',
       location: 'ヘッダー左',
-      desc: 'AI修正前に原本を安全に保存しておくバックアップフォルダを作成・指定。',
+      desc: '【原本の上書き保護】AIに編集させる前に、修正前の安全な状態を別フォルダへバックアップ退避します。',
       icon: '📂'
     },
     {
       id: 'reloadWorkBtn',
       name: '🔄 原本再読込',
       location: 'ヘッダー左',
-      desc: 'AI修正後の最新ファイルをF5リロード不要で瞬時に画面へ再反映します。',
+      desc: '【最新状態の即時同期】AIがファイルを編集・保存した後、画面をF5リロード不要で最新表示に更新します。',
       icon: '🔄'
     },
     {
       id: 'toggleDiffBtn',
       name: '🔄 Diff検証',
       location: 'ヘッダー右',
-      desc: '修正前とAI修正後の原本をWinMerge風に左右2画面でブロック差分比較。',
+      desc: '【AI修正結果の誤り検収】修正前とAI修正後の原本を左右2画面でブロック差分比較し、誤修正や意図しない改変を防ぎます。',
       icon: '🔄'
     },
     {
       id: 'toggleInlineDiffBtn',
       name: '🎨 差分ハイライト',
       location: '中央ツールバー',
-      desc: '通常プレビュー文書内で修正・追加された行を直接色付け表示。',
+      desc: '【本文内の修正行チェック】通常のプレビュー画面上で、修正前と比べて変更・追加された行を直接色付け表示します。',
       icon: '🎨'
     },
     {
       id: 'exportJsonBtn',
       name: '💾 JSON / 📝 MD表',
       location: 'ヘッダー中央',
-      desc: '作成した指摘一覧をJSONやMarkdown表でエビデンスとして保存。',
+      desc: '【指摘エビデンスの出力】作成した指摘一覧をJSON（復元用）やMarkdown表（報告用）として外部ファイル保存します。',
       icon: '💾'
     },
     {
       id: 'importJsonBtn',
       name: '📂 指摘JSON読込',
       location: 'ヘッダー中央',
-      desc: '保存した指摘JSONファイルを再読み込みしてレビュー状態を復元。',
+      desc: '【レビュー状態の復元】以前保存した指摘JSONファイルを再読み込みし、前回のレビュー作業を途中から再開します。',
       icon: '📂'
     }
   ];
@@ -317,42 +317,42 @@
       id: 'toggleFilesBtn',
       name: '◧ ファイル開閉 (Alt+1)',
       location: '中央ツールバー',
-      desc: '左のファイルツリー表示/非表示を切り替え、プレビュー領域を拡張。',
+      desc: '【作業領域の拡張】左のファイルツリーを折りたたんで、中央プレビューの閲覧画面を横に広く使います。',
       icon: '◧'
     },
     {
       id: 'toggleLogsBtn',
       name: '◨ 指摘一覧開閉 (Alt+2)',
       location: '中央ツールバー',
-      desc: '右の指摘エビデンス欄の表示/非表示を切り替え、閲覧画面を最大化。',
+      desc: '【プレビューの最大化】右の指摘エビデンス欄を折りたたんで、ドキュメントの閲覧・確認に画面を集中させます。',
       icon: '◨'
     },
     {
       id: 'reloadCurrentFileBtn',
       name: '🔄 単一ファイル再読込',
       location: '中央ツールバー',
-      desc: '現在開いている1ファイルのみを高速再読込（大規模フォルダでも一瞬）。',
+      desc: '【待ち時間ゼロの同期】開いている1ファイルだけを高速再読込し、大規模フォルダでも一瞬で最新化します。',
       icon: '🔄'
     },
     {
       id: 'openDetachedModifiedBtn',
       name: '🪟 別窓: 原本',
       location: '中央ツールバー',
-      desc: '原本プレビューを独立別ウィンドウで開き、マルチモニタで快適閲覧。',
+      desc: '【マルチモニタ活用】作業中の原本プレビューを別ウィンドウで開き、サブディスプレイで常時閲覧します。',
       icon: '🪟'
     },
     {
       id: 'openDetachedBackupBtn',
       name: '🪟 別窓: 修正前',
       location: '中央ツールバー',
-      desc: '退避データ（修正前原本）を独立別ウィンドウで表示し、並列確認。',
+      desc: '【ビフォー原本の並列表示】退避データ（修正前原本）を別ウィンドウで開き、別画面で常に比較参照します。',
       icon: '🪟'
     },
     {
       id: 'btnPortalWide',
       name: '🏠 公式ポータル',
       location: '左上ブランド',
-      desc: 'tossy-appsの公式ポータルページを別タブで開きます。',
+      desc: '【開発ポータル・関連情報】tossy-apps公式ポータルページ（他ツールや最新リリース情報）を開きます。',
       icon: '🏠'
     }
   ];
@@ -748,6 +748,13 @@
   // 8. CapCut風 矢印線 & 本物クローン切り抜き（Cutout）
   // ========================================================
   function pointToElement(targetId, sourceEl) {
+    const overlay = document.getElementById('guideModalOverlay');
+    // ダイアログが開いていない（非アクティブ）状態では、絶対に矢印を描画しない安全ガード
+    if (!overlay || !overlay.classList.contains('active')) {
+      clearHighlight();
+      return;
+    }
+
     let targetEl = document.getElementById(targetId);
     if (!targetEl) {
       if (targetId === 'manualHeaderLink') {
@@ -760,8 +767,9 @@
 
     if (activeArrowTimeout) {
       clearTimeout(activeArrowTimeout);
-      clearHighlight();
+      activeArrowTimeout = null;
     }
+    clearHighlight();
 
     const svgLayer = document.getElementById('guideArrowSvgLayer');
     const pathEl = document.getElementById('guideArrowPath');
@@ -816,15 +824,17 @@
     const midY = Math.round(endY + (startY - endY) * 0.45);
 
     const pathData = `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`;
-    pathEl.setAttribute('d', pathData);
+    if (pathEl) pathEl.setAttribute('d', pathData);
 
     // 3. 矢印脇のスマートなナビ吹き出し（ボタンのすぐ下に配置）
-    pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで即実行)</span>';
-    pinEl.style.display = 'flex';
-    pinEl.style.left = `${Math.max(10, Math.round(targetCenterX - 110))}px`;
-    pinEl.style.top = `${Math.round(endY + 12)}px`;
+    if (pinEl) {
+      pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで即実行)</span>';
+      pinEl.style.display = 'flex';
+      pinEl.style.left = `${Math.max(10, Math.round(targetCenterX - 110))}px`;
+      pinEl.style.top = `${Math.round(endY + 12)}px`;
+    }
 
-    svgLayer.classList.add('active');
+    if (svgLayer) svgLayer.classList.add('active');
 
     activeArrowTimeout = setTimeout(() => {
       clearHighlight();
@@ -832,13 +842,23 @@
   }
 
   function clearHighlight() {
+    if (activeArrowTimeout) {
+      clearTimeout(activeArrowTimeout);
+      activeArrowTimeout = null;
+    }
+
     const svgLayer = document.getElementById('guideArrowSvgLayer');
+    const pathEl = document.getElementById('guideArrowPath');
     const pinEl = document.getElementById('guideTargetPin');
     const spotlightBox = document.getElementById('guideSpotlightBox');
 
     if (svgLayer) svgLayer.classList.remove('active');
+    if (pathEl) pathEl.setAttribute('d', ''); // 矢印のSVGパスを即座にリセット
     if (pinEl) pinEl.style.display = 'none';
-    if (spotlightBox) spotlightBox.classList.remove('active');
+    if (spotlightBox) {
+      spotlightBox.classList.remove('active');
+      spotlightBox.innerHTML = ''; // 残存クローン要素を完全消去
+    }
 
     document.querySelectorAll('.guide-element-highlighted').forEach(el => {
       el.classList.remove('guide-element-highlighted');
@@ -863,10 +883,15 @@
     const overlay = document.getElementById('guideModalOverlay');
     if (overlay) {
       overlay.classList.remove('active');
-      stopCarouselLoop();
-      clearHighlight();
     }
+    stopCarouselLoop();
+    clearHighlight(); // 矢印・吹き出し・スポットライトを0秒で即座に完全消去
   }
+
+  // 画面リサイズ時も矢印の座標ズレを防ぐためクリア
+  window.addEventListener('resize', () => {
+    clearHighlight();
+  });
 
   // グローバル公開
   window.DocReviewGuide = {

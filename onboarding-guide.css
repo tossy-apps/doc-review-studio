@@ -26,12 +26,12 @@
   pointer-events: auto;
 }
 
-/* 1. 横長ワイド・2.5cm大型ゆったりウィンドウ（幅1520px × 高さ800px・UD丸ゴシックフォント採用） */
+/* 1. 横長ワイド・2.5cm大型ゆったりウィンドウ（幅1520px × 高さ840px・UD丸ゴシックフォント採用） */
 .guide-window {
   width: 1520px;
   max-width: 96vw;
-  height: 800px;
-  max-height: 92vh;
+  height: 840px;
+  max-height: 94vh;
   background: #f8fafc;
   color: #1e293b;
   border-radius: 16px;
@@ -176,40 +176,40 @@
 }
 
 /* ========================================================
-   2. CapCut風 ステップカルーセル（1.3倍スケール・高さ325px）
+   2. CapCut風 ステップカルーセル（拡大時さらに大型化・高さ380px）
    ======================================================== */
 .guide-carousel-wrapper {
   position: relative;
   width: 100%;
-  height: 325px;
-  min-height: 325px;
+  height: 380px;
+  min-height: 380px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  perspective: 1000px;
+  perspective: 1100px;
 }
 
 .guide-cards-stage {
   position: relative;
   width: 100%;
-  height: 285px;
-  min-height: 285px;
+  height: 340px;
+  min-height: 340px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* 各スライドカード（1.3倍大型化） */
+/* 各スライドカード（通常時幅590px / 中央拡大時スケール1.18で実質約30%大型化） */
 .carousel-card {
   position: absolute;
-  width: 530px;
-  height: 275px;
+  width: 590px;
+  height: 330px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
@@ -221,17 +221,17 @@
   cursor: pointer;
 }
 
-/* カルーセル配置状態 */
+/* カルーセル配置状態（中央アクティブ時は実質約30%拡大してダイナミックに強調！） */
 .carousel-card.state-center {
-  transform: translateX(0) scale(1);
+  transform: translateX(0) scale(1.18);
   opacity: 1;
   z-index: 10;
-  box-shadow: 0 16px 36px rgba(37, 99, 235, 0.18), 0 0 0 2px #3b82f6;
+  box-shadow: 0 20px 45px rgba(37, 99, 235, 0.24), 0 0 0 2.5px #2563eb;
   pointer-events: auto;
 }
 
 .carousel-card.state-left {
-  transform: translateX(-380px) scale(0.82);
+  transform: translateX(-470px) scale(0.85);
   opacity: 0.35;
   z-index: 5;
   filter: blur(0.5px);
@@ -239,7 +239,7 @@
 }
 
 .carousel-card.state-right {
-  transform: translateX(380px) scale(0.82);
+  transform: translateX(470px) scale(0.85);
   opacity: 0.35;
   z-index: 5;
   filter: blur(0.5px);
@@ -247,7 +247,7 @@
 }
 
 .carousel-card.state-hidden {
-  transform: translateX(600px) scale(0.6);
+  transform: translateX(700px) scale(0.65);
   opacity: 0;
   z-index: 1;
   pointer-events: none;
@@ -255,7 +255,7 @@
 
 /* カード内部構造 */
 .card-preview-area {
-  height: 165px;
+  height: 180px;
   background: #0f172a;
   position: relative;
   overflow: hidden;
@@ -266,39 +266,41 @@
 }
 
 .card-desc-area {
-  padding: 12px 18px;
+  padding: 14px 22px;
   background: #ffffff;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .card-step-pill {
   align-self: flex-start;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 800;
   background: #2563eb;
   color: #ffffff;
-  padding: 3px 9px;
-  border-radius: 4px;
+  padding: 4px 11px;
+  border-radius: 5px;
   letter-spacing: 0.5px;
 }
 
 .card-step-title {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 21px;
+  font-weight: 800;
   color: #0f172a;
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
+  letter-spacing: -0.2px;
 }
 
 .card-step-desc {
-  font-size: 14px;
-  color: #475569;
-  line-height: 1.55;
+  font-size: 15.5px;
+  color: #334155;
+  line-height: 1.6;
+  font-weight: 500;
 }
 
 /* --- カード1のアニメーション (原本を開く) --- */
