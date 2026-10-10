@@ -1,7 +1,7 @@
 /**
  * DocReview Studio - オンボーディングガイド モジュール
  * CapCut風 ステップカルーセル & 矢印ポインター誘導
- * (ヘッダー露出・縦スクロールゼロ・2列タイトル対応)
+ * (ユースケース別3大分類・AI合体セル・フェーズ連動カルーセル・UDフォント対応)
  */
 
 (function () {
@@ -11,101 +11,355 @@
   let carouselTimer = null;
   let isCarouselPaused = false;
   let activeArrowTimeout = null;
-  let currentButtonPage = 0; // 0: 基本・よく使う, 1: 応用・発展
+  let currentButtonPage = 0; // 0: レビュー作成, 1: AI結果検証, 2: UI/UX便利機能
 
-  // 1. よく使う基本機能（Page 1: 6個）
-  const PRIMARY_BUTTON_ITEMS = [
+  // ========================================================
+  // 1. カルーセル 3フェーズ データセット（タブ連動）
+  // ========================================================
+  const CAROUSEL_SETS = [
+    {
+      badge: '✨ レビュー作成サイクル',
+      title: '3ステップで直感マスター',
+      sub: 'マニュアル不要のレビュー作成サイクル (所要時間30秒)',
+      steps: [
+        {
+          index: 0,
+          targetId: 'openDirBtn',
+          pill: 'STEP 01',
+          title: '📁 原本を開く / 展開',
+          desc: '左上の「原本を開く」からフォルダを選択。ファイルツリーが瞬時に展開されます。（カードクリックで場所案内）',
+          previewHtml: `
+            <div class="anim-box-step1">
+              <div class="anim-folder-pulse">📁</div>
+              <div class="anim-tree-step1">
+                <div class="tree-row"><span>📄</span> index.html</div>
+                <div class="tree-row selected"><span>📝</span> spec.md</div>
+                <div class="tree-row"><span>📄</span> manual.html</div>
+              </div>
+            </div>
+          `
+        },
+        {
+          index: 1,
+          targetId: 'addIssueFromParentBtn',
+          pill: 'STEP 02',
+          title: '📌 選択して指摘作成',
+          desc: 'プレビュー内の文章を選択して「指摘リストに追加」を押すだけ。行番号や文脈を自動解析します。',
+          previewHtml: `
+            <div class="anim-box-step2">
+              <div class="doc-text-sample">
+                ユーザー情報は
+                <span class="highlight-text-anim">暗号化して保存</span>
+                すること。
+              </div>
+              <svg class="anim-cursor-svg" viewBox="0 0 24 24" fill="none">
+                <path d="M4 3L11 20L14 13L21 11L4 3Z" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+              <div class="anim-pin-badge">📌 指摘に追加</div>
+            </div>
+          `
+        },
+        {
+          index: 2,
+          targetId: 'copyCurrentBtn',
+          pill: 'STEP 03',
+          title: '🤖 AI指示プロンプト生成',
+          desc: '「選択ファイル指示」で開いているファイルの指摘をAIに即コピペ。全ファイル合算指示もワンクリック！',
+          previewHtml: `
+            <div class="anim-box-step3">
+              <div class="ai-copy-chip">
+                <span>🤖 AI指示プロンプト</span>
+                <span style="font-size: 8px; background: rgba(255,255,255,0.2); padding: 1px 4px; border-radius: 2px;">コピー完了!</span>
+              </div>
+              <div class="diff-preview-mini">
+                <div class="diff-mini-col">
+                  <div style="font-size: 8px; color: #94a3b8;">Before</div>
+                  <div class="diff-del-row">- 平文で一時保存</div>
+                </div>
+                <div class="diff-mini-col">
+                  <div style="font-size: 8px; color: #94a3b8;">After</div>
+                  <div class="diff-add-row">+ 暗号化して保存</div>
+                </div>
+              </div>
+            </div>
+          `
+        }
+      ]
+    },
+    {
+      badge: '🔍 AI修正結果の検証サイクル',
+      title: 'AI修正結果の検証サイクル',
+      sub: '退避バックアップ・原本再読込・左右Diff検証で安心検収 (所要時間30秒)',
+      steps: [
+        {
+          index: 0,
+          targetId: 'openBackupDirBtn',
+          pill: 'STEP 01',
+          title: '📂 退避先を指定 (原本保護)',
+          desc: 'AI修正を行う前に、修正前の原本を安全にキープする退避フォルダを作成・指定します。',
+          previewHtml: `
+            <div class="anim-box-step1">
+              <div class="anim-folder-pulse" style="animation: folderPulse 1.8s infinite ease-in-out;">📂</div>
+              <div class="anim-tree-step1">
+                <div class="tree-row"><span>📁</span> backup_original/</div>
+                <div class="tree-row selected"><span>🛡️</span> 修正前原本を安全退避</div>
+                <div class="tree-row"><span>✅</span> いつでも比較・復元可能</div>
+              </div>
+            </div>
+          `
+        },
+        {
+          index: 1,
+          targetId: 'reloadWorkBtn',
+          pill: 'STEP 02',
+          title: '🔄 原本を最新再読込',
+          desc: 'AI修正後の最新ファイルをF5リロード不要で瞬時に画面へ反映。作業の手を止めません。',
+          previewHtml: `
+            <div class="anim-box-step1">
+              <div class="anim-folder-pulse" style="animation: folderPulse 1.8s infinite ease-in-out;">🔄</div>
+              <div class="anim-tree-step1">
+                <div class="tree-row"><span>📄</span> AIが修正完了</div>
+                <div class="tree-row selected"><span>⚡</span> F5不要で瞬時再読込</div>
+                <div class="tree-row"><span>✅</span> 最新差分を検知</div>
+              </div>
+            </div>
+          `
+        },
+        {
+          index: 2,
+          targetId: 'toggleDiffBtn',
+          pill: 'STEP 03',
+          title: '🔄 左右2画面でDiff検証',
+          desc: '「Diff検証」で退避原本とAI修正原本をWinMerge風に左右2画面で並列比較。ブロック差分を視覚化します。',
+          previewHtml: `
+            <div class="anim-box-step3" style="width: 90%;">
+              <div class="ai-copy-chip" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
+                <span>🔄 WinMerge風 左右比較</span>
+              </div>
+              <div class="diff-preview-mini">
+                <div class="diff-mini-col">
+                  <div style="font-size: 9px; color: #94a3b8;">修正前 (退避原本)</div>
+                  <div class="diff-del-row">- 脆弱な設定記述</div>
+                </div>
+                <div class="diff-mini-col">
+                  <div style="font-size: 9px; color: #94a3b8;">修正後 (AI作業中)</div>
+                  <div class="diff-add-row">+ セキュアな最新記述</div>
+                </div>
+              </div>
+            </div>
+          `
+        }
+      ]
+    },
+    {
+      badge: '🖥️ 作業効率を極めるUI/UX',
+      title: '作業効率を極めるUI/UX機能',
+      sub: 'ペイン開閉・別窓プレビュー・高速リロードで快適作業 (所要時間30秒)',
+      steps: [
+        {
+          index: 0,
+          targetId: 'toggleFilesBtn',
+          pill: 'STEP 01',
+          title: '◧ ◨ ペーン開閉で画面広々',
+          desc: '「Alt+1」でファイルツリー、「Alt+2」で指摘一覧をパタパタ閉じてプレビューを最大化！',
+          previewHtml: `
+            <div class="anim-box-step1">
+              <div class="anim-folder-pulse" style="font-size: 34px;">🖥️</div>
+              <div class="anim-tree-step1">
+                <div class="tree-row"><span>◧</span> Alt+1: ツリー開閉</div>
+                <div class="tree-row selected"><span>◨</span> Alt+2: 指摘欄開閉</div>
+                <div class="tree-row"><span>📐</span> 作業画面を最大化</div>
+              </div>
+            </div>
+          `
+        },
+        {
+          index: 1,
+          targetId: 'openDetachedModifiedBtn',
+          pill: 'STEP 02',
+          title: '🪟 マルチモニタ別窓表示',
+          desc: '「別窓: 原本」「別窓: 修正前」で独立したウィンドウとして分離表示し、複数画面で快適レビュー。',
+          previewHtml: `
+            <div class="anim-box-step3" style="width: 88%;">
+              <div class="ai-copy-chip" style="background: linear-gradient(135deg, #475569, #1e293b);">
+                <span>🪟 独立ウィンドウ ポップアップ</span>
+              </div>
+              <div style="font-size: 11.5px; color: #cbd5e1; text-align: center; padding: 4px;">
+                サブモニターに常時フル画面表示して作業効率アップ！
+              </div>
+            </div>
+          `
+        },
+        {
+          index: 2,
+          targetId: 'reloadCurrentFileBtn',
+          pill: 'STEP 03',
+          title: '🔄 現在ファイルのみ高速更新',
+          desc: '大規模なフォルダでも、「このファイルを再読込」なら開いているファイルだけを0秒で同期。',
+          previewHtml: `
+            <div class="anim-box-step1">
+              <div class="anim-folder-pulse">⚡</div>
+              <div class="anim-tree-step1">
+                <div class="tree-row"><span>📄</span> 大規模プロジェクト対応</div>
+                <div class="tree-row selected"><span>⚡</span> 選択中ファイルだけ0秒同期</div>
+                <div class="tree-row"><span>🚀</span> 全体走査の待ち時間ゼロ</div>
+              </div>
+            </div>
+          `
+        }
+      ]
+    }
+  ];
+
+  // ========================================================
+  // 2. ボタン一覧 3大分類データセット
+  // ========================================================
+
+  // ①【📝 レビュー・指摘作成】（基本サイクル・合体セル含む）
+  const REVIEW_CREATION_ITEMS = [
     {
       id: 'openDirBtn',
       name: '📁 原本を開く',
       location: 'ヘッダー左',
-      desc: '作業対象となるHTMLやMarkdownの親フォルダを選択。',
+      desc: '作業対象となるHTMLやMarkdownの親フォルダを選択。ツリーが瞬時に展開されます。',
       icon: '📁'
     },
     {
       id: 'addIssueFromParentBtn',
       name: '📌 指摘リストに追加',
       location: '中央ツールバー',
-      desc: '本文プレビューで選択したテキストを行番号・文脈ごと登録。',
+      desc: '本文プレビューで選択したテキストを行番号・文脈ごと即座に指摘登録。',
       icon: '📌'
     },
     {
-      id: 'copyCurrentBtn',
-      name: '🤖 選択ファイル指示',
+      id: 'fileFilterInput',
+      name: '🔍 ファイル検索',
+      location: '左サイドバー',
+      desc: '大量のドキュメントから目的のHTMLやMarkdownをインクリメンタル検索。',
+      icon: '🔍'
+    },
+    // ★ 選択指示 & 全指示の合体デュアルセル（2列スパン）
+    {
+      isDual: true,
+      name: '🤖 AI指示プロンプト生成',
       location: 'ヘッダー中央',
-      desc: '開いているファイルの指摘をAIプロンプトとして即コピー。',
-      icon: '🤖'
+      hint: '（用途に合わせて2種類の指示プロンプトを取得）',
+      icon: '🤖',
+      left: {
+        id: 'copyCurrentBtn',
+        title: '📄 選択ファイル指示',
+        desc: '開いている文書の指摘のみコピー'
+      },
+      right: {
+        id: 'copyAllBtn',
+        title: '📚 全ファイル指示',
+        desc: 'プロジェクト全指摘を合算コピー'
+      }
     },
     {
-      id: 'copyAllBtn',
-      name: '🤖 全ファイル指示',
-      location: 'ヘッダー中央',
-      desc: 'プロジェクト全ファイルの指摘を1本のAIプロンプトに合算生成。',
-      icon: '🤖'
-    },
-    {
-      id: 'toggleDiffBtn',
-      name: '🔄 Diff検証',
+      id: 'manualHeaderLink',
+      name: '📖 詳細マニュアル',
       location: 'ヘッダー右',
-      desc: '修正前とAI修正後の原本をWinMerge風に左右2画面で差分比較。',
-      icon: '🔄'
+      desc: '全機能の詳しい使い方やキーボードショートカット一覧を別タブで確認。',
+      icon: '📖'
+    }
+  ];
+
+  // ②【🔍 AI修正結果のチェック】（修正後の検収・Diff検証）
+  const AI_INSPECTION_ITEMS = [
+    {
+      id: 'openBackupDirBtn',
+      name: '📂 退避先を指定',
+      location: 'ヘッダー左',
+      desc: 'AI修正前に原本を安全に保存しておくバックアップフォルダを作成・指定。',
+      icon: '📂'
     },
     {
       id: 'reloadWorkBtn',
       name: '🔄 原本再読込',
       location: 'ヘッダー左',
-      desc: 'AI修正後の最新変更をF5リロードなしで瞬時に再反映。',
+      desc: 'AI修正後の最新ファイルをF5リロード不要で瞬時に画面へ再反映します。',
       icon: '🔄'
-    }
-  ];
-
-  // 2. 応用・発展機能（Page 2: 6個）
-  const ADVANCED_BUTTON_ITEMS = [
+    },
     {
-      id: 'openBackupDirBtn',
-      name: '📂 退避先を指定',
-      location: 'ヘッダー左',
-      desc: '修正前原本の安全な退避フォルダを作成・指定します。',
-      icon: '📂'
+      id: 'toggleDiffBtn',
+      name: '🔄 Diff検証',
+      location: 'ヘッダー右',
+      desc: '修正前とAI修正後の原本をWinMerge風に左右2画面でブロック差分比較。',
+      icon: '🔄'
     },
     {
       id: 'toggleInlineDiffBtn',
       name: '🎨 差分ハイライト',
       location: '中央ツールバー',
-      desc: '通常プレビュー文書内で修正差分行を直接色付け表示。',
+      desc: '通常プレビュー文書内で修正・追加された行を直接色付け表示。',
       icon: '🎨'
     },
     {
       id: 'exportJsonBtn',
       name: '💾 JSON / 📝 MD表',
       location: 'ヘッダー中央',
-      desc: '作成した指摘一覧をJSONやMarkdown表でエビデンス保存。',
+      desc: '作成した指摘一覧をJSONやMarkdown表でエビデンスとして保存。',
       icon: '💾'
     },
     {
       id: 'importJsonBtn',
       name: '📂 指摘JSON読込',
       location: 'ヘッダー中央',
-      desc: '保存した指摘JSONを再読み込みしてレビューを復元。',
+      desc: '保存した指摘JSONファイルを再読み込みしてレビュー状態を復元。',
       icon: '📂'
+    }
+  ];
+
+  // ③【🖥️ UI/UX便利機能】（画面レイアウト・別窓・高速化）
+  const UI_UX_ITEMS = [
+    {
+      id: 'toggleFilesBtn',
+      name: '◧ ファイル開閉 (Alt+1)',
+      location: '中央ツールバー',
+      desc: '左のファイルツリー表示/非表示を切り替え、プレビュー領域を拡張。',
+      icon: '◧'
+    },
+    {
+      id: 'toggleLogsBtn',
+      name: '◨ 指摘一覧開閉 (Alt+2)',
+      location: '中央ツールバー',
+      desc: '右の指摘エビデンス欄の表示/非表示を切り替え、閲覧画面を最大化。',
+      icon: '◨'
+    },
+    {
+      id: 'reloadCurrentFileBtn',
+      name: '🔄 単一ファイル再読込',
+      location: '中央ツールバー',
+      desc: '現在開いている1ファイルのみを高速再読込（大規模フォルダでも一瞬）。',
+      icon: '🔄'
     },
     {
       id: 'openDetachedModifiedBtn',
-      name: '別窓: 原本',
+      name: '🪟 別窓: 原本',
       location: '中央ツールバー',
-      desc: 'マルチモニタ用に原本プレビューを独立した別ウィンドウで表示。',
+      desc: '原本プレビューを独立別ウィンドウで開き、マルチモニタで快適閲覧。',
       icon: '🪟'
     },
     {
       id: 'openDetachedBackupBtn',
-      name: '別窓: 修正前',
+      name: '🪟 別窓: 修正前',
       location: '中央ツールバー',
-      desc: '退避データ（修正前原本）を独立別ウィンドウで表示。',
+      desc: '退避データ（修正前原本）を独立別ウィンドウで表示し、並列確認。',
       icon: '🪟'
+    },
+    {
+      id: 'btnPortalWide',
+      name: '🏠 公式ポータル',
+      location: '左上ブランド',
+      desc: 'tossy-appsの公式ポータルページを別タブで開きます。',
+      icon: '🏠'
     }
   ];
 
-  // DOM構築
+  // ========================================================
+  // 3. UI初期化 & DOM構築
+  // ========================================================
   function initGuideUI() {
     if (document.getElementById('guideModalOverlay')) return;
 
@@ -164,93 +418,19 @@
 
         <!-- メインボディ (縦スクロールゼロで1画面フィット) -->
         <div class="guide-window-body" id="guideWindowBody">
-          <!-- 4. 左右2列のコンパクトヘッダー (高さ32px) -->
+          <!-- ヘッダータイトル (左右2列レイアウト) -->
           <div class="guide-hero-section">
             <div class="hero-left-box">
-              <span class="guide-badge">✨ 完全ローカル完結</span>
-              <h2 class="guide-main-heading">3ステップで直感マスター</h2>
+              <span class="guide-badge" id="guideHeroBadge">✨ レビュー作成サイクル</span>
+              <h2 class="guide-main-heading" id="guideHeroTitle">3ステップで直感マスター</h2>
             </div>
-            <p class="guide-sub-heading">マニュアル不要の基本操作サイクル (所要時間30秒)</p>
+            <p class="guide-sub-heading" id="guideHeroSub">マニュアル不要のレビュー作成サイクル (所要時間30秒)</p>
           </div>
 
-          <!-- カルーセルステージ (スリム化・高さ240px) -->
+          <!-- カルーセルステージ -->
           <div class="guide-carousel-wrapper" id="guideCarouselWrapper">
             <div class="guide-cards-stage" id="guideCardsStage">
-
-              <!-- STEP 1 -->
-              <div class="carousel-card state-center" id="cardStep0" data-index="0" data-target-id="openDirBtn">
-                <div class="card-preview-area">
-                  <div class="anim-box-step1">
-                    <div class="anim-folder-pulse">📁</div>
-                    <div class="anim-tree-step1">
-                      <div class="tree-row"><span>📄</span> index.html</div>
-                      <div class="tree-row selected"><span>📝</span> spec.md</div>
-                      <div class="tree-row"><span>📄</span> manual.html</div>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-desc-area">
-                  <div class="card-step-pill">STEP 01</div>
-                  <div class="card-step-title">📁 原本を開く / 展開</div>
-                  <div class="card-step-desc">
-                    左上の「原本を開く」からフォルダを選択。ファイルツリーが瞬時に展開されます。（カードクリックで場所案内）
-                  </div>
-                </div>
-              </div>
-
-              <!-- STEP 2 -->
-              <div class="carousel-card state-right" id="cardStep1" data-index="1" data-target-id="addIssueFromParentBtn">
-                <div class="card-preview-area">
-                  <div class="anim-box-step2">
-                    <div class="doc-text-sample">
-                      ユーザー情報は
-                      <span class="highlight-text-anim">暗号化して保存</span>
-                      すること。
-                    </div>
-                    <svg class="anim-cursor-svg" viewBox="0 0 24 24" fill="none">
-                      <path d="M4 3L11 20L14 13L21 11L4 3Z" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5" stroke-linejoin="round"/>
-                    </svg>
-                    <div class="anim-pin-badge">📌 指摘に追加</div>
-                  </div>
-                </div>
-                <div class="card-desc-area">
-                  <div class="card-step-pill">STEP 02</div>
-                  <div class="card-step-title">📌 選択して指摘作成</div>
-                  <div class="card-step-desc">
-                    プレビュー内の文章を選択して「指摘リストに追加」を押すだけ。行番号や文脈を自動解析します。
-                  </div>
-                </div>
-              </div>
-
-              <!-- STEP 3 -->
-              <div class="carousel-card state-hidden" id="cardStep2" data-index="2" data-target-id="copyCurrentBtn">
-                <div class="card-preview-area">
-                  <div class="anim-box-step3">
-                    <div class="ai-copy-chip">
-                      <span>🤖 AI指示プロンプト</span>
-                      <span style="font-size: 8px; background: rgba(255,255,255,0.2); padding: 1px 4px; border-radius: 2px;">コピー完了!</span>
-                    </div>
-                    <div class="diff-preview-mini">
-                      <div class="diff-mini-col">
-                        <div style="font-size: 8px; color: #94a3b8;">Before</div>
-                        <div class="diff-del-row">- 平文で一時保存</div>
-                      </div>
-                      <div class="diff-mini-col">
-                        <div style="font-size: 8px; color: #94a3b8;">After</div>
-                        <div class="diff-add-row">+ 暗号化して保存</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="card-desc-area">
-                  <div class="card-step-pill">STEP 03</div>
-                  <div class="card-step-title">🤖 AI指示 ＆ Diff検証</div>
-                  <div class="card-step-desc">
-                    「AI指示」ボタンで指示プロンプトを即取得。修正後は「Diff検証」でWinMerge風の左右比較！
-                  </div>
-                </div>
-              </div>
-
+              <!-- JSで動的に3枚を生成 -->
             </div>
 
             <!-- インジケーター -->
@@ -261,36 +441,39 @@
             </div>
           </div>
 
-          <!-- 他のボタン一覧セクション（3列 ＆ ページ切替スクロールアニメ・スリム化） -->
+          <!-- ツールバー機能一覧セクション（3大分類タブ ＆ スライド） -->
           <div class="guide-all-buttons-section">
             <div class="section-header-row">
               <div class="section-title">
                 <span>🔍</span> ツールバー機能一覧
-                <span style="font-size: 11px; color: #64748b; font-weight: normal; margin-left: 6px;">
-                  (クリックで場所を矢印案内)
+                <span style="font-size: 12px; color: #64748b; font-weight: normal; margin-left: 6px;">
+                  (クリックでヘッダー等の実物へ矢印案内)
                 </span>
               </div>
 
-              <!-- タブ & スライド切替ボタン -->
+              <!-- 3大ユースケース分類タブ & スライド切替ボタン -->
               <div style="display: flex; align-items: center; gap: 8px;">
                 <div class="btn-category-tabs">
-                  <button class="tab-btn active" id="tabPrimaryBtn">⭐ よく使う基本機能 (6)</button>
-                  <button class="tab-btn" id="tabAdvancedBtn">🛠️ 応用・発展機能 (6)</button>
+                  <button class="tab-btn active" id="tabCat0Btn">📝 レビュー・指摘作成</button>
+                  <button class="tab-btn" id="tabCat1Btn">🔍 AI修正結果のチェック</button>
+                  <button class="tab-btn" id="tabCat2Btn">🖥️ UI/UX便利機能</button>
                 </div>
                 <div class="page-nav-arrows">
-                  <button class="page-arrow-btn" id="pagePrevBtn" title="前のページへ">◀</button>
-                  <button class="page-arrow-btn" id="pageNextBtn" title="次のページへ">▶</button>
+                  <button class="page-arrow-btn" id="pagePrevBtn" title="前の分類へ">◀</button>
+                  <button class="page-arrow-btn" id="pageNextBtn" title="次の分類へ">▶</button>
                 </div>
               </div>
             </div>
 
-            <!-- スクロールスライドステージ -->
+            <!-- スクロールスライドステージ (3大分類: 300%) -->
             <div class="button-pages-viewport">
               <div class="button-pages-slider" id="buttonPagesSlider">
-                <!-- Page 1: よく使う基本 (3列) -->
-                <div class="button-page" id="pagePrimaryGrid"></div>
-                <!-- Page 2: 応用・発展 (3列) -->
-                <div class="button-page" id="pageAdvancedGrid"></div>
+                <!-- Page 1: レビュー・指摘作成 -->
+                <div class="button-page" id="pageReviewGrid"></div>
+                <!-- Page 2: AI検査結果のチェック -->
+                <div class="button-page" id="pageAiCheckGrid"></div>
+                <!-- Page 3: UI/UX便利機能 -->
+                <div class="button-page" id="pageUiUxGrid"></div>
               </div>
             </div>
           </div>
@@ -301,21 +484,154 @@
 
     document.body.appendChild(overlay);
 
+    renderCarouselCards(0);
     renderButtonGrids();
     bindGuideEvents();
   }
 
-  // ボタンカードを生成（3列×2ページ）
-  function renderButtonGrids() {
-    const page1El = document.getElementById('pagePrimaryGrid');
-    const page2El = document.getElementById('pageAdvancedGrid');
-    if (!page1El || !page2El) return;
+  // ========================================================
+  // 4. カルーセルカード描画 & ステップ管理
+  // ========================================================
+  function renderCarouselCards(categoryIdx) {
+    const stage = document.getElementById('guideCardsStage');
+    const badgeEl = document.getElementById('guideHeroBadge');
+    const titleEl = document.getElementById('guideHeroTitle');
+    const subEl = document.getElementById('guideHeroSub');
+    if (!stage) return;
 
-    page1El.innerHTML = PRIMARY_BUTTON_ITEMS.map(createButtonCardHtml).join('');
-    page2El.innerHTML = ADVANCED_BUTTON_ITEMS.map(createButtonCardHtml).join('');
+    const catData = CAROUSEL_SETS[categoryIdx] || CAROUSEL_SETS[0];
+
+    if (badgeEl) badgeEl.innerText = catData.badge;
+    if (titleEl) titleEl.innerText = catData.title;
+    if (subEl) subEl.innerText = catData.sub;
+
+    stage.innerHTML = catData.steps.map((step, idx) => `
+      <div class="carousel-card ${idx === 0 ? 'state-center' : idx === 1 ? 'state-right' : 'state-hidden'}"
+           id="cardStep${idx}" data-index="${idx}" data-target-id="${step.targetId}">
+        <div class="card-preview-area">
+          ${step.previewHtml}
+        </div>
+        <div class="card-desc-area">
+          <div class="card-step-pill">${step.pill}</div>
+          <div class="card-step-title">${step.title}</div>
+          <div class="card-step-desc">${step.desc}</div>
+        </div>
+      </div>
+    `).join('');
+
+    currentStepIndex = 0;
+    updateCarouselIndicators();
+
+    // カードクリックで矢印案内
+    stage.querySelectorAll('.carousel-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const idx = parseInt(card.dataset.index, 10);
+        if (idx !== currentStepIndex) {
+          goToStep(idx);
+        }
+        const targetId = card.dataset.targetId;
+        if (targetId) pointToElement(targetId, card);
+      });
+    });
   }
 
-  function createButtonCardHtml(item) {
+  function goToStep(nextIndex) {
+    currentStepIndex = (nextIndex + 3) % 3;
+
+    const cards = [
+      document.getElementById('cardStep0'),
+      document.getElementById('cardStep1'),
+      document.getElementById('cardStep2')
+    ];
+
+    cards.forEach((card, idx) => {
+      if (!card) return;
+      card.className = 'carousel-card';
+      if (idx === currentStepIndex) {
+        card.classList.add('state-center');
+      } else if (idx === (currentStepIndex - 1 + 3) % 3) {
+        card.classList.add('state-left');
+      } else if (idx === (currentStepIndex + 1) % 3) {
+        card.classList.add('state-right');
+      } else {
+        card.classList.add('state-hidden');
+      }
+    });
+
+    updateCarouselIndicators();
+  }
+
+  function updateCarouselIndicators() {
+    const dots = document.querySelectorAll('.indicator-dot');
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentStepIndex);
+    });
+  }
+
+  function startCarouselLoop() {
+    stopCarouselLoop();
+    carouselTimer = setInterval(() => {
+      if (!isCarouselPaused) {
+        goToStep(currentStepIndex + 1);
+      }
+    }, 4500);
+  }
+
+  function stopCarouselLoop() {
+    if (carouselTimer) {
+      clearInterval(carouselTimer);
+      carouselTimer = null;
+    }
+  }
+
+  // ========================================================
+  // 5. ボタンカード描画（合体セル対応）
+  // ========================================================
+  function renderButtonGrids() {
+    const page0El = document.getElementById('pageReviewGrid');
+    const page1El = document.getElementById('pageAiCheckGrid');
+    const page2El = document.getElementById('pageUiUxGrid');
+
+    if (page0El) page0El.innerHTML = REVIEW_CREATION_ITEMS.map(createItemHtml).join('');
+    if (page1El) page1El.innerHTML = AI_INSPECTION_ITEMS.map(createItemHtml).join('');
+    if (page2El) page2El.innerHTML = UI_UX_ITEMS.map(createItemHtml).join('');
+  }
+
+  function createItemHtml(item) {
+    // 合体デュアルセルの場合（選択指示 & 全指示）
+    if (item.isDual) {
+      return `
+        <div class="btn-guide-card btn-guide-dual-card">
+          <div class="btn-guide-icon">${item.icon}</div>
+          <div class="btn-guide-dual-content">
+            <div class="dual-header">
+              <span class="btn-guide-name">${item.name}</span>
+              <span class="btn-guide-location-tag">${item.location}</span>
+              <span class="dual-hint">${item.hint}</span>
+            </div>
+            <div class="dual-actions-row">
+              <div class="dual-action-box" data-target-id="${item.left.id}" title="クリックでヘッダーの実物を案内">
+                <div class="dual-action-texts">
+                  <div class="dual-action-title">${item.left.title}</div>
+                  <div class="dual-action-desc">${item.left.desc}</div>
+                </div>
+                <button class="dual-pointer-btn">案内 ➔</button>
+              </div>
+              <div class="dual-action-divider"></div>
+              <div class="dual-action-box" data-target-id="${item.right.id}" title="クリックでヘッダーの実物を案内">
+                <div class="dual-action-texts">
+                  <div class="dual-action-title">${item.right.title}</div>
+                  <div class="dual-action-desc">${item.right.desc}</div>
+                </div>
+                <button class="dual-pointer-btn">案内 ➔</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 通常のカード
     return `
       <div class="btn-guide-card" data-target-id="${item.id}" title="クリックすると実際の場所を矢印で案内します">
         <div class="btn-guide-icon">${item.icon}</div>
@@ -331,56 +647,55 @@
     `;
   }
 
-  // ページ切り替え（スクロールアニメーション）
+  // ========================================================
+  // 6. 分類タブ切替（カルーセルアニメも連動！）
+  // ========================================================
   function switchButtonPage(pageIdx) {
-    currentButtonPage = pageIdx;
+    clearHighlight(); // タブ・ページ切替時に前回の矢印とスポットライトを確実にクリア！
+    currentButtonPage = (pageIdx + 3) % 3;
     const slider = document.getElementById('buttonPagesSlider');
-    const tabPrimary = document.getElementById('tabPrimaryBtn');
-    const tabAdvanced = document.getElementById('tabAdvancedBtn');
+    const tabs = [
+      document.getElementById('tabCat0Btn'),
+      document.getElementById('tabCat1Btn'),
+      document.getElementById('tabCat2Btn')
+    ];
 
     if (slider) {
-      slider.style.transform = `translateX(-${pageIdx * 50}%)`;
+      slider.style.transform = `translateX(-${currentButtonPage * 33.3333}%)`;
     }
 
-    if (tabPrimary && tabAdvanced) {
-      tabPrimary.classList.toggle('active', pageIdx === 0);
-      tabAdvanced.classList.toggle('active', pageIdx === 1);
-    }
+    tabs.forEach((tab, idx) => {
+      if (tab) tab.classList.toggle('active', idx === currentButtonPage);
+    });
+
+    // 上部のカルーセルカード群も、そのフェーズの3ステップに即座に更新！
+    renderCarouselCards(currentButtonPage);
   }
 
-  // イベントバインド
+  // ========================================================
+  // 7. イベントバインド
+  // ========================================================
   function bindGuideEvents() {
     const overlay = document.getElementById('guideModalOverlay');
     const closeBtn = document.getElementById('guideCloseBtn');
     const dotClose = document.getElementById('guideDotClose');
 
-    closeBtn.onclick = closeGuideModal;
-    dotClose.onclick = closeGuideModal;
+    if (closeBtn) closeBtn.onclick = closeGuideModal;
+    if (dotClose) dotClose.onclick = closeGuideModal;
 
-    overlay.onclick = (e) => {
-      if (e.target === overlay) closeGuideModal();
-    };
+    if (overlay) {
+      overlay.onclick = (e) => {
+        if (e.target === overlay) closeGuideModal();
+      };
+    }
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && overlay.classList.contains('active')) {
+      if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) {
         closeGuideModal();
       }
     });
 
-    // カルーセルカードのクリックで場所案内
-    const cards = document.querySelectorAll('.carousel-card');
-    cards.forEach(card => {
-      card.addEventListener('click', () => {
-        const idx = parseInt(card.dataset.index, 10);
-        if (idx !== currentStepIndex) {
-          goToStep(idx);
-        }
-        const targetId = card.dataset.targetId;
-        if (targetId) pointToElement(targetId, card);
-      });
-    });
-
-    // インジケータードットのクリック
+    // カルーセルインジケータードット
     const dots = document.querySelectorAll('.indicator-dot');
     dots.forEach(dot => {
       dot.addEventListener('click', (e) => {
@@ -389,85 +704,58 @@
       });
     });
 
-    // カルーセルにマウスホバー中は自動ループ一時停止
+    // カルーセルホバー中は自動ループ一時停止
     const carouselWrapper = document.getElementById('guideCarouselWrapper');
     if (carouselWrapper) {
       carouselWrapper.addEventListener('mouseenter', () => { isCarouselPaused = true; });
       carouselWrapper.addEventListener('mouseleave', () => { isCarouselPaused = false; });
     }
 
-    // ボタンページ切り替えタブ & 矢印
-    const tabPrimary = document.getElementById('tabPrimaryBtn');
-    const tabAdvanced = document.getElementById('tabAdvancedBtn');
+    // 3大分類タブ切替ボタン
+    const tab0 = document.getElementById('tabCat0Btn');
+    const tab1 = document.getElementById('tabCat1Btn');
+    const tab2 = document.getElementById('tabCat2Btn');
     const pagePrev = document.getElementById('pagePrevBtn');
     const pageNext = document.getElementById('pageNextBtn');
 
-    if (tabPrimary) tabPrimary.onclick = () => switchButtonPage(0);
-    if (tabAdvanced) tabAdvanced.onclick = () => switchButtonPage(1);
-    if (pagePrev) pagePrev.onclick = () => switchButtonPage(0);
-    if (pageNext) pageNext.onclick = () => switchButtonPage(1);
+    if (tab0) tab0.onclick = () => switchButtonPage(0);
+    if (tab1) tab1.onclick = () => switchButtonPage(1);
+    if (tab2) tab2.onclick = () => switchButtonPage(2);
+    if (pagePrev) pagePrev.onclick = () => switchButtonPage(currentButtonPage - 1);
+    if (pageNext) pageNext.onclick = () => switchButtonPage(currentButtonPage + 1);
 
-    // ボタンガイドカードのクリックで矢印案内 (カード本体をsourceElとして渡す！)
-    const guideCards = document.querySelectorAll('.btn-guide-card');
+    // 通常カードのクリック案内
+    const guideCards = document.querySelectorAll('.btn-guide-card:not(.btn-guide-dual-card)');
     guideCards.forEach(card => {
       card.addEventListener('click', () => {
         const targetId = card.dataset.targetId;
         if (targetId) pointToElement(targetId, card);
       });
     });
-  }
 
-  // カルーセルステップ切替 (0: Step1, 1: Step2, 2: Step3)
-  function goToStep(nextIndex) {
-    currentStepIndex = (nextIndex + 3) % 3;
-
-    const cards = [
-      document.getElementById('cardStep0'),
-      document.getElementById('cardStep1'),
-      document.getElementById('cardStep2')
-    ];
-
-    cards.forEach((card, idx) => {
-      card.className = 'carousel-card';
-      if (idx === currentStepIndex) {
-        card.classList.add('state-center');
-      } else if (idx === (currentStepIndex - 1 + 3) % 3) {
-        card.classList.add('state-left');
-      } else if (idx === (currentStepIndex + 1) % 3) {
-        card.classList.add('state-right');
-      } else {
-        card.classList.add('state-hidden');
-      }
+    // 合体デュアルセルの左右ボックスクリック案内
+    const dualBoxes = document.querySelectorAll('.dual-action-box');
+    dualBoxes.forEach(box => {
+      box.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetId = box.dataset.targetId;
+        if (targetId) pointToElement(targetId, box);
+      });
     });
-
-    const dots = document.querySelectorAll('.indicator-dot');
-    dots.forEach((dot, idx) => {
-      dot.classList.toggle('active', idx === currentStepIndex);
-    });
-  }
-
-  // 自動カルーセルループ
-  function startCarouselLoop() {
-    stopCarouselLoop();
-    carouselTimer = setInterval(() => {
-      if (!isCarouselPaused) {
-        goToStep(currentStepIndex + 1);
-      }
-    }, 3800);
-  }
-
-  function stopCarouselLoop() {
-    if (carouselTimer) {
-      clearInterval(carouselTimer);
-      carouselTimer = null;
-    }
   }
 
   // ========================================================
-  // 4. CapCut風 矢印線（ヘッダー完全露出に対応したベジェ曲線）
+  // 8. CapCut風 矢印線 & 本物クローン切り抜き（Cutout）
   // ========================================================
   function pointToElement(targetId, sourceEl) {
-    const targetEl = document.getElementById(targetId);
+    let targetEl = document.getElementById(targetId);
+    if (!targetEl) {
+      if (targetId === 'manualHeaderLink') {
+        targetEl = document.querySelector('header a.btn-manual');
+      } else if (targetId === 'btnPortalWide') {
+        targetEl = document.querySelector('.btn-portal-wide');
+      }
+    }
     if (!targetEl) return;
 
     if (activeArrowTimeout) {
@@ -547,7 +835,7 @@
     const svgLayer = document.getElementById('guideArrowSvgLayer');
     const pinEl = document.getElementById('guideTargetPin');
     const spotlightBox = document.getElementById('guideSpotlightBox');
-    
+
     if (svgLayer) svgLayer.classList.remove('active');
     if (pinEl) pinEl.style.display = 'none';
     if (spotlightBox) spotlightBox.classList.remove('active');
@@ -557,7 +845,9 @@
     });
   }
 
-  // モーダル開閉
+  // ========================================================
+  // 9. モーダル開閉
+  // ========================================================
   function openGuideModal() {
     initGuideUI();
     const overlay = document.getElementById('guideModalOverlay');
