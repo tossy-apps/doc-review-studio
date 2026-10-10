@@ -1,6 +1,6 @@
 # DocReview Studio ユーザーズマニュアル
 
-DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアルやMarkdownドキュメント（.md / .markdown）を読み込み、直感的なレビュー指摘の記録、AI修正指示プロンプトの自動生成、WinMerge風の左右Diff差分検証を行える**完全クライアントサイド型ドキュメント校正スタジオ**です。
+DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアルやMarkdownドキュメント（.md / .markdown）を読み込み、直感的なレビュー指摘の記録、AI修正指示プロンプトの自動生成、WinMerge風の左右Diff差分検証を行える**完全クライアントサイド型 AI協働ドキュメント校正スタジオ**です。
 
 ---
 
@@ -8,7 +8,7 @@ DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアル�
 
 [1. DocReview Studio の特徴・設計思想](#sec-features)
 [2. 画面構成（UIレイアウト）](#sec-layout)
-[3. クイックスタート（3ステップで始める）](#sec-quickstart)
+[3. クイックスタート（AI協働改修の基本フロー）](#sec-quickstart)
 [4. 基本レビュー手順（指摘の記録・エビデンス管理）](#sec-review)
 [5. AIプロンプト連携（LLM指示の一括生成）](#sec-aiprompt)
 [6. WinMerge風 Diff差分検証機能](#sec-diff)
@@ -19,6 +19,10 @@ DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアル�
 ## 1. DocReview Studio の特徴・設計思想
 
 ![全体レイアウト](./images/01_main_view.png)
+
+### 🤖 人間とAIが協働する「ドキュメント改修サイクル」
+- **人間は「直感的に指摘するだけ」**: 本文のテキストをドラッグ選択して指示を入力するだけで、LLM（Claude, Gemini, ChatGPT 等）が迷わず直接修正を実行できる高精度プロンプト（対象ファイル・概算行番号・対象テキスト・前後文脈・修正指示）を一括自動生成します。
+- **AI修正後の結果を「Diff検証で安全確認」**: AIがファイルを書き換えた後は、ワンクリックで最新データを再読込。退避した修正前原本との左右並列Diff（WinMerge風）により、「指示通りに修正されたか」「予期せぬ余計な崩れがないか」を目視で即座に検証できます。
 
 ### 🔒 サーバー通信ゼロ・完全ローカル完結
 - **File System Access API** を採用し、PCローカルのフォルダやファイルをブラウザ内部メモリで直接読み込み・操作します。

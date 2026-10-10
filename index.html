@@ -5,11 +5,13 @@
   <meta charset="UTF-8">
   <meta name="robots" content="index, follow">
   <meta name="description"
-    content="DocReview Studio - 完全クライアントサイドで動作するHTML & Markdownマニュアル・技術文書レビュー＆WinMerge風Diff差分検証ツール。機密を漏らさずローカル完結。">
-  <meta name="keywords" content="DocReview, HTMLレビュー, Markdownレビュー, WinMerge, 差分比較, Diff, 技術文書, マニュアル校正">
-  <meta property="og:title" content="DocReview Studio - 完全クライアントサイドHTML & Markdown文書レビューツール">
-  <meta property="og:description" content="ブラウザ単体でローカルのHTML/Markdown文書を読み込み、レビュー指摘の記録、AI指示生成、左右ブロック差分検証を行えるWebツール。">
-  <title>DocReview Studio & Diff Inspector</title>
+    content="DocReview Studio - 完全クライアントサイドで動作するHTML & Markdown文書レビュー・AI修正指示プロンプト生成＆WinMerge風Diff差分検証ツール。機密を漏らさずローカル完結。">
+  <meta name="keywords" content="DocReview, HTMLレビュー, Markdownレビュー, AIプロンプト生成, WinMerge, 差分比較, Diff, 技術文書, マニュアル校正">
+  <meta property="og:title" content="DocReview Studio - 完全クライアントサイドHTML & Markdown AI指示・Diff検証ツール">
+  <meta property="og:description" content="ブラウザ単体でHTML/Markdown文書を読み込み、直感的なレビュー指摘からAI修正指示プロンプトの一括自動生成、左右Diff差分検証までを行える完全ローカル完結型Webツール。">
+  <title>DocReview Studio | HTML & Markdown AI指示・Diff検証スタジオ</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" href="favicon.png">
   <script src="marked.min.js"></script>
   <style>
     :root {
@@ -37,49 +39,95 @@
       padding: 0;
       height: 100vh;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       background: #111214;
       color: var(--text-main);
+      overflow: hidden;
+    }
+
+    .main-column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      min-width: 0;
       overflow: hidden;
     }
 
     header {
       background: var(--bg-header);
       border-bottom: 2px solid var(--border-light);
-      padding: 6px 16px;
+      padding: 6px 12px;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       height: 58px;
       flex-shrink: 0;
       z-index: 100;
     }
 
-    .brand-section {
+    .sidebar-brand-box {
+      padding: 12px 14px 10px 14px;
+      background: #18191c;
+      border-bottom: 1px solid var(--border-light);
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding-right: 14px;
-      border-right: 1px solid var(--border-group);
+      gap: 6px;
       flex-shrink: 0;
     }
 
-    .brand-section .title {
-      font-size: 14px;
-      font-weight: 700;
+    .sidebar-brand-box .brand-title {
+      font-size: 20px;
+      font-weight: 800;
       letter-spacing: 0.5px;
       color: #ffffff;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      line-height: 1.2;
     }
 
-    .brand-section .folder-status {
+    .sidebar-brand-box .brand-subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      margin-top: -3px;
+      margin-bottom: 2px;
+    }
+
+    .btn-portal-wide {
+      display: inline-flex;
+      align-self: flex-start;
+      align-items: center;
+      gap: 5px;
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      border-radius: 4px;
+      padding: 3px 9px;
+      height: 24px;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      white-space: nowrap;
+    }
+
+    .btn-portal-wide:hover {
+      background: #0369a1;
+      border-color: #7dd3fc;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
+    }
+
+    .folder-status-box {
       font-size: 11px;
       color: #93c5fd;
       font-weight: bold;
       font-family: monospace;
-      max-width: 150px;
+      background: #111214;
+      border: 1px solid #2b2d35;
+      border-radius: 4px;
+      padding: 4px 8px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -179,6 +227,51 @@
       color: #ffffff;
     }
 
+    .btn-portal {
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      border-radius: 4px;
+      padding: 1px 7px;
+      height: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-portal:hover {
+      background: #0369a1;
+      border-color: #7dd3fc;
+      color: #ffffff;
+    }
+
+    .portal-link-box {
+      display: block;
+      padding: 6px 10px;
+      background: #1e222a;
+      border: 1px solid #3b4252;
+      border-radius: 6px;
+      color: #60a5fa;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .portal-link-box:hover {
+      background: #282e39;
+      border-color: #60a5fa;
+      color: #93c5fd;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+    }
+
     .pane-files-footer {
       padding: 8px 12px;
       border-top: 1px solid var(--border-light);
@@ -216,13 +309,15 @@
     /* 左ペイン: ファイルツリー（表示切替対応） */
     .pane-files {
       width: 240px;
-      min-width: 160px;
+      min-width: 180px;
       max-width: 600px;
       background: var(--sidebar-bg);
       color: #ffffff;
       display: flex;
       flex-direction: column;
       flex-shrink: 0;
+      height: 100vh;
+      border-right: 1px solid var(--border-light);
     }
 
     .pane-files.collapsed {
@@ -275,16 +370,19 @@
     }
 
     .pane-files-header {
-      padding: 10px 12px;
+      height: 34px;
+      padding: 0 14px;
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      color: #e5e7eb;
+      color: #cbd5e1;
       border-bottom: 1px solid var(--border-light);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      background: #1e1f22;
+      flex-shrink: 0;
     }
 
     .pane-files-search {
@@ -776,81 +874,92 @@
 
 <body>
 
-  <header>
-    <div class="brand-section">
-      <span class="title">DocReview Studio</span>
-      <span class="folder-status" id="folderLabel">[原本未選択]</span>
+  <!-- 左：ファイルツリー＆ブランドエリア -->
+  <div class="pane-files" id="paneFiles">
+    <!-- 最上部: ブランド・ポータル・原本ステータス -->
+    <div class="sidebar-brand-box">
+      <div class="brand-title">DocReview Studio</div>
+      <div class="brand-subtitle">HTML &amp; Markdown AIレビュー支援</div>
+      <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="btn-portal-wide" title="tossy-apps 公式ポータルへ">
+        🏠 公式ポータル
+      </a>
+      <div class="folder-status-box" id="folderLabel">[原本未選択]</div>
     </div>
 
-    <!-- グループ1: 原本・退避管理 -->
-    <div class="action-group">
-      <div class="group-label">Source & Backup</div>
-      <div class="group-buttons">
-        <button class="btn" id="openDirBtn">📁 原本を開く</button>
-        <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
-        <button class="btn" id="openBackupDirBtn" title="退避フォルダを指定し原本をバックアップ">📂 退避先を指定</button>
-      </div>
+    <!-- ファイルツリーヘッダー -->
+    <div class="pane-files-header">
+      <span>Files</span>
+      <span id="fileTotalCount" style="color: #60a5fa; font-weight: bold;">0</span>
     </div>
-
-    <!-- グループ2: レビューエビデンス -->
-    <div class="action-group">
-      <div class="group-label">Evidence</div>
-      <div class="group-buttons">
-        <button class="btn" id="exportJsonBtn" title="指摘データをJSON保存">💾 JSON</button>
-        <button class="btn" id="exportMdBtn" title="指摘データをMarkdown表保存">📝 MD表</button>
-        <button class="btn" id="importJsonBtn" title="過去の指摘JSONを復元">📂 読込</button>
-        <input type="file" id="importJsonInput" accept=".json" style="display: none;">
-      </div>
+    <div class="pane-files-search">
+      <input type="text" id="fileFilterInput" class="file-search-input" placeholder="🔍 ファイル検索 (HTML / MD)..." />
     </div>
-
-    <!-- グループ3: AIプロンプト生成 -->
-    <div class="action-group">
-      <div class="group-label">AI Prompt</div>
-      <div class="group-buttons">
-        <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみコピー">
-          🤖 選択ファイル指示
-        </button>
-        <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算コピー">
-          🤖 全ファイル指示
-        </button>
-      </div>
+    <ul class="file-tree" id="fileTree">
+      <li style="color: #9ca3af; cursor: default;">原本フォルダを開いてください</li>
+    </ul>
+    <div class="pane-files-footer">
+      <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="portal-link-box" title="tossy-apps 公式ポータルへ戻る">
+        🏠 tossy-apps 公式ポータル
+      </a>
+      <div style="margin-top: 5px; font-size: 9px; color: #4b5563;">&copy; 2026 DocReview Studio</div>
     </div>
+  </div>
 
-    <!-- グループ4: 差分検証 -->
-    <div class="action-group" style="margin-left: auto;">
-      <div class="group-label">Inspection & Guide</div>
-      <div class="group-buttons">
-        <a href="./manual.html" target="_blank" class="btn btn-manual" title="使い方マニュアルを開く">
-          📖 マニュアル
-        </a>
-        <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダをブロック差分検証">
-          🔄 Diff検証
-        </button>
-      </div>
-    </div>
-  </header>
+  <!-- 左リサイザー（ドラッグ伸縮） -->
+  <div class="resizer resizer-left" id="resizerLeft" title="ドラッグしてファイルツリーの幅を変更"></div>
 
-  <div class="main-workspace">
+  <!-- 右メインカラム（ヘッダー ＋ プレビュー/Diff ＋ 右指摘ログ） -->
+  <div class="main-column">
+    <header>
+      <!-- グループ1: 原本・退避管理 -->
+      <div class="action-group">
+        <div class="group-label">Source & Backup</div>
+        <div class="group-buttons">
+          <button class="btn" id="openDirBtn">📁 原本を開く</button>
+          <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
+          <button class="btn" id="openBackupDirBtn" title="退避フォルダを指定し原本をバックアップ">📂 退避先を指定</button>
+        </div>
+      </div>
 
-    <!-- 左：ファイルツリー -->
-    <div class="pane-files" id="paneFiles">
-      <div class="pane-files-header">
-        <span>Files</span>
-        <span id="fileTotalCount" style="color: #60a5fa; font-weight: bold;">0</span>
+      <!-- グループ2: レビューエビデンス -->
+      <div class="action-group">
+        <div class="group-label">Evidence</div>
+        <div class="group-buttons">
+          <button class="btn" id="exportJsonBtn" title="指摘データをJSON保存">💾 JSON</button>
+          <button class="btn" id="exportMdBtn" title="指摘データをMarkdown表保存">📝 MD表</button>
+          <button class="btn" id="importJsonBtn" title="過去の指摘JSONを復元">📂 読込</button>
+          <input type="file" id="importJsonInput" accept=".json" style="display: none;">
+        </div>
       </div>
-      <div class="pane-files-search">
-        <input type="text" id="fileFilterInput" class="file-search-input" placeholder="🔍 ファイル検索 (HTML / MD)..." />
-      </div>
-      <ul class="file-tree" id="fileTree">
-        <li style="color: #9ca3af; cursor: default;">原本フォルダを開いてください</li>
-      </ul>
-      <div class="pane-files-footer">
-        &copy; 2026 DocReview Studio
-      </div>
-    </div>
 
-    <!-- 左リサイザー（ドラッグ伸縮） -->
-    <div class="resizer resizer-left" id="resizerLeft" title="ドラッグしてファイルツリーの幅を変更"></div>
+      <!-- グループ3: AIプロンプト生成 -->
+      <div class="action-group">
+        <div class="group-label">AI Prompt</div>
+        <div class="group-buttons">
+          <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみコピー">
+            🤖 選択ファイル指示
+          </button>
+          <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算コピー">
+            🤖 全ファイル指示
+          </button>
+        </div>
+      </div>
+
+      <!-- グループ4: 差分検証 & ガイド -->
+      <div class="action-group" style="margin-left: auto;">
+        <div class="group-label">Guide & Diff</div>
+        <div class="group-buttons">
+          <a href="./manual.html" target="_blank" class="btn btn-manual" title="使い方マニュアルを開く">
+            📖 マニュアル
+          </a>
+          <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダをブロック差分検証">
+            🔄 Diff検証
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-workspace">
 
     <!-- 中央：インラインプレビュー / WinMerge風Diff比較 -->
     <div class="pane-center" id="paneCenter">
@@ -937,6 +1046,7 @@
       </div>
     </div>
 
+  </div>
   </div>
 
   <!-- 退避先フォルダ選択時の確認モーダル -->

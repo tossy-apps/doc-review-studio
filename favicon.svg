@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e222a"/>
+      <stop offset="100%" stop-color="#0f1115"/>
+    </linearGradient>
+    <linearGradient id="docGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+    <linearGradient id="checkGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ade80"/>
+      <stop offset="100%" stop-color="#16a34a"/>
+    </linearGradient>
+  </defs>
+  <!-- 背景角丸 -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#bgGrad)" stroke="#38bdf8" stroke-width="2"/>
+  
+  <!-- 重なるドキュメント（背後：Diff差分検証を象徴） -->
+  <rect x="14" y="10" width="28" height="36" rx="4" fill="#334155" opacity="0.6"/>
+  
+  <!-- 前面ドキュメント -->
+  <rect x="18" y="14" width="30" height="38" rx="4" fill="url(#docGrad)"/>
+  
+  <!-- ドキュメント内テキスト行 -->
+  <line x1="24" y1="22" x2="40" y2="22" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="24" y1="29" x2="42" y2="29" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="24" y1="36" x2="34" y2="36" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="24" y1="43" x2="38" y2="43" stroke="#e0f2fe" stroke-width="2.5" stroke-linecap="round"/>
+  
+  <!-- レビュー承認バッジ／チェックマーク（右下） -->
+  <circle cx="45" cy="45" r="13" fill="#111827" stroke="#4ade80" stroke-width="2"/>
+  <path d="M39 45 L43 49 L51 40" fill="none" stroke="url(#checkGrad)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
