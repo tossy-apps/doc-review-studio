@@ -688,15 +688,33 @@
 
     if (overlay) {
       overlay.onclick = (e) => {
+        if (activePointingTargetId) {
+          clearHighlight();
+          return;
+        }
         if (e.target === overlay) {
           closeGuideModal();
         }
       };
     }
 
+    const windowEl = document.getElementById('guideWindow');
+    if (windowEl) {
+      windowEl.addEventListener('click', (e) => {
+        // 案内ボタン以外のクリックで、矢印案内が出ていれば解除
+        if (activePointingTargetId && !e.target.closest('.btn-point-guide') && !e.target.closest('.btn-point-guide-mini') && !e.target.closest('.guide-action-card')) {
+          clearHighlight();
+        }
+      });
+    }
+
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) {
-        closeGuideModal();
+        if (activePointingTargetId) {
+          clearHighlight();
+        } else {
+          closeGuideModal();
+        }
       }
     });
 
@@ -744,12 +762,20 @@
     }
   }
 
+  let activePointingTargetId = null;
+
   // ========================================================
   // 6. 矢印線 ＆ 本物クローン切り抜き（スポットライト演出）
   // ========================================================
   function pointToElement(targetId, sourceEl) {
     const overlay = document.getElementById('guideModalOverlay');
     if (!overlay || !overlay.classList.contains('active')) {
+      clearHighlight();
+      return;
+    }
+
+    // 同じボタンをもう一度クリックした場合はトグルで解除
+    if (activePointingTargetId === targetId) {
       clearHighlight();
       return;
     }
@@ -770,6 +796,8 @@
     }
     clearHighlight();
 
+    activePointingTargetId = targetId;
+
     const svgLayer = document.getElementById('guideArrowSvgLayer');
     const pathEl = document.getElementById('guideArrowPath');
     const pinEl = document.getElementById('guideTargetPin');
@@ -779,7 +807,7 @@
     const targetRect = targetEl.getBoundingClientRect();
     const winRect = windowEl ? windowEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2 };
 
-    // 1. スポットライト切り抜き枠に対象ボタンのクローンを配置
+    // 1. スポットライト枠に対象ボタンのクローンを配置してパルス発光
     if (spotlightBox) {
       spotlightBox.innerHTML = '';
       const clone = targetEl.cloneNode(true);
@@ -787,7 +815,7 @@
       clone.style.margin = '0';
       clone.style.pointerEvents = 'auto';
       clone.style.cursor = 'pointer';
-      clone.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.85)';
+      clone.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.95)';
       clone.onclick = (e) => {
         e.stopPropagation();
         closeGuideModal();
@@ -825,9 +853,9 @@
     const pathData = `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`;
     if (pathEl) pathEl.setAttribute('d', pathData);
 
-    // 3. ナビ吹き出し
+    // 3. ナビ吹き出し（クリックで解除または直接実行）
     if (pinEl) {
-      pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで即実行)</span>';
+      pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで直接実行 / ガイドを触れば案内終了)</span>';
       pinEl.style.display = 'flex';
       pinEl.style.left = `${Math.max(10, Math.round(targetCenterX - 110))}px`;
       pinEl.style.top = `${Math.round(endY + 12)}px`;
@@ -837,10 +865,11 @@
 
     activeArrowTimeout = setTimeout(() => {
       clearHighlight();
-    }, 8000);
+    }, 7000);
   }
 
   function clearHighlight() {
+    activePointingTargetId = null;
     if (activeArrowTimeout) {
       clearTimeout(activeArrowTimeout);
       activeArrowTimeout = null;
