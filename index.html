@@ -1754,6 +1754,16 @@
         return;
       }
 
+      // ガード: 原本フォルダと退避先フォルダが同一の場合は警告して中断
+      if (workDirHandle && backupDirHandle) {
+        try {
+          if (await workDirHandle.isSameEntry(backupDirHandle)) {
+            alert("⚠️ エラー: 原本フォルダと退避先フォルダに同じフォルダが選択されています。\n原本とは別の（または上位の）バックアップ用フォルダを選択してください。");
+            return;
+          }
+        } catch (e) { }
+      }
+
       let hasFiles = false;
       for await (const entry of backupDirHandle.values()) {
         hasFiles = true;
@@ -1779,7 +1789,7 @@
         progressText.innerText = "退避準備中...";
 
         const fileEntries = [];
-        await collectAllFiles(workDirHandle, backupDirHandle, fileEntries);
+        await collectAllFiles(workDirHandle, backupDirHandle, fileEntries, 0);
         const total = fileEntries.length;
 
         let completed = 0;
@@ -1828,16 +1838,33 @@
 
     function shouldIgnoreEntry(name) {
       if (!name) return true;
-      if (name === '.git' || name.startsWith('.git/')) return true;
-      if (name === '.svn' || name === '.hg' || name === 'node_modules' || name === '.DS_Store' || name === '.vscode') return true;
-      if (name.toLowerCase().endsWith('.lnk')) return true;
-      if (name.includes('_backup')) return true;
+      const lower = name.toLowerCase();
+      if (lower === '.git' || lower.startsWith('.git/')) return true;
+      if (lower === '.svn' || lower === '.hg' || lower === 'node_modules' || lower === '.ds_store' || lower === '.vscode') return true;
+      if (lower.endsWith('.lnk')) return true;
+      if (lower.includes('_backup') || lower.startsWith('_backup') || lower.startsWith('backup_')) return true;
+      if (lower === '_docs' || lower.startsWith('_docs') || lower === 'backup' || lower.startsWith('doc_backup')) return true;
       return false;
     }
 
-    async function collectAllFiles(srcDirH, destDirH, taskList) {
+    async function collectAllFiles(srcDirH, destDirH, taskList, depth = 0) {
+      if (depth > 20) {
+        console.warn("ディレクトリ走査深度制限(20)に達したため走査を打ち切りました:", srcDirH.name);
+        return;
+      }
       for await (const entry of srcDirH.values()) {
         if (shouldIgnoreEntry(entry.name)) continue;
+
+        // ガード: 走査対象が退避先フォルダそのものなら絶対にスキップ（自己再帰コピーの防止）
+        if (entry.kind === 'directory') {
+          try {
+            if (backupDirHandle && (await entry.isSameEntry(backupDirHandle))) {
+              console.warn("退避先フォルダ自体を検出したためコピー走査をスキップしました:", entry.name);
+              continue;
+            }
+          } catch (e) { }
+        }
+
         if (entry.kind === 'file') {
           taskList.push({
             name: entry.name,
@@ -1846,7 +1873,7 @@
           });
         } else if (entry.kind === 'directory') {
           const subDestDir = await destDirH.getDirectoryHandle(entry.name, { create: true });
-          await collectAllFiles(entry, subDestDir, taskList);
+          await collectAllFiles(entry, subDestDir, taskList, depth + 1);
         }
       }
     }
@@ -2075,9 +2102,23 @@
       }, 150);
     }
 
-    async function scanDirTree(dirH, pathPrefix, state, fileHandlesMap, resHandlesMap) {
+    async function scanDirTree(dirH, pathPrefix, state, fileHandlesMap, resHandlesMap, depth = 0) {
+      if (depth > 25) {
+        console.warn("スキャン深度制限(25)に達したため走査を制限しました:", dirH.name);
+        return;
+      }
       for await (const entry of dirH.values()) {
         if (shouldIgnoreEntry(entry.name)) continue;
+
+        if (entry.kind === 'directory') {
+          try {
+            if (backupDirHandle && (await entry.isSameEntry(backupDirHandle))) {
+              console.warn("退避先フォルダを原本スキャンからスキップしました:", entry.name);
+              continue;
+            }
+          } catch (e) { }
+        }
+
         const relPath = pathPrefix ? `${pathPrefix}/${entry.name}` : entry.name;
 
         if (entry.kind === 'file') {
@@ -2098,7 +2139,7 @@
             await new Promise(r => setTimeout(r, 0));
           }
         } else if (entry.kind === 'directory') {
-          await scanDirTree(entry, relPath, state, fileHandlesMap, resHandlesMap);
+          await scanDirTree(entry, relPath, state, fileHandlesMap, resHandlesMap, depth + 1);
         }
       }
     }
