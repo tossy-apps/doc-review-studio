@@ -1,7 +1,7 @@
 /* ========================================================
    DocReview Studio - オンボーディングガイド モジュール
-   案A: 左右スプリット型 スタジオオンボーディングUI
-   (左: ステップ手順ナビ / 右: リッチ実演 ＆ ツールバー矢印案内)
+   直感マスター型 スタジオオンボーディングUI
+   (左: 3大ユースケース選択 / 右上: 自動実演アニメ / 右下: 全ボタン一望グリッド)
    ======================================================== */
 
 /* 全画面オーバーレイ背景（縦・横センタリング） */
@@ -14,7 +14,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 20px;
   box-sizing: border-box;
   opacity: 0;
   pointer-events: none;
@@ -26,12 +26,12 @@
   pointer-events: auto;
 }
 
-/* 1. ワイド・左右スプリット スタジオウィンドウ (幅1280px × 高さ720px) */
+/* 1. ワイド・左右スプリット スタジオウィンドウ (幅1260px × 高さ740px) */
 .guide-window {
-  width: 1280px;
+  width: 1260px;
   max-width: 95vw;
-  height: 720px;
-  max-height: 92vh;
+  height: 740px;
+  max-height: 94vh;
   background: #ffffff;
   color: #1e293b;
   border-radius: 16px;
@@ -50,7 +50,7 @@
   transform: translateY(0) scale(1);
 }
 
-/* タイトルバー（macOSドット ＋ 中央タブ ＋ 閉じるボタン） */
+/* タイトルバー（シンプル＆クリーン） */
 .guide-titlebar {
   background: #f1f5f9;
   border-bottom: 1px solid #e2e8f0;
@@ -60,7 +60,7 @@
   justify-content: space-between;
   user-select: none;
   flex-shrink: 0;
-  height: 52px;
+  height: 48px;
   box-sizing: border-box;
 }
 
@@ -96,42 +96,6 @@
   letter-spacing: -0.2px;
 }
 
-/* 中央モード切り替えピルタブ */
-.guide-mode-tabs {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: #e2e8f0;
-  padding: 3px;
-  border-radius: 8px;
-}
-
-.guide-mode-tab {
-  background: none;
-  border: none;
-  padding: 6px 14px;
-  font-size: 12.5px;
-  font-weight: 700;
-  color: #64748b;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.guide-mode-tab:hover {
-  color: #0f172a;
-}
-
-.guide-mode-tab.active {
-  background: #ffffff;
-  color: #2563eb;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
 .guide-close-btn {
   background: #e2e8f0;
   border: none;
@@ -164,16 +128,16 @@
 }
 
 /* --------------------------------------------------------
-   左ペイン: ステップ手順ナビゲーション (幅 360px)
+   左ペイン: 大分類ステップメニュー (幅 320px)
    -------------------------------------------------------- */
 .guide-left-pane {
-  width: 360px;
+  width: 320px;
   background: #f8fafc;
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 20px 18px;
+  padding: 20px 16px;
   box-sizing: border-box;
   flex-shrink: 0;
 }
@@ -197,19 +161,19 @@
   margin: 3px 0 0 0;
 }
 
-/* ステップカード一覧 */
+/* 大分類メニューカード一覧 */
 .step-nav-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   flex: 1;
 }
 
 .step-nav-item {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 12px 14px;
+  border-radius: 12px;
+  padding: 14px 16px;
   cursor: pointer;
   display: flex;
   align-items: flex-start;
@@ -227,8 +191,8 @@
 
 .step-nav-item.active {
   background: #ffffff;
-  border: 1.5px solid #2563eb;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.14);
+  border: 2px solid #2563eb;
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.15);
 }
 
 .step-nav-item.active::before {
@@ -237,7 +201,7 @@
   left: 0;
   top: 0;
   bottom: 0;
-  width: 4px;
+  width: 5px;
   background: #2563eb;
 }
 
@@ -246,7 +210,7 @@
   font-weight: 800;
   background: #e2e8f0;
   color: #475569;
-  padding: 3px 7px;
+  padding: 3px 8px;
   border-radius: 4px;
   flex-shrink: 0;
 }
@@ -260,11 +224,11 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
 }
 
 .step-item-title {
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.35;
@@ -276,7 +240,7 @@
   line-height: 1.45;
 }
 
-/* 左ペイン下部：便利リンク & オプション */
+/* 左ペイン下部：次回非表示チェック & マニュアルリンク */
 .guide-left-footer {
   border-top: 1px solid #e2e8f0;
   padding-top: 14px;
@@ -306,6 +270,7 @@
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: inherit;
+  text-decoration: none;
 }
 
 .btn-quick-util:hover {
@@ -325,30 +290,31 @@
 }
 
 /* --------------------------------------------------------
-   右ペイン: 実演プレビュー ＆ アクション案内 (残り全幅)
+   右ペイン: 自動実演アニメ ＆ 全ボタン一望グリッド
    -------------------------------------------------------- */
 .guide-right-pane {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  padding: 20px 26px 18px 26px;
+  padding: 16px 22px 14px 22px;
   box-sizing: border-box;
   background: #ffffff;
-  overflow: hidden;
+  overflow: hidden; /* 縦スクロールゼロ！ */
+  gap: 10px;
 }
 
-/* 上部：大型実演・アニメーションフレーム */
+/* 上部：操作不要の自動実演アニメーションフレーム (高さ200pxに最適化) */
 .guide-demo-frame {
   background: #0f172a;
   border-radius: 12px;
   border: 1px solid #1e293b;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 310px;
+  height: 200px;
   flex-shrink: 0;
+  position: relative;
 }
 
 .demo-screen-content {
@@ -358,20 +324,20 @@
   justify-content: center;
   position: relative;
   overflow: hidden;
-  padding: 16px;
+  padding: 10px;
 }
 
 .demo-caption-bar {
   background: #1e293b;
   border-top: 1px solid #334155;
-  padding: 12px 20px;
+  padding: 7px 16px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .demo-step-heading {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 800;
   color: #f8fafc;
   display: flex;
@@ -379,31 +345,36 @@
   gap: 8px;
 }
 
-.demo-step-explanation {
-  font-size: 13.5px;
-  color: #cbd5e1;
-  line-height: 1.5;
-  font-weight: 500;
+.demo-auto-badge {
+  font-size: 10.5px;
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  padding: 1.5px 7px;
+  border-radius: 4px;
+  font-weight: 700;
 }
 
-/* 下部：このステップで使うツールバーボタン群 */
+/* 下部：ボタン群セクション（分類ごとにグループ化・一望できる） */
 .guide-actions-section {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-top: 14px;
+  gap: 8px;
   flex: 1;
-  justify-content: space-between;
 }
 
-.actions-header-row {
+.action-group-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 6px 12px 8px 12px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.actions-title {
-  font-size: 13.5px;
+.action-group-header {
+  font-size: 12.5px;
   font-weight: 800;
   color: #334155;
   display: flex;
@@ -411,29 +382,24 @@
   gap: 6px;
 }
 
-/* アクションカード一覧（均等2列グリッド: 隙間ゼロ・はみ出しゼロ） */
-.action-cards-grid {
+.action-group-grid {
   display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
   width: 100%;
-  min-width: 0;
 }
 
-.action-cards-grid.cols-1 { grid-template-columns: minmax(0, 1fr); }
-.action-cards-grid.cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.action-cards-grid.cols-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-/* 単体アクションカード（均等ボックス・縮小耐性） */
+/* 単体機能カード（コンパクト＆押しやすい） */
 .guide-action-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 10px 14px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   cursor: pointer;
   position: relative;
   min-width: 0;
@@ -441,9 +407,8 @@
 }
 
 .guide-action-card:hover {
-  background: #ffffff;
   border-color: #3b82f6;
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
+  box-shadow: 0 3px 10px rgba(37, 99, 235, 0.12);
   transform: translateY(-1px);
 }
 
@@ -457,11 +422,11 @@
 }
 
 .action-card-icon {
-  font-size: 22px;
-  background: #ffffff;
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
+  font-size: 20px;
+  background: #f1f5f9;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -472,7 +437,7 @@
 .action-card-details {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
   overflow: hidden;
 }
@@ -485,7 +450,7 @@
 }
 
 .action-card-name {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 800;
   color: #0f172a;
   white-space: nowrap;
@@ -494,19 +459,19 @@
 }
 
 .action-card-loc-tag {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   background: #e2e8f0;
   color: #475569;
-  padding: 1.5px 6px;
-  border-radius: 4px;
+  padding: 1px 5px;
+  border-radius: 3px;
   white-space: nowrap;
   flex-shrink: 0;
 }
 
 .action-card-desc {
-  font-size: 11.5px;
-  color: #475569;
+  font-size: 11px;
+  color: #64748b;
   line-height: 1.35;
   white-space: normal;
   display: -webkit-box;
@@ -515,21 +480,18 @@
   overflow: hidden;
 }
 
-/* 単体案内ボタン（カード右端） */
+/* 案内ボタン（カード右端） */
 .btn-point-guide {
-  background: #ffffff;
+  background: #f8fafc;
   color: #2563eb;
   font-size: 11.5px;
   font-weight: 800;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 5px 12px;
+  border-radius: 5px;
   border: 1px solid #cbd5e1;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 4px;
   transition: all 0.15s ease;
   font-family: inherit;
 }
@@ -539,116 +501,7 @@
   background: #2563eb;
   color: #ffffff;
   border-color: #2563eb;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
-}
-
-/* 🤖 デュアルアクションボタングループ (選択ファイル / 全ファイル) */
-.action-card-dual-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.btn-point-guide-mini {
-  background: #ffffff;
-  color: #2563eb;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 9px;
-  border-radius: 5px;
-  border: 1px solid #cbd5e1;
-  cursor: pointer;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.btn-point-guide-mini:hover {
-  background: #2563eb;
-  color: #ffffff;
-  border-color: #2563eb;
-}
-
-/* 下部ナビゲーションバー（前へ / 次へ / 完了） */
-.guide-nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-top: 1px solid #f1f5f9;
-  padding-top: 12px;
-}
-
-.nav-indicators {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.nav-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #cbd5e1;
-  transition: all 0.2s ease;
-}
-
-.nav-dot.active {
-  width: 24px;
-  border-radius: 999px;
-  background: #2563eb;
-}
-
-.nav-buttons-group {
-  display: flex;
-  gap: 8px;
-}
-
-.btn-nav-prev {
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
-  color: #475569;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 7px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
-}
-
-.btn-nav-prev:hover:not(:disabled) {
-  background: #f1f5f9;
-  color: #0f172a;
-}
-
-.btn-nav-prev:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.btn-nav-next {
-  background: #2563eb;
-  border: 1px solid #2563eb;
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 700;
-  padding: 7px 20px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.btn-nav-next:hover {
-  background: #1d4ed8;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
 }
 
 /* ========================================================
@@ -657,12 +510,12 @@
 .anim-box-step1 {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   width: 86%;
 }
 
 .anim-folder-pulse {
-  font-size: 44px;
+  font-size: 38px;
   animation: folderPulse 2.8s infinite ease-in-out;
 }
 
@@ -676,14 +529,14 @@
   background: #1e293b;
   border: 1px solid #334155;
   border-radius: 8px;
-  padding: 12px 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
 }
 
 .tree-row {
-  font-size: 13px;
+  font-size: 12px;
   font-family: monospace;
   color: #94a3b8;
   display: flex;
@@ -695,25 +548,25 @@
   background: rgba(56, 189, 248, 0.2);
   color: #38bdf8;
   border-radius: 4px;
-  padding: 3px 8px;
+  padding: 2px 6px;
 }
 
 .anim-box-step2 {
-  width: 88%;
+  width: 86%;
   background: #1e293b;
   border: 1px solid #334155;
   border-radius: 8px;
-  padding: 16px 20px;
+  padding: 12px 16px;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .doc-text-sample {
-  font-size: 14.5px;
+  font-size: 13.5px;
   color: #cbd5e1;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
 .highlight-text-anim {
@@ -741,30 +594,30 @@
 
 .anim-cursor-svg {
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   z-index: 10;
   pointer-events: none;
   animation: cursorSwipe 3.4s infinite ease-in-out;
 }
 
 @keyframes cursorSwipe {
-  0% { opacity: 0; transform: translate(20px, 22px); }
-  20% { opacity: 1; transform: translate(32px, 22px); }
-  38% { transform: translate(145px, 22px); }
-  50%, 80% { transform: translate(155px, 46px); }
-  92%, 100% { opacity: 0; transform: translate(155px, 46px); }
+  0% { opacity: 0; transform: translate(16px, 18px); }
+  20% { opacity: 1; transform: translate(28px, 18px); }
+  38% { transform: translate(130px, 18px); }
+  50%, 80% { transform: translate(140px, 38px); }
+  92%, 100% { opacity: 0; transform: translate(140px, 38px); }
 }
 
 .anim-pin-badge {
   position: absolute;
-  bottom: 12px;
-  right: 16px;
+  bottom: 8px;
+  right: 12px;
   background: #16a34a;
   color: #ffffff;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 4px;
   animation: pinPop 3.4s infinite ease-in-out;
 }
@@ -776,19 +629,19 @@
 }
 
 .anim-box-step3 {
-  width: 90%;
+  width: 88%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .ai-copy-chip {
   background: linear-gradient(90deg, #2563eb, #7c3aed);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 800;
-  padding: 6px 12px;
-  border-radius: 6px;
+  padding: 5px 10px;
+  border-radius: 5px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -803,28 +656,28 @@
   flex: 1;
   background: #1e293b;
   border: 1px solid #334155;
-  border-radius: 6px;
-  padding: 8px;
+  border-radius: 5px;
+  padding: 6px;
   font-family: monospace;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .diff-del-row {
   background: rgba(220, 38, 38, 0.3);
   color: #fca5a5;
-  padding: 3px 6px;
+  padding: 2px 5px;
   border-radius: 3px;
 }
 
 .diff-add-row {
   background: rgba(22, 163, 74, 0.3);
   color: #86efac;
-  padding: 3px 6px;
+  padding: 2px 5px;
   border-radius: 3px;
 }
 
 /* ========================================================
-   4. 矢印線 ＆ 本物クローン切り抜き（スポットライト演出）
+   4. 矢印線 ＆ 本物クローン切り抜き（前版仕様・ダイアログ暗転ゼロ）
    ======================================================== */
 .guide-arrow-svg-layer {
   position: fixed;
@@ -895,7 +748,7 @@
   border: 1.5px solid #38bdf8;
   padding: 6px 14px;
   border-radius: 999px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 800;
   display: flex;
   align-items: center;

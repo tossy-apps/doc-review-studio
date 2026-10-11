@@ -1,67 +1,43 @@
 /**
  * DocReview Studio - オンボーディングガイド モジュール
- * 案A: 左右スプリット型 スタジオオンボーディングUI
- * (左: ステップ手順ナビ / 右: リッチ実演 ＆ ツールバー矢印案内)
+ * 直感マスター型 スタジオオンボーディングUI
+ * (左: 3大ユースケース選択 / 右上: 自動実演アニメ / 右下: 全ボタン一望グリッド)
  */
 
 (function () {
   'use strict';
 
-  let currentModeIndex = 0; // 0: レビュー作成, 1: AI結果検証, 2: UI/UX便利機能
-  let currentStepIndex = 0; // 0, 1, 2
+  let currentCategoryIndex = 0; // 0: レビュー作成, 1: AI結果検証, 2: UI/UX便利機能
+  let autoAnimStepIndex = 0;
+  let autoAnimTimer = null;
   let activeArrowTimeout = null;
 
   // ========================================================
-  // 1. 左右スプリット用 ガイドデータ定義
+  // 1. 3大ユースケース ＆ グループ別機能データ定義
   // ========================================================
-  const GUIDE_MODES = [
+  const CATEGORIES = [
     {
-      modeKey: 'review',
-      tabLabel: '✨ レビュー作成 (基本3ステップ)',
-      navTitle: '基本のレビューサイクル',
-      steps: [
+      pill: 'STEP 01',
+      title: '📝 レビュー・指摘作成',
+      summary: '原本読込 ➔ テキスト選択指摘 ➔ AI指示文コピー',
+      // 右上の自動ループアニメーションスライド (操作不要で流れる)
+      slides: [
         {
-          index: 0,
-          pill: 'STEP 01',
-          title: '📁 原本読込 ＆ 退避バックアップ',
-          summary: '作業フォルダを開き、編集前原本を保護',
-          heading: '【準備】原本フォルダの読込と退避先バックアップ',
-          explanation: '校正したいHTMLやMarkdownの作業フォルダを指定します。同時に退避先フォルダを指定しておくことで、AI編集前の元データを安全保護し、後から左右Diffで比較・復元できます。',
-          previewHtml: `
+          badge: '1/3 原本フォルダ読込 ＆ バックアップ',
+          html: `
             <div class="anim-box-step1">
               <div class="anim-folder-pulse">📁</div>
               <div class="anim-tree-step1">
                 <div class="tree-row"><span>📄</span> index.html</div>
-                <div class="tree-row selected"><span>📝</span> spec.md</div>
-                <div class="tree-row"><span>📄</span> manual.html</div>
+                <div class="tree-row selected"><span>📝</span> spec.md (レビュー対象)</div>
+                <div class="tree-row"><span>🛡️</span> backup_dir/ (退避原本)</div>
               </div>
             </div>
-          `,
-          actionItems: [
-            {
-              id: 'openDirBtn',
-              name: '📁 原本フォルダを開く',
-              loc: 'ヘッダー左',
-              desc: '校正対象のHTML/Markdownフォルダを指定。左ツリーに一括読込します。',
-              icon: '📁'
-            },
-            {
-              id: 'openBackupDirBtn',
-              name: '📂 退避先を指定',
-              loc: 'ヘッダー左',
-              desc: 'AI修正前の原本バックアップ先を指定。後から左右Diff比較や復元に活用。',
-              icon: '📂'
-            }
-          ]
+          `
         },
         {
-          index: 1,
-          pill: 'STEP 02',
-          title: '📌 選択して指摘作成',
-          summary: '本文テキストをドラッグ選択して指示データを蓄積',
-          heading: '【レビュー】文章を選択してワンクリックで指摘登録',
-          explanation: 'プレビュー上で直したいテキストをドラッグ選択して「指摘リストに追加」を押すだけ。対象行番号・前後の文脈・ファイル名を自動解析し、AIへ渡す指示エビデンスとして記録します。',
-          previewHtml: `
+          badge: '2/3 直したい文章を選択して指摘登録',
+          html: `
             <div class="anim-box-step2">
               <div class="doc-text-sample">
                 ユーザー情報は
@@ -73,36 +49,15 @@
               </svg>
               <div class="anim-pin-badge">📌 指摘に追加</div>
             </div>
-          `,
-          actionItems: [
-            {
-              id: 'addIssueFromParentBtn',
-              name: '📌 指摘リストに追加',
-              loc: '中央ツールバー',
-              desc: '本文で選択中のテキストを行番号・文脈付きで記録し、AI指示エビデンスにします。',
-              icon: '📌'
-            },
-            {
-              id: 'openDetachedModifiedBtn',
-              name: '🪟 別窓: 原本',
-              loc: '中央ツールバー',
-              desc: '作業中の最新原本プレビューを別ウィンドウで開き、サブモニターで常時閲覧。',
-              icon: '🪟'
-            }
-          ]
+          `
         },
         {
-          index: 2,
-          pill: 'STEP 03',
-          title: '🤖 AI指示プロンプト生成 ＆ 修正',
-          summary: '蓄積した指摘を1クリックでコピーしAIに貼るだけ',
-          heading: '【AI連携】プロンプトをクリップボードに即コピー',
-          explanation: '蓄積した指摘をAI修正命令文へワンクリック変換。ChatGPTやClaude、Cursor等のチャット欄に貼り付ける（Ctrl+V）だけで修正を依頼できます。左右Diffで結果を検収できます。',
-          previewHtml: `
+          badge: '3/3 AI指示プロンプトをワンクリックコピー',
+          html: `
             <div class="anim-box-step3">
               <div class="ai-copy-chip">
                 <span>🤖 AI指示プロンプト</span>
-                <span style="font-size: 9px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">コピー完了!</span>
+                <span style="font-size: 9px; background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 3px;">コピー完了! (Ctrl+VでAIに貼付)</span>
               </div>
               <div class="diff-preview-mini">
                 <div class="diff-mini-col">
@@ -115,107 +70,74 @@
                 </div>
               </div>
             </div>
-          `,
-          actionItems: [
+          `
+        }
+      ],
+      // 右下に一望表示される機能ボタン群 (グループ別)
+      groups: [
+        {
+          title: '📁 原本フォルダ読込 ＆ バックアップ保護',
+          items: [
             {
-              isDual: true,
-              name: '🤖 AI指示プロンプト生成',
-              loc: 'ヘッダー中央',
-              desc: '蓄積した指摘をAI修正命令文へ即変換。ChatGPTやClaudeに貼って依頼。',
-              icon: '🤖',
-              buttons: [
-                { id: 'copyCurrentBtn', label: '📄 選択指示 ➔', title: '開いている文書のみコピー' },
-                { id: 'copyAllBtn', label: '📚 全件指示 ➔', title: 'プロジェクト全件を合算コピー' }
-              ]
+              id: 'openDirBtn',
+              name: '📁 原本フォルダを開く',
+              loc: 'ヘッダー左',
+              desc: '校正対象のHTML/Markdownフォルダを指定。左ツリーに一括読込',
+              icon: '📁'
             },
             {
-              id: 'toggleDiffBtn',
-              name: '🔄 左右差分(Diff)',
+              id: 'openBackupDirBtn',
+              name: '📂 退避先を指定',
+              loc: 'ヘッダー左',
+              desc: 'AI修正前の元データを安全退避。後から左右Diff比較に活用',
+              icon: '📂'
+            }
+          ]
+        },
+        {
+          title: '📌 校正箇所の指定（ドラッグ選択）',
+          items: [
+            {
+              id: 'addIssueFromParentBtn',
+              name: '📌 指摘リストに追加',
               loc: '中央ツールバー',
-              desc: 'AI修正前後の差分をWinMerge風に左右並列比較し、誤修正を検収。',
-              icon: '🔄'
+              desc: '選択中の文章を行番号・文脈付きで記録し、AI指示エビデンスにします',
+              icon: '📌'
+            }
+          ]
+        },
+        {
+          title: '🤖 AI指示プロンプト生成',
+          items: [
+            {
+              id: 'copyCurrentBtn',
+              name: '📄 選択ファイル指示',
+              loc: 'ヘッダー中央',
+              desc: '開いている文書の指摘のみをプロンプト化してクリップボードにコピー',
+              icon: '📄'
+            },
+            {
+              id: 'copyAllBtn',
+              name: '📚 全ファイル指示',
+              loc: 'ヘッダー中央',
+              desc: 'プロジェクト全ドキュメントの指摘を合算してプロンプトコピー',
+              icon: '📚'
             }
           ]
         }
       ]
     },
     {
-      modeKey: 'aiCheck',
-      tabLabel: '🔍 AI修正結果の検証 (Diff・復元)',
-      navTitle: '安心のAI修正検証サイクル',
-      steps: [
+      pill: 'STEP 02',
+      title: '🔍 AI修正結果の検証',
+      summary: '左右並列Diff ➔ 原本再読込 ➔ エビデンス保存',
+      slides: [
         {
-          index: 0,
-          pill: 'STEP 01',
-          title: '📂 退避バックアップ原本の確保',
-          summary: 'AI編集前に原本を別フォルダへ退避保存',
-          heading: '【保護】AI編集前のセーフティネット作成',
-          explanation: 'AIにファイルを修正・上書きさせる前に、修正前の原本を別フォルダへ安全バックアップ。いつでも元の状態と比較・復元できるセーフティネットを作ります。',
-          previewHtml: `
-            <div class="anim-box-step1">
-              <div class="anim-folder-pulse" style="animation: folderPulse 1.8s infinite ease-in-out;">📂</div>
-              <div class="anim-tree-step1">
-                <div class="tree-row"><span>📁</span> backup_original/</div>
-                <div class="tree-row selected"><span>🛡️</span> 修正前原本を安全退避</div>
-                <div class="tree-row"><span>✅</span> いつでも比較・復元可能</div>
-              </div>
-            </div>
-          `,
-          actionItems: [
-            {
-              id: 'openBackupDirBtn',
-              name: '📂 退避先を指定',
-              loc: 'ヘッダー左',
-              desc: '修正前原本の保存先を指定し、AI修正後の比較・復元用データを確保。',
-              icon: '📂'
-            }
-          ]
-        },
-        {
-          index: 1,
-          pill: 'STEP 02',
-          title: '🔄 AI修正後の原本を瞬時再読込',
-          summary: 'F5不要で即座に最新ファイルを検知',
-          heading: '【反映】AIの修正内容を待ち時間ゼロで画面更新',
-          explanation: 'AIがファイルを編集・保存した後、画面をF5リロード不要で最新内容に瞬時更新。AIが正しく修正してくれたかを待機時間ゼロで確認できます。',
-          previewHtml: `
-            <div class="anim-box-step1">
-              <div class="anim-folder-pulse" style="animation: folderPulse 1.8s infinite ease-in-out;">🔄</div>
-              <div class="anim-tree-step1">
-                <div class="tree-row"><span>📄</span> AIが修正完了</div>
-                <div class="tree-row selected"><span>⚡</span> F5不要で瞬時再読込</div>
-                <div class="tree-row"><span>✅</span> 最新差分を検知</div>
-              </div>
-            </div>
-          `,
-          actionItems: [
-            {
-              id: 'reloadWorkBtn',
-              name: '🔄 原本を最新再読込',
-              loc: '中央ツールバー',
-              desc: 'フォルダ全体の最新状態をF5不要で瞬時再読込します。',
-              icon: '🔄'
-            },
-            {
-              id: 'reloadSingleBtn',
-              name: '⚡ 単一ファイル再読込',
-              loc: '中央ツールバー',
-              desc: '開いている1ファイルだけをピンポイントで0秒更新。大規模PJで効果大。',
-              icon: '⚡'
-            }
-          ]
-        },
-        {
-          index: 2,
-          pill: 'STEP 03',
-          title: '🔄 左右2画面でDiff検証・復元',
-          summary: 'WinMerge風の並列比較で誤修正をゼロに',
-          heading: '【検収】退避データと修正データを左右並列比較',
-          explanation: '「修正前の退避原本」と「AI修正後の原本」をWinMerge風に左右2画面で並列比較。AIによる意図しない行削除や崩れがないかをブロック差分で厳密にチェックします。',
-          previewHtml: `
+          badge: '1/2 左右2画面でブロック差分検証 (WinMerge風)',
+          html: `
             <div class="anim-box-step3" style="width: 90%;">
               <div class="ai-copy-chip" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
-                <span>🔄 WinMerge風 左右比較</span>
+                <span>🔄 左右並列ブロック比較</span>
               </div>
               <div class="diff-preview-mini">
                 <div class="diff-mini-col">
@@ -228,66 +150,90 @@
                 </div>
               </div>
             </div>
-          `,
-          actionItems: [
+          `
+        },
+        {
+          badge: '2/2 AI編集後の原本をF5不要で即時再読込',
+          html: `
+            <div class="anim-box-step1">
+              <div class="anim-folder-pulse" style="animation: folderPulse 1.8s infinite ease-in-out;">🔄</div>
+              <div class="anim-tree-step1">
+                <div class="tree-row"><span>📄</span> AIが修正完了</div>
+                <div class="tree-row selected"><span>⚡</span> F5不要で瞬時再読込</div>
+                <div class="tree-row"><span>✅</span> 最新差分を検知</div>
+              </div>
+            </div>
+          `
+        }
+      ],
+      groups: [
+        {
+          title: '🔄 左右Diff差分検証（修正成果物のブロック比較）',
+          items: [
             {
               id: 'toggleDiffBtn',
-              name: '🔄 左右差分(Diff)',
+              name: '🔄 左右Diff検証',
               loc: '中央ツールバー',
-              desc: '左右2画面で退避原本とAI修正原本を並列比較し、ブロック差分を検証。',
+              desc: '左右2画面で退避原本とAI修正原本を並列比較し、ブロック差分を検証',
               icon: '🔄'
+            },
+            {
+              id: 'toggleInlineDiffBtn',
+              name: '🔄 インラインDiff',
+              loc: '中央ツールバー',
+              desc: 'プレビュー領域内で退避ファイルと即時並列比較を行います',
+              icon: '🔄'
+            }
+          ]
+        },
+        {
+          title: '🔄 原本の再読込（AI編集後の即時反映）',
+          items: [
+            {
+              id: 'reloadCurrentFileBtn',
+              name: '⚡ 単一ファイル再読込',
+              loc: '中央ツールバー',
+              desc: '開いている1ファイルだけをピンポイントで0秒更新。大規模PJで効果大',
+              icon: '⚡'
+            },
+            {
+              id: 'reloadWorkBtn',
+              name: '🔄 原本を最新再読込',
+              loc: 'ヘッダー左',
+              desc: 'フォルダ全体の最新状態をF5不要で瞬時再読込します',
+              icon: '🔄'
+            }
+          ]
+        },
+        {
+          title: '💾 指摘エビデンスの保存 ＆ 復元',
+          items: [
+            {
+              id: 'exportJsonBtn',
+              name: '💾 指摘JSON保存',
+              loc: 'ヘッダー中央',
+              desc: '指摘データをJSONファイルとしてエクスポート保存します',
+              icon: '💾'
+            },
+            {
+              id: 'exportMdBtn',
+              name: '📝 MD表保存',
+              loc: 'ヘッダー中央',
+              desc: '指摘一覧をMarkdownテーブル表として出力・報告用保存します',
+              icon: '📝'
             }
           ]
         }
       ]
     },
     {
-      modeKey: 'uiUx',
-      tabLabel: '🖥️ 便利UI/UX (別窓・高速化)',
-      navTitle: '作業効率を極める便利機能',
-      steps: [
+      pill: 'STEP 03',
+      title: '🖥️ UI/UX便利機能',
+      summary: '別窓プレビュー ➔ ペイン開閉 ➔ マニュアル・ポータル',
+      slides: [
         {
-          index: 0,
-          pill: 'STEP 01',
-          title: '🪟 ペイン開閉で閲覧領域を最大化',
-          summary: 'ツリーや指摘欄を隠して文書に集中',
-          heading: '【表示最大化】ワンタッチでプレビュー領域を拡張',
-          explanation: '「Alt+1」でファイルツリー、「Alt+2」で指摘一覧をワンタッチ開閉。長文マニュアルや表組みの閲覧時に、中央のプレビュー領域をディスプレイいっぱいに広げて確認できます。',
-          previewHtml: `
-            <div class="anim-box-step1">
-              <div class="anim-folder-pulse" style="animation: folderPulse 2.2s infinite ease-in-out;">🖥️</div>
-              <div class="anim-tree-step1">
-                <div class="tree-row"><span>⌨️</span> Alt+1: ツリー開閉</div>
-                <div class="tree-row selected"><span>⌨️</span> Alt+2: 指摘欄開閉</div>
-                <div class="tree-row"><span>🚀</span> 作業画面を最大化</div>
-              </div>
-            </div>
-          `,
-          actionItems: [
-            {
-              id: 'toggleTreeBtn',
-              name: '📁 ファイル開閉 (Alt+1)',
-              loc: '中央ツールバー',
-              desc: '左のファイルツリーを折りたたんで、中央の閲覧画面を横に広く使います。',
-              icon: '📁'
-            },
-            {
-              id: 'toggleIssuesBtn',
-              name: '📋 指摘一覧開閉 (Alt+2)',
-              loc: '中央ツールバー',
-              desc: '右の指摘エビデンス欄を折りたたんで、ドキュメント閲覧に画面を集中。',
-              icon: '📋'
-            }
-          ]
-        },
-        {
-          index: 1,
-          pill: 'STEP 02',
-          title: '🪟 マルチモニタ独立ウィンドウ表示',
-          summary: 'サブディスプレイで原本・退避を常時表示',
-          heading: '【2画面作業】プレビューを独立ウィンドウ化',
-          explanation: '原本プレビューや修正前プレビューを独立ウィンドウとして分離ポップアップ。サブディスプレイに配置することで、マルチモニター環境での並列作業効率が跳ね上がります。',
-          previewHtml: `
+          badge: '1/2 サブモニターで原本プレビューを常時表示',
+          html: `
             <div class="anim-box-step1">
               <div class="anim-folder-pulse" style="animation: folderPulse 2.2s infinite ease-in-out;">🪟</div>
               <div class="anim-tree-step1">
@@ -296,55 +242,77 @@
                 <div class="tree-row"><span>⚡</span> 2画面並列で作業スピードUP</div>
               </div>
             </div>
-          `,
-          actionItems: [
-            {
-              id: 'openDetachedModifiedBtn',
-              name: '🪟 別窓: 原本',
-              loc: '中央ツールバー',
-              desc: '作業中の原本プレビューを別ウィンドウで開き、サブディスプレイで常時閲覧。',
-              icon: '🪟'
-            },
+          `
+        },
+        {
+          badge: '2/2 ワンタッチで作業領域を最大化 (Alt+1 / Alt+2)',
+          html: `
+            <div class="anim-box-step1">
+              <div class="anim-folder-pulse" style="animation: folderPulse 2.2s infinite ease-in-out;">🖥️</div>
+              <div class="anim-tree-step1">
+                <div class="tree-row"><span>⌨️</span> Alt+1: ツリー開閉</div>
+                <div class="tree-row selected"><span>⌨️</span> Alt+2: 指摘欄開閉</div>
+                <div class="tree-row"><span>🚀</span> 作業画面を最大化</div>
+              </div>
+            </div>
+          `
+        }
+      ],
+      groups: [
+        {
+          title: '🪟 マルチモニタ独立ウィンドウ表示',
+          items: [
             {
               id: 'openDetachedBackupBtn',
               name: '🪟 別窓: 修正前',
               loc: '中央ツールバー',
-              desc: '退避データ（修正前原本）を別ウィンドウで開き、別画面で常に比較参照。',
+              desc: '退避データ（修正前原本）を別ウィンドウで開き、別画面で常に比較参照',
+              icon: '🪟'
+            },
+            {
+              id: 'openDetachedModifiedBtn',
+              name: '🪟 別窓: 原本',
+              loc: '中央ツールバー',
+              desc: '作業中の原本プレビューを別ウィンドウで開き、サブディスプレイで常時閲覧',
               icon: '🪟'
             }
           ]
         },
         {
-          index: 2,
-          pill: 'STEP 03',
-          title: '🔍 高速検索 ＆ 詳細マニュアル',
-          summary: '目的文書の即時発見とショートカット確認',
-          heading: '【探索・ヘルプ】素早いファイル発見と仕様確認',
-          explanation: '大量のドキュメント群から確認したいファイルをインクリメンタル検索。いつでも公式マニュアルから全機能の使い方やキーボードショートカットを確認できます。',
-          previewHtml: `
-            <div class="anim-box-step1">
-              <div class="anim-folder-pulse" style="animation: folderPulse 2.2s infinite ease-in-out;">🔍</div>
-              <div class="anim-tree-step1">
-                <div class="tree-row"><span>🔍</span> インクリメンタル検索</div>
-                <div class="tree-row selected"><span>📖</span> ショートカットキー一覧</div>
-                <div class="tree-row"><span>🏠</span> 公式ポータル連携</div>
-              </div>
-            </div>
-          `,
-          actionItems: [
+          title: '🪟 ペイン開閉（プレビュー最大化）',
+          items: [
             {
-              id: 'fileFilterInput',
-              name: '🔍 ファイル検索',
-              loc: '左サイドバー',
-              desc: '確認したいHTML/Markdownをファイル名で瞬時にインクリメンタル検索。',
-              icon: '🔍'
+              id: 'toggleFilesBtn',
+              name: '◧ ファイル開閉 (Alt+1)',
+              loc: '中央ツールバー',
+              desc: '左のファイルツリーを折りたたんで、中央の閲覧画面を横に広く使います',
+              icon: '📁'
             },
+            {
+              id: 'toggleLogsBtn',
+              name: '◨ 指摘一覧開閉 (Alt+2)',
+              loc: '中央ツールバー',
+              desc: '右の指摘エビデンス欄を折りたたんで、ドキュメント閲覧に画面を集中',
+              icon: '📋'
+            }
+          ]
+        },
+        {
+          title: '📖 詳細マニュアル ＆ 公式ポータル',
+          items: [
             {
               id: 'manualHeaderLink',
               name: '📖 詳細マニュアル',
               loc: 'ヘッダー右',
-              desc: '全機能の使い方、便利なショートカットキー一覧を別タブで確認。',
+              desc: '全機能の使い方、便利なショートカットキー一覧を別タブで確認',
               icon: '📖'
+            },
+            {
+              id: 'btnPortalWide',
+              name: '🏠 公式ポータル',
+              loc: '左サイドバー',
+              desc: 'tossy-apps公式ポータル（他ツールや最新リリース情報）を開きます',
+              icon: '🏠'
             }
           ]
         }
@@ -396,7 +364,7 @@
 
     overlay.innerHTML = `
       <div class="guide-window" id="guideWindow">
-        <!-- タイトルバー (ドット ＋ 中央モードタブ ＋ 閉じるボタン) -->
+        <!-- タイトルバー (上部タブ完全撤去・シンプル化) -->
         <div class="guide-titlebar">
           <div class="guide-title-left">
             <div class="window-dots">
@@ -408,98 +376,66 @@
               <span>💡</span> DocReview Studio スタジオガイド
             </div>
           </div>
-
-          <!-- 中央モード切り替えピルタブ -->
-          <div class="guide-mode-tabs" id="guideModeTabs">
-            ${GUIDE_MODES.map((m, idx) => `
-              <button class="guide-mode-tab ${idx === 0 ? 'active' : ''}" data-mode-idx="${idx}">
-                ${m.tabLabel}
-              </button>
-            `).join('')}
-          </div>
-
           <button class="guide-close-btn" id="guideCloseBtn" title="閉じる (Esc)">✕</button>
         </div>
 
         <!-- 左右スプリットメインボディ -->
         <div class="guide-split-body">
-          <!-- 左ペイン: ステップ一覧ナビゲーション (幅360px) -->
+          <!-- 左ペイン: 3大ユースケース選択メニュー (幅320px) -->
           <div class="guide-left-pane">
             <div class="step-nav-header">
-              <span class="step-nav-label" id="stepNavLabel">WORKFLOW STEPS</span>
-              <h3 class="step-nav-title" id="stepNavTitle">基本のレビューサイクル</h3>
+              <span class="step-nav-label">WORKFLOW</span>
+              <h3 class="step-nav-title">基本操作ステップ</h3>
             </div>
 
-            <!-- ステップリスト -->
-            <div class="step-nav-list" id="stepNavList">
-              <!-- 動的生成 -->
+            <!-- 3つの大分類ステップカード -->
+            <div class="step-nav-list" id="categoryNavList">
+              ${CATEGORIES.map((cat, idx) => `
+                <div class="step-nav-item ${idx === 0 ? 'active' : ''}" data-cat-idx="${idx}">
+                  <span class="step-item-pill">${cat.pill}</span>
+                  <div class="step-item-content">
+                    <div class="step-item-title">${cat.title}</div>
+                    <div class="step-item-summary">${cat.summary}</div>
+                  </div>
+                </div>
+              `).join('')}
             </div>
 
-            <!-- 左ペイン下部: クイックリンク & オプション -->
+            <!-- 左ペイン下部: 次回非表示 ＆ マニュアルリンク -->
             <div class="guide-left-footer">
               <div class="footer-quick-links">
-                <button class="btn-quick-util" id="btnQuickSearch">
-                  <span>🔍</span> 検索
-                </button>
-                <button class="btn-quick-util" id="btnQuickManual">
-                  <span>📖</span> マニュアル
-                </button>
-                <button class="btn-quick-util" id="btnQuickPortal">
-                  <span>🏠</span> ポータル
-                </button>
+                <a href="./manual.html" target="_blank" class="btn-quick-util" id="btnQuickManual">
+                  <span>📖</span> 詳細マニュアル
+                </a>
+                <a href="https://tossy-apps.github.io/" target="_blank" class="btn-quick-util" id="btnQuickPortal">
+                  <span>🏠</span> 公式ポータル
+                </a>
               </div>
-              <label class="guide-dont-show-row">
+              <label class="guide-dont-show-row" title="チェックを入れると次回ページを開いた時にこのガイドが自動で開かなくなります（ヘッダー右上の💡ガイドからいつでも再開できます）">
                 <input type="checkbox" id="chkDontShowGuide">
                 <span>次回から起動時に自動表示しない</span>
               </label>
             </div>
           </div>
 
-          <!-- 右ペイン: 実演プレビュー ＆ アクション案内 (残り全幅) -->
-          <div class="guide-right-pane">
-            <!-- 上部: 大型実演フレーム -->
+          <!-- 右ペイン: 自動実演アニメ ＆ 全ボタン一望グリッド -->
+          <div class="guide-right-pane" id="guideRightPane">
+            <!-- 上部: 操作不要の自動スクロールアニメーションフレーム -->
             <div class="guide-demo-frame">
               <div class="demo-screen-content" id="demoScreenContent">
-                <!-- 動的アニメーションHTML -->
+                <!-- 自動ループアニメーションHTML -->
               </div>
               <div class="demo-caption-bar">
                 <div class="demo-step-heading" id="demoStepHeading">
-                  <!-- ステップタイトル -->
+                  <!-- スライド見出し -->
                 </div>
-                <div class="demo-step-explanation" id="demoStepExplanation">
-                  <!-- ステップ詳細説明 -->
-                </div>
+                <span class="demo-auto-badge">⚡ 自動実演中 (操作不要)</span>
               </div>
             </div>
 
-            <!-- 下部: ツールバー案内アクションステージ -->
-            <div class="guide-actions-section">
-              <div class="actions-header-row">
-                <div class="actions-title">
-                  <span>🎯</span> このステップで使用する画面ボタン
-                  <span style="font-size: 11.5px; color: #64748b; font-weight: normal; margin-left: 6px;">
-                    (クリックでヘッダー等の実物へ矢印案内)
-                  </span>
-                </div>
-              </div>
-
-              <!-- アクションカードグリッド (均等配置) -->
-              <div class="action-cards-grid" id="actionCardsGrid">
-                <!-- 動的生成 -->
-              </div>
-
-              <!-- 下部ナビゲーションバー -->
-              <div class="guide-nav-bar">
-                <div class="nav-indicators" id="navIndicators">
-                  <span class="nav-dot active"></span>
-                  <span class="nav-dot"></span>
-                  <span class="nav-dot"></span>
-                </div>
-                <div class="nav-buttons-group">
-                  <button class="btn-nav-prev" id="btnNavPrev">◀ 前へ</button>
-                  <button class="btn-nav-next" id="btnNavNext">次へ ▶</button>
-                </div>
-              </div>
+            <!-- 下部: ツールバー機能ボタン群 (グループ別・一望できる) -->
+            <div class="guide-actions-section" id="guideActionsSection">
+              <!-- グループ化された機能ボタン一覧を動的生成 -->
             </div>
           </div>
         </div>
@@ -508,171 +444,108 @@
 
     document.body.appendChild(overlay);
     bindGuideEvents();
-    renderCurrentState();
+    renderCategory(0);
   }
 
   // ========================================================
-  // 3. 画面レンダリング処理
+  // 3. カテゴリ切り替え ＆ レンダリング
   // ========================================================
-  function renderCurrentState() {
-    const mode = GUIDE_MODES[currentModeIndex];
-    if (!mode) return;
+  function renderCategory(catIdx) {
+    currentCategoryIndex = catIdx;
+    const cat = CATEGORIES[currentCategoryIndex];
+    if (!cat) return;
 
-    // 1. 上部モードタブのアクティブ更新
-    const tabs = document.querySelectorAll('.guide-mode-tab');
-    tabs.forEach((tab, idx) => {
-      tab.classList.toggle('active', idx === currentModeIndex);
+    // 1. 左メニューのアクティブ更新
+    const navItems = document.querySelectorAll('#categoryNavList .step-nav-item');
+    navItems.forEach((item, idx) => {
+      item.classList.toggle('active', idx === currentCategoryIndex);
     });
 
-    // 2. 左ペインタイトルの更新
-    const titleEl = document.getElementById('stepNavTitle');
-    if (titleEl) titleEl.textContent = mode.navTitle;
+    // 2. 右上の自動アニメーション初期化 & 開始
+    autoAnimStepIndex = 0;
+    startAutoAnimation();
 
-    // 3. 左ペインのステップリスト生成
-    const listEl = document.getElementById('stepNavList');
-    if (listEl) {
-      listEl.innerHTML = mode.steps.map((step, idx) => `
-        <div class="step-nav-item ${idx === currentStepIndex ? 'active' : ''}" data-step-idx="${idx}">
-          <span class="step-item-pill">${step.pill}</span>
-          <div class="step-item-content">
-            <div class="step-item-title">${step.title}</div>
-            <div class="step-item-summary">${step.summary}</div>
+    // 3. 右下のグループ別ボタン一覧生成 (いちいち切り替え不要で一望できる！)
+    const sectionEl = document.getElementById('guideActionsSection');
+    if (sectionEl) {
+      sectionEl.innerHTML = cat.groups.map(group => `
+        <div class="action-group-box">
+          <div class="action-group-header">
+            <span>🔹</span> ${group.title}
+          </div>
+          <div class="action-group-grid">
+            ${group.items.map(item => `
+              <div class="guide-action-card" data-target-id="${item.id}">
+                <div class="action-card-left">
+                  <div class="action-card-icon">${item.icon}</div>
+                  <div class="action-card-details">
+                    <div class="action-card-name-row">
+                      <span class="action-card-name">${item.name}</span>
+                      <span class="action-card-loc-tag">${item.loc}</span>
+                    </div>
+                    <div class="action-card-desc">${item.desc}</div>
+                  </div>
+                </div>
+                <button class="btn-point-guide" data-target-id="${item.id}">
+                  案内 ➔
+                </button>
+              </div>
+            `).join('')}
           </div>
         </div>
       `).join('');
 
-      // ステップクリックイベント付与
-      listEl.querySelectorAll('.step-nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const sIdx = parseInt(item.dataset.stepIdx, 10);
-          goToStep(sIdx);
-        });
-      });
-    }
-
-    // 4. 右ペインのデモ・実演更新
-    const step = mode.steps[currentStepIndex];
-    if (!step) return;
-
-    const demoContent = document.getElementById('demoScreenContent');
-    const demoHeading = document.getElementById('demoStepHeading');
-    const demoDesc = document.getElementById('demoStepExplanation');
-
-    if (demoContent) demoContent.innerHTML = step.previewHtml;
-    if (demoHeading) demoHeading.innerHTML = `<span>${step.pill}:</span> ${step.heading}`;
-    if (demoDesc) demoDesc.textContent = step.explanation;
-
-    // 5. 右ペインのアクションカード一覧生成
-    const gridEl = document.getElementById('actionCardsGrid');
-    if (gridEl) {
-      const items = step.actionItems || [];
-      gridEl.className = `action-cards-grid cols-${Math.min(items.length, 3)}`;
-
-      gridEl.innerHTML = items.map(item => {
-        if (item.isDual) {
-          return `
-            <div class="guide-action-card guide-action-card-dual">
-              <div class="action-card-left">
-                <div class="action-card-icon">${item.icon}</div>
-                <div class="action-card-details">
-                  <div class="action-card-name-row">
-                    <span class="action-card-name">${item.name}</span>
-                    <span class="action-card-loc-tag">${item.loc}</span>
-                  </div>
-                  <div class="action-card-desc">${item.desc}</div>
-                </div>
-              </div>
-              <div class="action-card-dual-group">
-                ${item.buttons.map(b => `
-                  <button class="btn-point-guide-mini" data-target-id="${b.id}" title="${b.title}">
-                    ${b.label}
-                  </button>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="guide-action-card" data-target-id="${item.id}">
-            <div class="action-card-left">
-              <div class="action-card-icon">${item.icon}</div>
-              <div class="action-card-details">
-                <div class="action-card-name-row">
-                  <span class="action-card-name">${item.name}</span>
-                  <span class="action-card-loc-tag">${item.loc}</span>
-                </div>
-                <div class="action-card-desc">${item.desc}</div>
-              </div>
-            </div>
-            <button class="btn-point-guide" data-target-id="${item.id}">
-              案内 ➔
-            </button>
-          </div>
-        `;
-      }).join('');
-
-      // 通常カードクリックで矢印・スポットライト案内
-      gridEl.querySelectorAll('.guide-action-card:not(.guide-action-card-dual)').forEach(card => {
-        card.addEventListener('click', () => {
+      // 各カードをクリックしたらヘッダーの実物ボタンへ矢印案内
+      sectionEl.querySelectorAll('.guide-action-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
           const targetId = card.dataset.targetId;
           if (targetId) pointToElement(targetId, card);
         });
       });
-
-      // デュアルボタングループの各ボタンクリックで案内
-      gridEl.querySelectorAll('.btn-point-guide-mini').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const targetId = btn.dataset.targetId;
-          if (targetId) pointToElement(targetId, btn);
-        });
-      });
-    }
-
-    // 6. ナビゲーションバーの更新
-    const indicators = document.getElementById('navIndicators');
-    if (indicators) {
-      indicators.innerHTML = mode.steps.map((_, idx) => `
-        <span class="nav-dot ${idx === currentStepIndex ? 'active' : ''}"></span>
-      `).join('');
-    }
-
-    const prevBtn = document.getElementById('btnNavPrev');
-    const nextBtn = document.getElementById('btnNavNext');
-
-    if (prevBtn) {
-      prevBtn.disabled = currentStepIndex === 0;
-    }
-
-    if (nextBtn) {
-      if (currentStepIndex === mode.steps.length - 1) {
-        nextBtn.innerHTML = '完了して閉じる ✓';
-        nextBtn.onclick = () => closeGuideModal();
-      } else {
-        nextBtn.innerHTML = '次へ ▶';
-        nextBtn.onclick = () => goToStep(currentStepIndex + 1);
-      }
     }
   }
 
   // ========================================================
-  // 4. ステップ・モード遷移
+  // 4. 操作不要の自動スクロール実演アニメーション
   // ========================================================
-  function goToStep(stepIdx) {
-    const mode = GUIDE_MODES[currentModeIndex];
-    if (!mode || stepIdx < 0 || stepIdx >= mode.steps.length) return;
-    currentStepIndex = stepIdx;
-    clearHighlight();
-    renderCurrentState();
+  function startAutoAnimation() {
+    if (autoAnimTimer) {
+      clearInterval(autoAnimTimer);
+      autoAnimTimer = null;
+    }
+
+    renderCurrentSlide();
+
+    autoAnimTimer = setInterval(() => {
+      const cat = CATEGORIES[currentCategoryIndex];
+      if (!cat || !cat.slides.length) return;
+      autoAnimStepIndex = (autoAnimStepIndex + 1) % cat.slides.length;
+      renderCurrentSlide();
+    }, 3800);
   }
 
-  function switchMode(modeIdx) {
-    if (modeIdx < 0 || modeIdx >= GUIDE_MODES.length) return;
-    currentModeIndex = modeIdx;
-    currentStepIndex = 0;
-    clearHighlight();
-    renderCurrentState();
+  function renderCurrentSlide() {
+    const cat = CATEGORIES[currentCategoryIndex];
+    if (!cat || !cat.slides.length) return;
+
+    const slide = cat.slides[autoAnimStepIndex];
+    const demoContent = document.getElementById('demoScreenContent');
+    const demoHeading = document.getElementById('demoStepHeading');
+
+    if (demoContent && slide) {
+      demoContent.innerHTML = slide.html;
+    }
+    if (demoHeading && slide) {
+      demoHeading.innerHTML = `<span>▶</span> ${slide.badge}`;
+    }
+  }
+
+  function stopAutoAnimation() {
+    if (autoAnimTimer) {
+      clearInterval(autoAnimTimer);
+      autoAnimTimer = null;
+    }
   }
 
   // ========================================================
@@ -688,71 +561,29 @@
 
     if (overlay) {
       overlay.onclick = (e) => {
-        if (activePointingTargetId) {
-          clearHighlight();
-          return;
-        }
         if (e.target === overlay) {
           closeGuideModal();
         }
       };
     }
 
-    const windowEl = document.getElementById('guideWindow');
-    if (windowEl) {
-      windowEl.addEventListener('click', (e) => {
-        // 案内ボタン以外のクリックで、矢印案内が出ていれば解除
-        if (activePointingTargetId && !e.target.closest('.btn-point-guide') && !e.target.closest('.btn-point-guide-mini') && !e.target.closest('.guide-action-card')) {
-          clearHighlight();
-        }
-      });
-    }
-
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && overlay && overlay.classList.contains('active')) {
-        if (activePointingTargetId) {
-          clearHighlight();
-        } else {
-          closeGuideModal();
-        }
+        closeGuideModal();
       }
     });
 
-    // モードタブの切り替え
-    const modeTabs = document.getElementById('guideModeTabs');
-    if (modeTabs) {
-      modeTabs.addEventListener('click', (e) => {
-        const btn = e.target.closest('.guide-mode-tab');
-        if (btn) {
-          const mIdx = parseInt(btn.dataset.modeIdx, 10);
-          switchMode(mIdx);
-        }
+    // 左ペインのカテゴリーカード選択
+    const navItems = document.querySelectorAll('#categoryNavList .step-nav-item');
+    navItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const catIdx = parseInt(item.dataset.catIdx, 10);
+        clearHighlight();
+        renderCategory(catIdx);
       });
-    }
+    });
 
-    // 前へボタン
-    const prevBtn = document.getElementById('btnNavPrev');
-    if (prevBtn) {
-      prevBtn.onclick = () => goToStep(currentStepIndex - 1);
-    }
-
-    // 左ペインフッターのユーティリティボタン
-    const btnSearch = document.getElementById('btnQuickSearch');
-    if (btnSearch) {
-      btnSearch.onclick = () => pointToElement('fileFilterInput', btnSearch);
-    }
-
-    const btnManual = document.getElementById('btnQuickManual');
-    if (btnManual) {
-      btnManual.onclick = () => pointToElement('manualHeaderLink', btnManual);
-    }
-
-    const btnPortal = document.getElementById('btnQuickPortal');
-    if (btnPortal) {
-      btnPortal.onclick = () => pointToElement('btnPortalWide', btnPortal);
-    }
-
-    // 次回から非表示チェックボックス
+    // 次回から非表示チェックボックス (localStorageに保存)
     const chk = document.getElementById('chkDontShowGuide');
     if (chk) {
       chk.checked = localStorage.getItem('docReviewStudio_hideGuide') === 'true';
@@ -762,20 +593,12 @@
     }
   }
 
-  let activePointingTargetId = null;
-
   // ========================================================
-  // 6. 矢印線 ＆ 本物クローン切り抜き（スポットライト演出）
+  // 6. 矢印線 ＆ 本物クローン切り抜き（前版仕様・ダイアログ暗転ゼロ）
   // ========================================================
   function pointToElement(targetId, sourceEl) {
     const overlay = document.getElementById('guideModalOverlay');
     if (!overlay || !overlay.classList.contains('active')) {
-      clearHighlight();
-      return;
-    }
-
-    // 同じボタンをもう一度クリックした場合はトグルで解除
-    if (activePointingTargetId === targetId) {
       clearHighlight();
       return;
     }
@@ -796,8 +619,6 @@
     }
     clearHighlight();
 
-    activePointingTargetId = targetId;
-
     const svgLayer = document.getElementById('guideArrowSvgLayer');
     const pathEl = document.getElementById('guideArrowPath');
     const pinEl = document.getElementById('guideTargetPin');
@@ -807,7 +628,7 @@
     const targetRect = targetEl.getBoundingClientRect();
     const winRect = windowEl ? windowEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2 };
 
-    // 1. スポットライト枠に対象ボタンのクローンを配置してパルス発光
+    // 1. スポットライト枠に対象ボタンのクローンを配置して最前面パルス発光
     if (spotlightBox) {
       spotlightBox.innerHTML = '';
       const clone = targetEl.cloneNode(true);
@@ -853,9 +674,9 @@
     const pathData = `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`;
     if (pathEl) pathEl.setAttribute('d', pathData);
 
-    // 3. ナビ吹き出し（クリックで解除または直接実行）
+    // 3. ナビ吹き出し（ボタンのすぐ下に配置）
     if (pinEl) {
-      pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで直接実行 / ガイドを触れば案内終了)</span>';
+      pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで即実行)</span>';
       pinEl.style.display = 'flex';
       pinEl.style.left = `${Math.max(10, Math.round(targetCenterX - 110))}px`;
       pinEl.style.top = `${Math.round(endY + 12)}px`;
@@ -863,13 +684,13 @@
 
     if (svgLayer) svgLayer.classList.add('active');
 
+    // 前版と同じく、十分な時間（15秒間）線がしっかり残り続ける
     activeArrowTimeout = setTimeout(() => {
       clearHighlight();
-    }, 7000);
+    }, 15000);
   }
 
   function clearHighlight() {
-    activePointingTargetId = null;
     if (activeArrowTimeout) {
       clearTimeout(activeArrowTimeout);
       activeArrowTimeout = null;
@@ -897,9 +718,8 @@
     const overlay = document.getElementById('guideModalOverlay');
     if (overlay) {
       overlay.classList.add('active');
-      currentStepIndex = 0;
       clearHighlight();
-      renderCurrentState();
+      renderCategory(0);
     }
   }
 
@@ -908,6 +728,7 @@
     if (overlay) {
       overlay.classList.remove('active');
     }
+    stopAutoAnimation();
     clearHighlight();
   }
 
