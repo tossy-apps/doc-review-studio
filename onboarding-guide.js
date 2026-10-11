@@ -118,24 +118,21 @@
           `,
           actionItems: [
             {
-              id: 'copyCurrentBtn',
-              name: '📄 選択ファイル指示',
+              isDual: true,
+              name: '🤖 AI指示プロンプト生成',
               loc: 'ヘッダー中央',
-              desc: '開いている文書の指摘のみをプロンプト化してクリップボードにコピー。',
-              icon: '📄'
-            },
-            {
-              id: 'copyAllBtn',
-              name: '📚 全ファイル指示',
-              loc: 'ヘッダー中央',
-              desc: 'プロジェクト全ドキュメントの指摘を合算してプロンプトコピー。',
-              icon: '📚'
+              desc: '蓄積した指摘をAI修正命令文へ即変換。ChatGPTやClaudeに貼って依頼。',
+              icon: '🤖',
+              buttons: [
+                { id: 'copyCurrentBtn', label: '📄 選択指示 ➔', title: '開いている文書のみコピー' },
+                { id: 'copyAllBtn', label: '📚 全件指示 ➔', title: 'プロジェクト全件を合算コピー' }
+              ]
             },
             {
               id: 'toggleDiffBtn',
               name: '🔄 左右差分(Diff)',
               loc: '中央ツールバー',
-              desc: 'AI修正前後の差分をWinMerge風に左右並列比較し、誤修正をチェック。',
+              desc: 'AI修正前後の差分をWinMerge風に左右並列比較し、誤修正を検収。',
               icon: '🔄'
             }
           ]
@@ -571,29 +568,64 @@
       const items = step.actionItems || [];
       gridEl.className = `action-cards-grid cols-${Math.min(items.length, 3)}`;
 
-      gridEl.innerHTML = items.map(item => `
-        <div class="guide-action-card" data-target-id="${item.id}">
-          <div class="action-card-left">
-            <div class="action-card-icon">${item.icon}</div>
-            <div class="action-card-details">
-              <div class="action-card-name-row">
-                <span class="action-card-name">${item.name}</span>
-                <span class="action-card-loc-tag">${item.loc}</span>
+      gridEl.innerHTML = items.map(item => {
+        if (item.isDual) {
+          return `
+            <div class="guide-action-card guide-action-card-dual">
+              <div class="action-card-left">
+                <div class="action-card-icon">${item.icon}</div>
+                <div class="action-card-details">
+                  <div class="action-card-name-row">
+                    <span class="action-card-name">${item.name}</span>
+                    <span class="action-card-loc-tag">${item.loc}</span>
+                  </div>
+                  <div class="action-card-desc">${item.desc}</div>
+                </div>
               </div>
-              <div class="action-card-desc">${item.desc}</div>
+              <div class="action-card-dual-group">
+                ${item.buttons.map(b => `
+                  <button class="btn-point-guide-mini" data-target-id="${b.id}" title="${b.title}">
+                    ${b.label}
+                  </button>
+                `).join('')}
+              </div>
             </div>
-          </div>
-          <button class="btn-point-guide" data-target-id="${item.id}">
-            案内 ➔
-          </button>
-        </div>
-      `).join('');
+          `;
+        }
 
-      // アクションカードクリックで矢印・スポットライト案内
-      gridEl.querySelectorAll('.guide-action-card').forEach(card => {
-        card.addEventListener('click', (e) => {
+        return `
+          <div class="guide-action-card" data-target-id="${item.id}">
+            <div class="action-card-left">
+              <div class="action-card-icon">${item.icon}</div>
+              <div class="action-card-details">
+                <div class="action-card-name-row">
+                  <span class="action-card-name">${item.name}</span>
+                  <span class="action-card-loc-tag">${item.loc}</span>
+                </div>
+                <div class="action-card-desc">${item.desc}</div>
+              </div>
+            </div>
+            <button class="btn-point-guide" data-target-id="${item.id}">
+              案内 ➔
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      // 通常カードクリックで矢印・スポットライト案内
+      gridEl.querySelectorAll('.guide-action-card:not(.guide-action-card-dual)').forEach(card => {
+        card.addEventListener('click', () => {
           const targetId = card.dataset.targetId;
           if (targetId) pointToElement(targetId, card);
+        });
+      });
+
+      // デュアルボタングループの各ボタンクリックで案内
+      gridEl.querySelectorAll('.btn-point-guide-mini').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetId = btn.dataset.targetId;
+          if (targetId) pointToElement(targetId, btn);
         });
       });
     }
