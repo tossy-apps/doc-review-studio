@@ -1,0 +1,7 @@
+# DocReview Studio local history
+.docreview-history/
+
+# OS / Editor temporary files
+.DS_Store
+Thumbs.db
+*.tmp

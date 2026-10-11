@@ -2654,7 +2654,7 @@
         const file = await fh.getFile();
         const text = await file.text();
         const data = JSON.parse(text);
-        if (data && Array.isArray(data.logs) && data.logs.length > 0) {
+        if (data && Array.isArray(data.logs)) {
           reviewLogs = data.logs;
           renderLogs(false);
           renderFileTree();
@@ -3731,6 +3731,9 @@
       workResourceHandles = {};
       htmlFileNames = [];
       openFolders.clear();
+      reviewLogs = [];
+      currentFileName = "";
+      renderLogs(false);
 
       showScanModal("⚡ 原本フォルダを高速スキャン中...");
 
@@ -5248,6 +5251,7 @@
         reviewLogs = [];
         renderLogs(false);
         renderFileTree();
+        scheduleSaveReviewLogs();
       }
     }
 
