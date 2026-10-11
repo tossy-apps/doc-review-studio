@@ -1501,10 +1501,7 @@
             ◧ ファイル
           </button>
 
-          <div id="currentViewLabel" title="ファイル全体への指摘対象 (クリックで指摘ボタン表示)"><strong>ファイルを選択してください</strong></div>
-          <button id="fileReviewFloatBtn" class="file-review-float-btn" title="このファイル全体に対する指摘を作成">
-            📌 指摘に追加 (ファイル全体)
-          </button>
+          <div id="currentViewLabel" title="クリックでこのファイル全体への指摘を作成"><strong>ファイルを選択してください</strong></div>
           <button class="btn-copy-path" id="copyFilePathBtn" title="表示中ファイルのPCフルパスをクリップボードにコピー" style="display: none; padding: 2px 7px;">
             📋
           </button>
@@ -2303,61 +2300,21 @@
 
     const copyFilePathBtn = document.getElementById('copyFilePathBtn');
     if (copyFilePathBtn) copyFilePathBtn.onclick = copyCurrentFilePath;
-    function showFileReviewFloatBtn() {
-      if (!currentFileName) return;
-      const labelEl = document.getElementById('currentViewLabel');
-      const floatBtn = document.getElementById('fileReviewFloatBtn');
-      if (!labelEl || !floatBtn) return;
-
-      const rect = labelEl.getBoundingClientRect();
-      floatBtn.style.top = Math.round(rect.bottom + 6) + 'px';
-      floatBtn.style.left = Math.round(rect.left) + 'px';
-      floatBtn.style.display = 'inline-flex';
-    }
-
-    function hideFileReviewFloatBtn() {
-      const floatBtn = document.getElementById('fileReviewFloatBtn');
-      if (floatBtn) floatBtn.style.display = 'none';
-    }
 
     document.getElementById('currentViewLabel').onclick = function (e) {
       if (!currentFileName) return;
       e.stopPropagation();
 
-      // ファイル名テキストを選択状態にして、ファイル全体への指摘対象であることを明示
-      const range = document.createRange();
-      range.selectNodeContents(this);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
+      const origBg = this.style.background;
+      this.style.background = "rgba(34, 197, 94, 0.35)";
+      setTimeout(() => { this.style.background = origBg; }, 300);
 
-      // テキスト選択時のように「📌 指摘に追加」ボタンをポップアップ表示！
-      showFileReviewFloatBtn();
+      processAddLog({
+        text: `[ファイル全体] ${currentFileName}`,
+        context: `ファイル全体に対する指摘・修正指示`,
+        fileName: currentFileName
+      });
     };
-
-    const fileFloatBtn = document.getElementById('fileReviewFloatBtn');
-    if (fileFloatBtn) {
-      fileFloatBtn.onclick = function (e) {
-        e.stopPropagation();
-        if (!currentFileName) return;
-        hideFileReviewFloatBtn();
-
-        processAddLog({
-          text: `[ファイル全体] ${currentFileName}`,
-          context: `ファイル全体・全般に対する指摘・修正要望`,
-          fileName: currentFileName
-        });
-      };
-    }
-
-    document.addEventListener('click', (e) => {
-      const floatBtn = document.getElementById('fileReviewFloatBtn');
-      if (floatBtn && floatBtn.style.display !== 'none') {
-        if (!e.target.closest('#fileReviewFloatBtn') && !e.target.closest('#currentViewLabel')) {
-          hideFileReviewFloatBtn();
-        }
-      }
-    });
 
     document.getElementById('createSnapshotBtn').onclick = createNewGenerationSnapshot;
     const exportGenBtn = document.getElementById('exportGenerationBtn');
@@ -2431,40 +2388,10 @@
 
     async function copyCurrentFilePath() {
       if (!currentFileName) return;
-      let fullPath = getFullFilePath(currentFileName);
-
-      let rootPath = getRootFullPath();
-      if (!rootPath) {
-        const input = prompt(
-          `【フルパス設定】\nPC上のフルパス（例: D:\\Downloads\\jdk-27_doc-all\\docs）を入力すると、次回以降完全なフルパスでコピーされます。\n（空欄のままでも「${workDirHandle ? workDirHandle.name : ''}」結合でコピーします）`,
-          workDirHandle ? workDirHandle.name : ''
-        );
-        if (input && input.trim() && input.trim() !== (workDirHandle ? workDirHandle.name : '')) {
-          setRootFullPath(input.trim());
-          fullPath = getFullFilePath(currentFileName);
-        }
-      }
+      const fullPath = getFullFilePath(currentFileName);
 
       try {
         await navigator.clipboard.writeText(fullPath);
-        const btn = document.getElementById('copyFilePathBtn');
-        if (btn) {
-          const origText = btn.innerHTML;
-          btn.innerHTML = "✓";
-          btn.style.borderColor = "#22c55e";
-          btn.style.color = "#4ade80";
-          setTimeout(() => {
-            btn.innerHTML = origText;
-            btn.style.borderColor = "";
-            btn.style.color = "";
-          }, 1200);
-        }
-        const labelEl = document.getElementById('currentViewLabel');
-        if (labelEl) {
-          const origBg = labelEl.style.background;
-          labelEl.style.background = "rgba(34, 197, 94, 0.25)";
-          setTimeout(() => { labelEl.style.background = origBg; }, 400);
-        }
       } catch (err) {
         const ta = document.createElement('textarea');
         ta.value = fullPath;
@@ -2473,6 +2400,21 @@
         document.execCommand('copy');
         document.body.removeChild(ta);
       }
+
+      const btn = document.getElementById('copyFilePathBtn');
+      if (btn) {
+        const origText = btn.innerHTML;
+        btn.innerHTML = "✓";
+        btn.style.borderColor = "#22c55e";
+        btn.style.color = "#4ade80";
+        setTimeout(() => {
+          btn.innerHTML = origText;
+          btn.style.borderColor = "";
+          btn.style.color = "";
+        }, 1200);
+      }
+
+      alert(`パスをクリップボードにコピーしました:\n${fullPath}`);
     }
 
     async function openWorkDirectory() {
@@ -2852,16 +2794,76 @@
 
     window.handleRemoveRecent = async function(id, e) {
       if (e) e.stopPropagation();
+      const item = await getRecentWorkspace(id);
+      if (!item) return;
+
+      if (!confirm(`「${item.name}」を履歴から削除しますか？\n※フォルダ内の「.docreview-history」（バックアップ・世代データ）およびパス設定も削除されます。`)) {
+        return;
+      }
+
+      // 1. 実フォルダ内の .docreview-history を削除
+      if (item.handle) {
+        try {
+          let perm = await item.handle.queryPermission({ mode: 'readwrite' });
+          if (perm !== 'granted') {
+            perm = await item.handle.requestPermission({ mode: 'readwrite' });
+          }
+          if (perm === 'granted') {
+            await item.handle.removeEntry('.docreview-history', { recursive: true });
+          }
+        } catch (err) {
+          // 既に存在しない場合やアクセス権限がない場合はスキップ
+          console.warn(".docreview-history 削除スキップ:", err);
+        }
+      }
+
+      // 2. ローカルストレージのパス設定を削除
+      if (item.name) {
+        localStorage.removeItem('doc_review_root_path_' + item.name);
+      }
+
+      // 3. 現在開いているワークスペースならキャッシュをクリア
+      if (workDirHandle && workDirHandle.name === item.name) {
+        backupDirHandle = null;
+        generationManifest = null;
+      }
+
+      // 4. IndexedDB から履歴を削除
       await removeRecentWorkspace(id);
       const items = await getRecentWorkspaces();
       renderRecentWorkspacesList(items);
     };
 
     async function handleClearAllRecent() {
-      if (confirm("最近使用した作業フォルダの履歴をすべて消去しますか？\n（実際のローカルファイルや世代データは削除されません）")) {
-        await clearRecentWorkspaces();
-        renderRecentWorkspacesList([]);
+      if (!confirm("最近使用した作業フォルダの履歴をすべて消去しますか？\n※各フォルダ内の「.docreview-history」（バックアップ・世代データ）およびパス設定も削除されます。")) {
+        return;
       }
+      try {
+        const items = await getRecentWorkspaces();
+        for (const item of items) {
+          if (item?.handle) {
+            try {
+              let perm = await item.handle.queryPermission({ mode: 'readwrite' });
+              if (perm === 'granted') {
+                await item.handle.removeEntry('.docreview-history', { recursive: true });
+              }
+            } catch (err) {
+              console.warn(".docreview-history 削除スキップ:", err);
+            }
+          }
+          if (item?.name) {
+            localStorage.removeItem('doc_review_root_path_' + item.name);
+          }
+        }
+        if (workDirHandle) {
+          backupDirHandle = null;
+          generationManifest = null;
+        }
+      } catch (e) {
+        console.warn("履歴一括削除中の警告:", e);
+      }
+      await clearRecentWorkspaces();
+      renderRecentWorkspacesList([]);
     }
 
     async function saveManifest(dirH, manifest) {
@@ -4042,12 +4044,12 @@
       const labelEl = document.getElementById('currentViewLabel');
       if (labelEl) {
         labelEl.innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
-        labelEl.title = `クリックしてフルパスをコピー:\n${getFullFilePath(name)}`;
+        labelEl.title = `クリックで「${name}」全体への指摘を追加`;
       }
       const copyBtn = document.getElementById('copyFilePathBtn');
       if (copyBtn) {
         copyBtn.style.display = 'inline-flex';
-        copyBtn.title = `クリックしてフルパスをコピー:\n${getFullFilePath(name)}`;
+        copyBtn.title = `クリックしてPCフルパスをコピー:\n${getFullFilePath(name)}`;
       }
       
       const placeholderEl = document.getElementById('emptyPlaceholder');
@@ -5235,8 +5237,13 @@
         if (item.file) ensureV0Backup(item.file);
       }
 
-      let out = `${titleHeader}\n以下のドキュメント（HTML / Markdown）の指定箇所について、指摘内容を反映してください。\n`;
-      out += "※指示のない既存のタグ構造、属性、クラス名、前後の文言は一切変更しないこと。\n\n";
+      let out = `${titleHeader}\n`;
+      out += "以下の指定箇所について、対象ファイルのみを直接編集して指摘内容を反映してください。\n\n";
+      out += "【厳守ルール】\n";
+      out += "1. 完全単一ファイル完結: 外部Web検索や他ファイルの走査・grepは一切行わないこと。\n";
+      out += "2. リンク先・外部構造の不問: HTML内のリンク先（href等）や参照先の存在・整合性は一切意識・検証せず、対象テキストのみをシンプルに検索・置換すること。\n";
+      out += "3. 他ファイル参照時の事前確認: もし他ファイルの参照や大掛かりな整合性確認がどうしても必要だと判断される場合は、勝手に調べ始めず、修正前に「どこを何のために参照する必要があるか」をユーザーに確認すること。\n";
+      out += "4. 構造・識別子の保護: 既存のHTMLタグ、属性値、クラス名、およびコード・メソッド等の英語識別子は維持し、指示のない前後の文言は変更しないこと。\n\n";
 
       logs.forEach((item, idx) => {
         out += "========================================\n";
