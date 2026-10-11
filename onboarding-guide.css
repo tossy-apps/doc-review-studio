@@ -13,10 +13,10 @@
   backdrop-filter: blur(1.5px);
   z-index: 9990;
   display: flex;
-  /* 上部ヘッダーのボタン（約56px）と重ならないよう、上部から約64px（約1.5cm強）空けて開始 */
+  /* アプリのヘッダー(58px)＋中央ツールバー(38px)＝96pxのボタン群が完全に露出し被らないよう104pxから開始 */
   align-items: flex-start;
   justify-content: center;
-  padding: 64px 20px 16px;
+  padding: 104px 20px 14px;
   box-sizing: border-box;
   opacity: 0;
   pointer-events: none;
@@ -32,9 +32,10 @@
 .guide-window {
   width: 1260px;
   max-width: 96vw;
-  /* 下領域の余白の無駄を解消し、画面縦領域をフル活用 */
-  height: calc(100vh - 82px);
-  max-height: 820px;
+  /* 下領域の余白の無駄を解消し、画面下端まで（14pxの余白のみ残して）ぴったりフィット */
+  height: calc(100vh - 118px);
+  min-height: 480px;
+  max-height: none;
   background: #ffffff;
   color: #1e293b;
   border-radius: 14px;

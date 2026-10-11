@@ -635,14 +635,15 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       cursor: pointer;
-      user-select: none;
+      user-select: text;
       padding: 3px 6px;
       border-radius: 4px;
       transition: background 0.15s, color 0.15s;
     }
 
     #currentViewLabel:hover {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
     }
 
     .btn-copy-path {
@@ -889,13 +890,78 @@
 
     .radio-row {
       display: flex;
-      gap: 6px;
+      flex-wrap: wrap; /* FlowLayout: 狭くなったら2行へ自然に折り返し */
+      align-items: center;
+      gap: 4px 10px;
       margin-bottom: 6px;
       background: #1f2937;
-      padding: 4px 6px;
-      border-radius: 4px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid #374151;
       font-size: 11px;
       color: #ffffff;
+      transform-origin: left center;
+    }
+
+    .radio-chip {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap; /* 「修」と「正」のような文字単位の縦割れを100%防止！ */
+      flex-shrink: 0;
+      font-size: 11px;
+      color: #cbd5e1;
+      user-select: none;
+      transition: color 0.15s;
+    }
+
+    .radio-chip input[type="radio"] {
+      margin: 0;
+      cursor: pointer;
+      accent-color: #38bdf8;
+    }
+
+    .radio-chip:hover {
+      color: #ffffff;
+    }
+
+    .radio-chip.active {
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    .file-review-float-btn {
+      position: fixed;
+      display: none;
+      z-index: 99999;
+      background: #16a34a;
+      color: #ffffff;
+      border: 1.5px solid #22c55e;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: bold;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      cursor: pointer;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+      user-select: none;
+      animation: floatBtnPop 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .file-review-float-btn:hover {
+      background: #15803d;
+      border-color: #4ade80;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+    }
+
+    @keyframes floatBtnPop {
+      0% { opacity: 0; transform: translateY(-4px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
     }
 
     .target-box {
@@ -1151,10 +1217,10 @@
         <span>Files</span>
         <span id="fileTotalCount" style="color: #60a5fa; font-weight: bold;">0</span>
       </div>
-      <div class="pane-zoom-widget" id="zoomWidgetLeft" title="ファイルツリーの拡大縮小 (Alt+ホイール または ＋/−ボタン / クリックで100%リセット)">
-        <button class="zoom-btn" data-pane="left" data-dir="-1" title="縮小 (Alt+ホイール下 または クリック)">−</button>
+      <div class="pane-zoom-widget" id="zoomWidgetLeft" title="ファイルツリーの拡大縮小 (Ctrl+ホイール / ＋/−ボタン / クリックで100%リセット)">
+        <button class="zoom-btn" data-pane="left" data-dir="-1" title="縮小 (Ctrl+ホイール下 または クリック)">−</button>
         <span class="zoom-val" id="zoomValLeft" data-pane="left" title="クリックで100%にリセット">100%</span>
-        <button class="zoom-btn" data-pane="left" data-dir="1" title="拡大 (Alt+ホイール上 または クリック)">＋</button>
+        <button class="zoom-btn" data-pane="left" data-dir="1" title="拡大 (Ctrl+ホイール上 または クリック)">＋</button>
       </div>
     </div>
     <div class="pane-files-search">
@@ -1206,13 +1272,21 @@
 
       <!-- グループ3: AIプロンプト生成 -->
       <div class="action-group">
-        <div class="group-label">AI Prompt</div>
+        <div class="group-label">AI Prompt & View</div>
         <div class="group-buttons">
           <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみコピー">
             🤖 選択ファイル指示
           </button>
           <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算コピー">
             🤖 全ファイル指示
+          </button>
+          <button class="btn" style="margin-left: 6px; padding: 3px 8px; font-size: 11px;" id="openDetachedModifiedBtn"
+            title="原本（修正後作業中）を独立別ウィンドウで開く">
+            🪟 別窓: 原本
+          </button>
+          <button class="btn" style="padding: 3px 8px; font-size: 11px;" id="openDetachedBackupBtn"
+            title="退避（修正前原本）を独立別ウィンドウで開く">
+            🪟 別窓: 修正前
           </button>
         </div>
       </div>
@@ -1221,8 +1295,8 @@
       <div class="action-group" style="margin-left: auto;">
         <div class="group-label">Guide & Diff</div>
         <div class="group-buttons">
-          <button class="btn" id="showGuideBtn" title="3ステップの動く使い方ガイドを表示">
-            💡 ガイド
+          <button class="btn" id="showGuideBtn" title="3ステップの動くスタジオガイドを表示">
+            💡 スタジオガイド
           </button>
           <a href="./manual.html" target="_blank" class="btn btn-manual" title="詳細な使い方マニュアルを開く">
             📖 マニュアル
@@ -1244,9 +1318,12 @@
             ◧ ファイル
           </button>
 
-          <div id="currentViewLabel" title="クリックしてフルパスをコピー"><strong>ファイルを選択してください</strong></div>
-          <button class="btn-copy-path" id="copyFilePathBtn" title="表示中ファイルのフルパスをクリップボードにコピー" style="display: none;">
-            📋 フルパスコピー
+          <div id="currentViewLabel" title="ファイル全体への指摘対象 (クリックで指摘ボタン表示)"><strong>ファイルを選択してください</strong></div>
+          <button id="fileReviewFloatBtn" class="file-review-float-btn" title="このファイル全体に対する指摘を作成">
+            📌 指摘に追加 (ファイル全体)
+          </button>
+          <button class="btn-copy-path" id="copyFilePathBtn" title="表示中ファイルのPCフルパスをクリップボードにコピー" style="display: none; padding: 2px 7px;">
+            📋
           </button>
           <span class="inline-progress-tag" id="backupProgressBadge">
             <span id="backupSpinner">⏳</span>
@@ -1257,33 +1334,24 @@
         <div class="toolbar-right-area">
           <button class="btn btn-accent" id="reloadCurrentFileBtn" style="font-weight: bold;"
             title="現在開いているこのファイルのみをディスクから高速再読込 (原本全体の走査なし)">
-            🔄 このファイルを再読込
+            🔄 ファイル再読込
           </button>
 
           <button class="btn" id="toggleInlineDiffBtn" style="font-weight: bold;"
-            title="通常プレビュー内で修正前（退避データ）との差分ハイライトをON/OFF">
-            🎨 差分ハイライト: OFF
+            title="通常プレビュー内で修正前（退避データ）との差分をハイライト">
+            🎨 Diffハイライト
           </button>
 
           <button class="btn btn-success" id="addIssueFromParentBtn" style="font-weight: bold;"
-            title="本文で選択したテキストを指摘リストへ追加">
+            title="本文選択テキスト、またはファイル全体を指摘リストへ追加">
             📌 指摘リストに追加
           </button>
 
-          <button class="btn" style="padding: 2px 8px; font-size: 11px;" id="openDetachedModifiedBtn"
-            title="原本（修正後作業中）を独立別ウィンドウで開く">
-            別窓: 原本
-          </button>
-          <button class="btn" style="padding: 2px 8px; font-size: 11px; display: none;" id="openDetachedBackupBtn"
-            title="退避（修正前原本）を独立別ウィンドウで開く">
-            別窓: 修正前
-          </button>
-
-          <div class="pane-zoom-widget" id="zoomWidgetCenter" title="ドキュメントプレビューの拡大縮小 (Alt+ホイール または ＋/−ボタン / クリックで100%リセット)">
+          <div class="pane-zoom-widget" id="zoomWidgetCenter" title="ドキュメントプレビューの拡大縮小 (Ctrl+ホイール / ＋/−ボタン / クリックで100%リセット)">
             <span class="zoom-pane-tag">本文</span>
-            <button class="zoom-btn" data-pane="center" data-dir="-1" title="縮小 (Alt+ホイール下 または クリック)">−</button>
+            <button class="zoom-btn" data-pane="center" data-dir="-1" title="縮小 (Ctrl+ホイール下 または クリック)">−</button>
             <span class="zoom-val" id="zoomValCenter" data-pane="center" title="クリックで100%にリセット">100%</span>
-            <button class="zoom-btn" data-pane="center" data-dir="1" title="拡大 (Alt+ホイール上 または クリック)">＋</button>
+            <button class="zoom-btn" data-pane="center" data-dir="1" title="拡大 (Ctrl+ホイール上 または クリック)">＋</button>
           </div>
 
           <button class="btn btn-toggle-active" id="toggleLogsBtn" title="指摘エビデンス欄の表示/非表示を切り替え (Alt+2)">
@@ -1306,7 +1374,7 @@
               📁 原本フォルダを開く
             </button>
             <button class="btn btn-manual" id="placeholderGuideBtn" style="font-weight: 700; padding: 6px 14px;">
-              💡 スタジオガイド (使い方)
+              💡 スタジオガイド
             </button>
           </div>
         </div>
@@ -1343,10 +1411,10 @@
       <div class="pane-logs-header">
         <strong id="logCountLabel" style="font-size: 12px; color: #ffffff;">指摘 (0件)</strong>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <div class="pane-zoom-widget" id="zoomWidgetRight" title="指摘一覧の拡大縮小 (Alt+ホイール または ＋/−ボタン / クリックで100%リセット)">
-            <button class="zoom-btn" data-pane="right" data-dir="-1" title="縮小 (Alt+ホイール下 または クリック)">−</button>
+          <div class="pane-zoom-widget" id="zoomWidgetRight" title="指摘一覧の拡大縮小 (Ctrl+ホイール / ＋/−ボタン / クリックで100%リセット)">
+            <button class="zoom-btn" data-pane="right" data-dir="-1" title="縮小 (Ctrl+ホイール下 または クリック)">−</button>
             <span class="zoom-val" id="zoomValRight" data-pane="right" title="クリックで100%にリセット">100%</span>
-            <button class="zoom-btn" data-pane="right" data-dir="1" title="拡大 (Alt+ホイール上 または クリック)">＋</button>
+            <button class="zoom-btn" data-pane="right" data-dir="1" title="拡大 (Ctrl+ホイール上 または クリック)">＋</button>
           </div>
           <button class="btn btn-danger" id="clearLogsBtn">全消去</button>
         </div>
@@ -1453,6 +1521,14 @@
 
     const TYPES = ["修正", "追加", "削除", "質問", "検討中"];
 
+    function applyRadioRowZoom() {
+      const rightZoom = paneZoomState['right'] || 1.0;
+      const invZoom = (1 / rightZoom).toFixed(4);
+      document.querySelectorAll('.radio-row').forEach(row => {
+        row.style.zoom = invZoom;
+      });
+    }
+
     // --- ペイン別ズーム管理 (左/中/右) ---
     const paneZoomState = {
       left: parseFloat(localStorage.getItem('doc_review_zoom_left') || '1.0'),
@@ -1478,8 +1554,35 @@
     }
 
     function handlePaneZoomWheel(pane, deltaY) {
+      if (!deltaY) return;
       const delta = deltaY < 0 ? 0.1 : -0.1;
       changePaneZoom(pane, delta);
+    }
+
+    function attachFrameWheelListeners() {
+      ['mainPreview', 'diffBefore', 'diffAfter'].forEach(id => {
+        const frame = document.getElementById(id);
+        if (!frame) return;
+        try {
+          if (frame.contentWindow) {
+            frame.contentWindow.addEventListener('wheel', (e) => {
+              if (e.ctrlKey || e.altKey) {
+                const deltaVal = e.deltaY !== 0 ? e.deltaY : (e.deltaX !== 0 ? e.deltaX : 0);
+                if (deltaVal !== 0) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handlePaneZoomWheel('center', deltaVal);
+                }
+              }
+            }, { passive: false, capture: true });
+            frame.contentWindow.addEventListener('keydown', (e) => {
+              if (e.key === 'Alt') {
+                e.preventDefault();
+              }
+            });
+          }
+        } catch (err) {}
+      });
     }
 
     function applyPaneZoom(pane) {
@@ -1506,6 +1609,7 @@
       } else if (pane === 'right') {
         const el = document.getElementById('logList');
         if (el) el.style.zoom = val;
+        applyRadioRowZoom();
       }
     }
 
@@ -1552,6 +1656,8 @@
           if (pane) setPaneZoom(pane, 1.0);
         };
       });
+
+      attachFrameWheelListeners();
     }
 
     window.addEventListener('message', function (e) {
@@ -1720,21 +1826,60 @@
 
     initPaneResizers();
 
-    // グローバル ホイールによるペイン個別ズーム (Alt+ホイール推奨・Chrome完全非干渉 / Ctrl+ホイールもキャプチャ抑止)
+    // グローバル ホイールによるペイン個別ズーム ＆ 画面上部Chrome標準ズームの完全両立
+    // 画面上部（ヘッダー・ツールバー・ブランド部など）: Chrome標準の全体ズーム(Ctrl+Wheel)を100%維持
+    // 独自ズーム対象の3領域（ファイル一覧#fileTree、プレビュー本文、指摘一覧#logList）: Ctrl+ホイールまたはAlt+ホイールで個別ズーム
     document.addEventListener('wheel', (e) => {
-      if (e.altKey || e.ctrlKey) {
+      const deltaVal = e.deltaY !== 0 ? e.deltaY : (e.deltaX !== 0 ? e.deltaX : 0);
+      if (deltaVal === 0) return;
+
+      // 1. Alt+ホイール操作: どの位置でも常にそのペインの個別ズーム
+      if (e.altKey) {
         e.preventDefault();
         e.stopPropagation();
         let pane = 'center';
         if (e.target && e.target.closest('#paneFiles')) pane = 'left';
         else if (e.target && e.target.closest('#paneLogs')) pane = 'right';
-        handlePaneZoomWheel(pane, e.deltaY);
+        handlePaneZoomWheel(pane, deltaVal);
+        return;
+      }
+
+      // 2. Ctrl+ホイール操作: コンテキスト判定で完全両立
+      if (e.ctrlKey) {
+        const target = e.target;
+        if (!target) return;
+
+        // 【画面上部】ヘッダーやツールバー、外枠の上にいる時はブラウザ全体ズーム（Chrome支配）に委ねる！
+        if (target.closest('header') ||
+            target.closest('.pane-center-toolbar') ||
+            target.closest('.sidebar-brand-box') ||
+            target.closest('.pane-files-header') ||
+            target.closest('.pane-files-search') ||
+            target.closest('.pane-files-footer') ||
+            target.closest('.pane-logs-header')) {
+          return; // preventDefault() を呼ばない ➔ Chrome標準ズームが発動！
+        }
+
+        // 【ペイン内領域】ファイル一覧、指摘一覧、プレビュー枠の上にいる時のみ個別ズーム
+        if (target.closest('#fileTree')) {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePaneZoomWheel('left', deltaVal);
+        } else if (target.closest('#logList')) {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePaneZoomWheel('right', deltaVal);
+        } else if (target.closest('#normalContainer') || target.closest('#diffContainer') || target.closest('#paneCenter')) {
+          e.preventDefault();
+          e.stopPropagation();
+          handlePaneZoomWheel('center', deltaVal);
+        }
       }
     }, { passive: false, capture: true });
 
-    // 中クリックによるペインズーム100%リセット (AltまたはCtrl + 中クリック)
+    // 中クリックによるペインズーム100%リセット (CtrlまたはAlt + 中クリック)
     document.addEventListener('mousedown', (e) => {
-      if ((e.altKey || e.ctrlKey) && e.button === 1) {
+      if ((e.ctrlKey || e.altKey) && e.button === 1) {
         e.preventDefault();
         let pane = 'center';
         if (e.target && e.target.closest('#paneFiles')) pane = 'left';
@@ -1744,6 +1889,10 @@
     }, { capture: true });
 
     window.addEventListener('keydown', (e) => {
+      // Altキー押下によるWindows/Chromeメニューフォーカス奪取を防止し、Alt+ホイールや各種ショートカットを確実に届かせる
+      if (e.key === 'Alt') {
+        e.preventDefault();
+      }
       if (e.altKey && e.key === '1') {
         e.preventDefault();
         toggleFilesPane();
@@ -1751,7 +1900,6 @@
         e.preventDefault();
         toggleLogsPane();
       } else if ((e.ctrlKey || e.altKey) && (e.key === '0' || e.key === 'Numpad0')) {
-        e.preventDefault();
         const hovered = document.querySelector(':hover');
         let pane = 'center';
         if (hovered && hovered.closest('#paneFiles')) pane = 'left';
@@ -1763,11 +1911,16 @@
     initAllPaneZooms();
 
     document.getElementById('addIssueFromParentBtn').onclick = function () {
-      const frameEl = document.getElementById('mainPreview');
-      if (!frameEl) return;
+      if (!currentFileName) {
+        alert("ファイルが選択されていません。左のツリーからファイルを選択してください。");
+        return;
+      }
 
+      const frameEl = document.getElementById('mainPreview');
+
+      // 1. 本文iframe内での選択テキストを優先判定
       try {
-        if (frameEl.contentDocument && frameEl.contentWindow) {
+        if (frameEl && frameEl.contentDocument && frameEl.contentWindow) {
           const win = frameEl.contentWindow;
           const sel = win.getSelection();
           const text = sel ? sel.toString().trim() : "";
@@ -1794,9 +1947,12 @@
         }
       } catch (err) { }
 
-      if (frameEl.contentWindow) {
-        frameEl.contentWindow.postMessage({ type: 'REQUEST_CURRENT_SELECTION' }, '*');
-      }
+      // 2. 本文テキスト未選択時、またはファイル名が選択されている場合は「ファイル全体に対する指摘」として追加！
+      processAddLog({
+        text: `[ファイル全体] ${currentFileName}`,
+        context: `ファイル全体・全般に対する指摘・修正要望`,
+        fileName: currentFileName
+      });
     };
 
     document.getElementById('openDirBtn').onclick = openWorkDirectory;
@@ -1808,14 +1964,16 @@
     const phGuideBtn = document.getElementById('placeholderGuideBtn');
     if (phGuideBtn) {
       phGuideBtn.onclick = () => {
-        if (window.DocReviewGuide) window.DocReviewGuide.open();
+        if (window.OnboardingGuide) window.OnboardingGuide.open();
+        else if (window.DocReviewGuide) window.DocReviewGuide.open();
       };
     }
 
     const showGuideBtn = document.getElementById('showGuideBtn');
     if (showGuideBtn) {
       showGuideBtn.onclick = () => {
-        if (window.DocReviewGuide) window.DocReviewGuide.open();
+        if (window.OnboardingGuide) window.OnboardingGuide.open();
+        else if (window.DocReviewGuide) window.DocReviewGuide.open();
       };
     }
 
@@ -1836,7 +1994,61 @@
     document.getElementById('reloadCurrentFileBtn').onclick = reloadCurrentFileOnly;
     document.getElementById('toggleInlineDiffBtn').onclick = toggleInlineDiffMode;
     document.getElementById('copyFilePathBtn').onclick = copyCurrentFilePath;
-    document.getElementById('currentViewLabel').onclick = copyCurrentFilePath;
+    function showFileReviewFloatBtn() {
+      if (!currentFileName) return;
+      const labelEl = document.getElementById('currentViewLabel');
+      const floatBtn = document.getElementById('fileReviewFloatBtn');
+      if (!labelEl || !floatBtn) return;
+
+      const rect = labelEl.getBoundingClientRect();
+      floatBtn.style.top = Math.round(rect.bottom + 6) + 'px';
+      floatBtn.style.left = Math.round(rect.left) + 'px';
+      floatBtn.style.display = 'inline-flex';
+    }
+
+    function hideFileReviewFloatBtn() {
+      const floatBtn = document.getElementById('fileReviewFloatBtn');
+      if (floatBtn) floatBtn.style.display = 'none';
+    }
+
+    document.getElementById('currentViewLabel').onclick = function (e) {
+      if (!currentFileName) return;
+      e.stopPropagation();
+
+      // ファイル名テキストを選択状態にして、ファイル全体への指摘対象であることを明示
+      const range = document.createRange();
+      range.selectNodeContents(this);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+
+      // テキスト選択時のように「📌 指摘に追加」ボタンをポップアップ表示！
+      showFileReviewFloatBtn();
+    };
+
+    const fileFloatBtn = document.getElementById('fileReviewFloatBtn');
+    if (fileFloatBtn) {
+      fileFloatBtn.onclick = function (e) {
+        e.stopPropagation();
+        if (!currentFileName) return;
+        hideFileReviewFloatBtn();
+
+        processAddLog({
+          text: `[ファイル全体] ${currentFileName}`,
+          context: `ファイル全体・全般に対する指摘・修正要望`,
+          fileName: currentFileName
+        });
+      };
+    }
+
+    document.addEventListener('click', (e) => {
+      const floatBtn = document.getElementById('fileReviewFloatBtn');
+      if (floatBtn && floatBtn.style.display !== 'none') {
+        if (!e.target.closest('#fileReviewFloatBtn') && !e.target.closest('#currentViewLabel')) {
+          hideFileReviewFloatBtn();
+        }
+      }
+    });
 
     document.getElementById('createSnapshotBtn').onclick = createNewGenerationSnapshot;
     document.getElementById('rollbackGenerationBtn').onclick = rollbackToSelectedGeneration;
@@ -1928,7 +2140,7 @@
         const btn = document.getElementById('copyFilePathBtn');
         if (btn) {
           const origText = btn.innerHTML;
-          btn.innerHTML = "✓ コピー完了";
+          btn.innerHTML = "✓";
           btn.style.borderColor = "#22c55e";
           btn.style.color = "#4ade80";
           setTimeout(() => {
@@ -3063,15 +3275,17 @@
       const btn = document.getElementById('toggleInlineDiffBtn');
       if (btn) {
         if (isInlineDiffMode) {
-          btn.innerHTML = "🎨 差分ハイライト: <span style='color:#4ade80;'>ON</span>";
+          btn.innerHTML = "🎨 Diffハイライト";
           btn.style.background = "rgba(34, 197, 94, 0.25)";
           btn.style.borderColor = "#22c55e";
           btn.style.color = "#4ade80";
+          btn.title = "差分ハイライト表示中 (クリックで解除)";
         } else {
-          btn.innerHTML = "🎨 差分ハイライト: OFF";
+          btn.innerHTML = "🎨 Diffハイライト";
           btn.style.background = "";
           btn.style.borderColor = "";
           btn.style.color = "";
+          btn.title = "通常プレビュー内で修正前（退避データ）との差分をハイライト";
         }
       }
       if (currentFileName) {
@@ -3452,7 +3666,12 @@
 
           function sendAddLog(targetText, context) {
             if (!targetText) {
-              alert("マニュアル本文のテキストを選択してください。");
+              window.parent.postMessage({
+                type: 'AI_REVIEW_ADD_LOG',
+                text: '[ファイル全体] ' + (${JSON.stringify(fileName)} || ''),
+                context: 'ファイル全体・全般に対する指摘・修正要望',
+                fileName: ${JSON.stringify(fileName)}
+              }, '*');
               return;
             }
             window.parent.postMessage({
@@ -3627,22 +3846,32 @@
             }, '*');
           }, true);
 
-          // Alt+マウスホイール (またはCtrl+ホイール) による中央ペインズームの親ウィンドウ連携
-          window.addEventListener('wheel', (e) => {
-            if (e.altKey || e.ctrlKey) {
+          // Altキー単体押下のWindowsメニュー奪取防止
+          window.addEventListener('keydown', (e) => {
+            if (e.key === 'Alt') {
               e.preventDefault();
-              e.stopPropagation();
-              window.parent.postMessage({
-                type: 'PANE_ZOOM_WHEEL',
-                pane: 'center',
-                deltaY: e.deltaY
-              }, '*');
+            }
+          });
+
+          // Ctrl+ホイール または Alt+ホイールによる中央プレビュー本文の個別ズーム
+          window.addEventListener('wheel', (e) => {
+            if (e.ctrlKey || e.altKey) {
+              const deltaVal = e.deltaY !== 0 ? e.deltaY : (e.deltaX !== 0 ? e.deltaX : 0);
+              if (deltaVal !== 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.parent.postMessage({
+                  type: 'PANE_ZOOM_WHEEL',
+                  pane: 'center',
+                  deltaY: deltaVal
+                }, '*');
+              }
             }
           }, { passive: false, capture: true });
 
-          // 中クリックによる100%リセット
+          // CtrlまたはAlt + 中クリックによる100%リセット
           window.addEventListener('mousedown', (e) => {
-            if ((e.altKey || e.ctrlKey) && e.button === 1) {
+            if ((e.ctrlKey || e.altKey) && e.button === 1) {
               e.preventDefault();
               window.parent.postMessage({
                 type: 'PANE_ZOOM_RESET',
@@ -3888,20 +4117,28 @@
           </div>
 
           <div class="radio-row" onclick="event.stopPropagation()">
-            ${TYPES.map(t => `
-              <label style="cursor:pointer; display:flex; align-items:center; gap:2px;">
-                <input type="radio" name="t_${idx}" value="${t}" ${item.type === t ? 'checked' : ''} onchange="updateType(${idx}, '${t}')">
-                ${t}
-              </label>
-            `).join('')}
+            ${TYPES.map(t => {
+              const isChecked = item.type === t;
+              return `
+                <label class="radio-chip ${isChecked ? 'active' : ''}">
+                  <input type="radio" name="t_${idx}" value="${t}" ${isChecked ? 'checked' : ''} onchange="updateType(${idx}, '${t}')">
+                  <span>${t}</span>
+                </label>
+              `;
+            }).join('')}
           </div>
 
-          <div class="target-box" title="クリックで該当箇所へジャンプ">${escapeHtml(item.target)}</div>
+          <div class="target-box" title="クリックで該当箇所へジャンプ">
+            ${item.target && item.target.startsWith('[ファイル全体]') ? '<span style="background:#2563eb; color:#ffffff; font-size:10.5px; font-weight:bold; padding:1px 6px; border-radius:3px; margin-right:5px;">📁 ファイル全体</span>' : ''}
+            ${escapeHtml(item.target)}
+          </div>
           ${item.context ? `<div class="context-box">${escapeHtml(item.context)}</div>` : ''}
 
           <textarea class="inst-text" id="inst-${idx}" placeholder="指示を入力" onclick="event.stopPropagation()" oninput="updateInst(${idx}, this.value)">${escapeHtml(item.instruction)}</textarea>
         </div>
       `).join('');
+
+      applyRadioRowZoom();
 
       if (autoFocus) {
         const el = document.getElementById(`card-${reviewLogs.length - 1}`);
@@ -3922,6 +4159,16 @@
         selectFile(item.file);
       }
 
+      if (item.target && item.target.startsWith('[ファイル全体]')) {
+        setTimeout(() => {
+          const targetFrame = document.getElementById('mainPreview');
+          if (targetFrame && targetFrame.contentWindow) {
+            targetFrame.contentWindow.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        }, needFileSwitch ? 300 : 50);
+        return;
+      }
+
       setTimeout(() => {
         const targetFrame = document.getElementById('mainPreview');
         if (targetFrame && targetFrame.contentWindow) {
@@ -3934,7 +4181,16 @@
       }, needFileSwitch ? 300 : 50);
     };
 
-    window.updateType = function (idx, val) { reviewLogs[idx].type = val; };
+    window.updateType = function (idx, val) {
+      reviewLogs[idx].type = val;
+      const card = document.getElementById(`card-${idx}`);
+      if (card) {
+        card.querySelectorAll('.radio-chip').forEach(lbl => {
+          const inp = lbl.querySelector('input');
+          lbl.classList.toggle('active', inp && inp.value === val);
+        });
+      }
+    };
     window.updateInst = function (idx, val) { reviewLogs[idx].instruction = val; };
     window.removeLog = function (idx) {
       reviewLogs.splice(idx, 1);
@@ -4108,8 +4364,12 @@
     }
 
     async function openDetachedBackup() {
+      if (!backupDirHandle && (!generationManifest || !currentFileName || !backupHtmlMap[currentFileName])) {
+        alert("退避先フォルダが未設定です。\nヘッダー左の「📂 退避先を指定」ボタンから退避フォルダを選択してください。");
+        return;
+      }
       if (!currentFileName || !backupHtmlMap[currentFileName]) {
-        alert("退避フォルダ内に該当ファイルが存在しません。");
+        alert("退避フォルダ内に該当ファイル（" + (currentFileName || "未選択") + "）が存在しません。");
         return;
       }
       const isMd = isMarkdownFile(currentFileName);
@@ -4418,22 +4678,32 @@
             }
           }, true);
 
-          // Alt+マウスホイール (またはCtrl+ホイール) によるDiff中央ペインズーム連携
-          window.addEventListener('wheel', (e) => {
-            if (e.altKey || e.ctrlKey) {
+          // Altキー単体押下のWindowsメニュー奪取防止
+          window.addEventListener('keydown', (e) => {
+            if (e.key === 'Alt') {
               e.preventDefault();
-              e.stopPropagation();
-              window.parent.postMessage({
-                type: 'PANE_ZOOM_WHEEL',
-                pane: 'center',
-                deltaY: e.deltaY
-              }, '*');
+            }
+          });
+
+          // Ctrl+ホイール または Alt+ホイールによるDiff中央プレビューの個別ズーム
+          window.addEventListener('wheel', (e) => {
+            if (e.ctrlKey || e.altKey) {
+              const deltaVal = e.deltaY !== 0 ? e.deltaY : (e.deltaX !== 0 ? e.deltaX : 0);
+              if (deltaVal !== 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.parent.postMessage({
+                  type: 'PANE_ZOOM_WHEEL',
+                  pane: 'center',
+                  deltaY: deltaVal
+                }, '*');
+              }
             }
           }, { passive: false, capture: true });
 
-          // 中クリックによる100%リセット
+          // CtrlまたはAlt + 中クリックによる100%リセット
           window.addEventListener('mousedown', (e) => {
-            if ((e.altKey || e.ctrlKey) && e.button === 1) {
+            if ((e.ctrlKey || e.altKey) && e.button === 1) {
               e.preventDefault();
               window.parent.postMessage({
                 type: 'PANE_ZOOM_RESET',

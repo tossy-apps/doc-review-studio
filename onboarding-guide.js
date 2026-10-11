@@ -265,14 +265,14 @@
             {
               id: 'openDetachedBackupBtn',
               name: '🪟 別窓: 修正前',
-              loc: '中央ツールバー',
+              loc: 'ヘッダー中央',
               desc: '退避データ（修正前原本）を別ウィンドウで開き、別画面で常に比較参照',
               icon: '🪟'
             },
             {
               id: 'openDetachedModifiedBtn',
               name: '🪟 別窓: 原本',
-              loc: '中央ツールバー',
+              loc: 'ヘッダー中央',
               desc: '作業中の原本プレビューを別ウィンドウで開き、サブディスプレイで常時閲覧',
               icon: '🪟'
             }
@@ -613,6 +613,11 @@
     }
     if (!targetEl) return;
 
+    // 非表示要素の場合は一時的にインライン表示して正確な配置座標を計算できるようにする
+    if (window.getComputedStyle(targetEl).display === 'none') {
+      targetEl.style.display = 'inline-flex';
+    }
+
     if (activeArrowTimeout) {
       clearTimeout(activeArrowTimeout);
       activeArrowTimeout = null;
@@ -626,7 +631,7 @@
     const windowEl = document.getElementById('guideWindow');
 
     const targetRect = targetEl.getBoundingClientRect();
-    const winRect = windowEl ? windowEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2 };
+    const winRect = windowEl ? windowEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: 104 };
 
     // 1. スポットライト枠に対象ボタンのクローンを配置して最前面パルス発光
     if (spotlightBox) {
@@ -662,10 +667,10 @@
       startY = Math.round(winRect.top + 20);
     }
 
-    // 矢印の終点（ヘッダーの対象ボタン下端中央）
+    // 矢印の終点（対象ボタン下端中央）
     const targetCenterX = Math.round(targetRect.left + targetRect.width / 2);
     const endX = targetCenterX;
-    const endY = Math.round(targetRect.bottom + 6);
+    const endY = Math.round(targetRect.bottom + 4);
 
     // ベジェ曲線の制御点（始点カードから上向きにスムーズに弧を描く）
     const midX = Math.round(endX + (startX - endX) * 0.35);
@@ -674,12 +679,22 @@
     const pathData = `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`;
     if (pathEl) pathEl.setAttribute('d', pathData);
 
-    // 3. ナビ吹き出し（ボタンのすぐ下に配置）
+    // 3. ナビ吹き出し（ボタンの位置に応じてガイドダイアログに絶対に被らない安全位置に配置）
     if (pinEl) {
-      pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで即実行)</span>';
+      const pinWidth = 230;
+      const leftPos = Math.max(10, Math.min(window.innerWidth - pinWidth - 10, Math.round(targetCenterX - pinWidth / 2)));
+      pinEl.style.left = `${leftPos}px`;
+
+      // ツールバー等(top >= 52px)のボタンは、ボタンの上側に「👇」吹き出しを出すことでガイド枠(top:104px)と一切干渉しない
+      if (targetRect.top >= 52) {
+        pinEl.innerHTML = '<span>👇</span> <span>このボタンです！(クリックで即実行)</span>';
+        pinEl.style.top = `${Math.max(6, Math.round(targetRect.top - 36))}px`;
+      } else {
+        // ヘッダー(top < 52px)のボタンは、ボタンの下側に「👆」吹き出しを出す（ガイド上部との隙間にすっきり収まる）
+        pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで即実行)</span>';
+        pinEl.style.top = `${Math.round(targetRect.bottom + 8)}px`;
+      }
       pinEl.style.display = 'flex';
-      pinEl.style.left = `${Math.max(10, Math.round(targetCenterX - 110))}px`;
-      pinEl.style.top = `${Math.round(endY + 12)}px`;
     }
 
     if (svgLayer) svgLayer.classList.add('active');
@@ -740,17 +755,25 @@
     close: closeGuideModal,
     pointTo: pointToElement
   };
+  window.DocReviewGuide = window.OnboardingGuide;
+  window.openDocReviewGuide = openGuideModal;
 
   // DOMロード後にガイドボタンと接続 ＆ 初回起動時オープン
   document.addEventListener('DOMContentLoaded', () => {
-    // ヘッダー等のガイド起動ボタンとの接続
-    const triggerBtn = document.getElementById('showGuideBtn') || document.getElementById('openGuideModalBtn') || document.querySelector('.btn-guide-trigger');
-    if (triggerBtn) {
-      triggerBtn.addEventListener('click', (e) => {
+    // ヘッダーや中央待機画面等のガイド起動ボタンとの接続
+    const triggerButtons = [
+      document.getElementById('showGuideBtn'),
+      document.getElementById('placeholderGuideBtn'),
+      document.getElementById('openGuideModalBtn'),
+      document.querySelector('.btn-guide-trigger')
+    ].filter(Boolean);
+
+    triggerButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
         openGuideModal();
       });
-    }
+    });
 
     // 「次回から非表示」がオフなら初回起動時に開く
     const hidePref = localStorage.getItem('docReviewStudio_hideGuide');
