@@ -13,6 +13,7 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="icon" type="image/png" href="favicon.png">
   <script src="marked.min.js"></script>
+  <script src="diff-match-patch.js"></script>
   <link rel="stylesheet" href="onboarding-guide.css">
   <style>
     :root {
@@ -1518,8 +1519,8 @@
           </button>
 
           <button class="btn" id="toggleInlineDiffBtn" style="font-weight: bold;"
-            title="通常プレビュー内で修正前（退避データ）との差分をハイライト">
-            🎨 Diffハイライト
+            title="修正前（原本）と修正後（差分ハイライト）を1画面で切り替え">
+            ⏭️ 修正後 (Diff)
           </button>
 
           <button class="btn btn-success" id="addIssueFromParentBtn" style="font-weight: bold;"
@@ -2929,6 +2930,16 @@
       }
     }
 
+    function getModifiedFilesCount() {
+      let count = 0;
+      for (const name of Object.keys(rawHtmlMap)) {
+        if (backupHtmlMap[name] !== undefined) {
+          if (rawHtmlMap[name] !== backupHtmlMap[name]) count++;
+        }
+      }
+      return count;
+    }
+
     async function ensureV0Backup(relPath) {
       if (!backupDirHandle || !generationManifest || !relPath) return;
       const v0Gen = generationManifest.generations.find(g => g.id === 'v0');
@@ -2939,13 +2950,27 @@
         const v0Dir = await backupDirHandle.getDirectoryHandle('v0', { create: true });
         const srcFh = workFileHandles[relPath];
         if (srcFh) {
-          if (!v0Gen.files.includes(relPath)) {
+          let destFh = null;
+          try {
+            destFh = await getFileHandleFromDirectory(v0Dir, relPath);
+          } catch (e) { }
+
+          // まだ v0 に存在しない場合のみ、現在のファイルを初回バックアップとして保存（上書き厳禁）
+          if (!destFh) {
             const file = await srcFh.getFile();
             await saveFileToDirectory(v0Dir, relPath, file);
-            v0Gen.files.push(relPath);
-            scheduleSaveManifest();
+            if (!v0Gen.files.includes(relPath)) {
+              v0Gen.files.push(relPath);
+              scheduleSaveManifest();
+            }
+            destFh = await getFileHandleFromDirectory(v0Dir, relPath);
+          } else {
+            if (!v0Gen.files.includes(relPath)) {
+              v0Gen.files.push(relPath);
+              scheduleSaveManifest();
+            }
           }
-          const destFh = await getFileHandleFromDirectory(v0Dir, relPath);
+
           if (destFh) {
             backupFileHandles[relPath] = destFh;
             if (!backupHtmlMap[relPath]) {
@@ -2978,6 +3003,8 @@
       if (sel) {
         sel.disabled = false;
         sel.innerHTML = '';
+
+        // 1. 保存済み世代（v0 初回原本、および過去のセーブ世代）
         for (const gen of generationManifest.generations) {
           const opt = document.createElement('option');
           opt.value = gen.id;
@@ -2986,6 +3013,14 @@
           if (gen.id === activeGenerationId) opt.selected = true;
           sel.appendChild(opt);
         }
+
+        // 2. 現在更新されるかもしれない作業中スロット（最新）を必ず末尾に追加
+        const modCount = getModifiedFilesCount();
+        const optLatest = document.createElement('option');
+        optLatest.value = 'latest';
+        optLatest.textContent = `最新 (作業中)${modCount > 0 ? ` (${modCount}件更新)` : ''}`;
+        if (activeGenerationId === 'latest') optLatest.selected = true;
+        sel.appendChild(optLatest);
       }
       if (createBtn) createBtn.disabled = false;
       if (exportBtn) exportBtn.disabled = false;
@@ -2998,13 +3033,13 @@
         alert("ファイルが選択されていません。プレビュー対象のファイルを選択してください。");
         return;
       }
-      const backupText = backupHtmlMap[currentFileName];
+      const backupText = (activeGenerationId === 'latest') ? rawHtmlMap[currentFileName] : backupHtmlMap[currentFileName];
       if (!backupText) {
         alert(`選択中の世代「${activeGenerationId}」には、このファイル（${currentFileName}）の記録がありません。`);
         return;
       }
       const curGen = generationManifest?.generations?.find(g => g.id === activeGenerationId);
-      const genLabel = curGen ? curGen.id : 'v0';
+      const genLabel = curGen ? curGen.id : (activeGenerationId === 'latest' ? 'latest' : 'v0');
 
       const lastDot = currentFileName.lastIndexOf('.');
       const base = lastDot !== -1 ? currentFileName.substring(0, lastDot) : currentFileName;
@@ -3030,22 +3065,36 @@
         label.innerText = "修正前 (原本未接続)";
         return;
       }
+      if (activeGenerationId === 'latest') {
+        label.innerText = "比較元: 初回原本 (v0)";
+        return;
+      }
       const curGen = generationManifest?.generations?.find(g => g.id === activeGenerationId);
       const genName = curGen ? curGen.name : '修正前';
-      label.innerText = `修正前: ${genName}`;
+      label.innerText = `表示中: ${genName}`;
     }
 
     async function onGenerationChange(e) {
       activeGenerationId = e.target.value;
+      if (activeGenerationId === 'v0') {
+        isInlineDiffMode = false;
+      } else {
+        isInlineDiffMode = true;
+      }
       if (generationManifest) {
         generationManifest.activeGeneration = activeGenerationId;
         scheduleSaveManifest();
       }
       const selectedText = e.target.options[e.target.selectedIndex]?.text || activeGenerationId;
       showScanModal(`📂 世代「${selectedText}」に切替中...`);
-      await loadBackupFolder();
+      if (activeGenerationId !== 'latest') {
+        await loadBackupFolder();
+      }
       hideScanModal();
       updateDiffBeforeLabel();
+      if (typeof renderCurrentView === 'function') {
+        await renderCurrentView();
+      }
       if (isDiffMode) refreshDiffFrames();
       if (detachedBackupWin && !detachedBackupWin.closed) loadIntoDetachedBackup();
     }
@@ -3098,16 +3147,20 @@
           isLegacyRoot: false,
           files: savedFiles
         });
-        generationManifest.activeGeneration = genId;
-        activeGenerationId = genId;
+        // セーブ後、カレントは「最新 (作業中)」を維持
+        generationManifest.activeGeneration = 'latest';
+        activeGenerationId = 'latest';
 
         await saveManifest(backupDirHandle, generationManifest);
         await loadBackupFolder();
         renderGenerationSelect();
 
         hideScanModal();
+        if (typeof renderCurrentView === 'function') {
+          await renderCurrentView();
+        }
         if (isDiffMode) refreshDiffFrames();
-        alert(`チェックポイント「${genName.trim()}」を保存しました！（対象ファイル: ${savedFiles.length}件）\n（世代プルダウンからいつでもこの版との差分を比較できます）`);
+        alert(`チェックポイント「${genName.trim()}」を保存しました！（対象ファイル: ${savedFiles.length}件）\n（プルダウンからいつでもこの版との差分比較や過去状態の閲覧ができます）`);
       } catch (err) {
         hideScanModal();
         alert("チェックポイント保存エラー: " + err.message);
@@ -3798,28 +3851,82 @@
 
     async function reloadWorkDirectory() {
       if (!workDirHandle) return;
-      const cachedNames = Object.keys(rawHtmlMap);
-      for (const name of cachedNames) {
-        try {
-          const fh = workFileHandles[name];
-          if (fh) {
-            const f = await fh.getFile();
-            rawHtmlMap[name] = await f.text();
-          }
-        } catch (e) { }
+      showScanModal("🔄 原本フォルダをディスクから再読込中...");
+
+      try {
+        // 1. キャッシュの破棄
+        rawHtmlMap = {};
+        blobUrlMap = {};
+
+        // 2. ディレクトリツリーの完全再走査
+        await loadWorkFolder();
+
+        // 3. 表示を「最新 (作業中)」に切り替えて、今ディスクにある最新の実ファイルを確実に表示
+        activeGenerationId = 'latest';
+        if (generationManifest) {
+          generationManifest.activeGeneration = 'latest';
+          scheduleSaveManifest();
+        }
+
+        renderGenerationSelect();
+        await renderCurrentView();
+
+        hideScanModal();
+
+        // 4. ベースライン（v0）のリセット確認（Git復元時などのテレコ防止）
+        const resetV0 = confirm(
+          "✅ 原本ファイルを最新状態に再読込しました！（最新状態を表示中）\n\n" +
+          "【ベースライン更新の確認】\n" +
+          "Gitでの巻き戻しや外部編集に合わせて、現在のディスク状態を新しい「初回原本 (v0)」としてリセットしますか？\n" +
+          "（「OK」を押すと現在の状態が新たな初回原本になります）"
+        );
+
+        if (resetV0) {
+          showScanModal("📦 初回原本 (v0) を現在の状態にリセット中...");
+          await resetV0BaselineToCurrent();
+          hideScanModal();
+          renderGenerationSelect();
+          await renderCurrentView();
+          alert("初回原本 (v0) を現在のファイル状態で更新・リセットしました！");
+        }
+      } catch (err) {
+        hideScanModal();
+        alert("原本再読込エラー: " + err.message);
       }
-      if (currentFileName) {
-        if (!rawHtmlMap[currentFileName] && workFileHandles[currentFileName]) {
+    }
+
+    async function resetV0BaselineToCurrent() {
+      if (!backupDirHandle || !generationManifest) return;
+      try {
+        try {
+          await backupDirHandle.removeEntry('v0', { recursive: true });
+        } catch (e) { }
+
+        const v0Dir = await backupDirHandle.getDirectoryHandle('v0', { create: true });
+        const v0Gen = generationManifest.generations.find(g => g.id === 'v0');
+        if (v0Gen) {
+          v0Gen.files = [];
+          v0Gen.createdAt = Date.now();
+        }
+
+        backupHtmlMap = {};
+        backupFileHandles = {};
+
+        if (currentFileName && workFileHandles[currentFileName]) {
           try {
             const f = await workFileHandles[currentFileName].getFile();
-            rawHtmlMap[currentFileName] = await f.text();
+            await saveFileToDirectory(v0Dir, currentFileName, f);
+            if (v0Gen) v0Gen.files.push(currentFileName);
+            backupHtmlMap[currentFileName] = await f.text();
+            backupFileHandles[currentFileName] = await getFileHandleFromDirectory(v0Dir, currentFileName);
           } catch (e) { }
         }
-        await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+
+        await saveManifest(backupDirHandle, generationManifest);
+        await loadBackupFolder();
+      } catch (err) {
+        console.error("v0リセットエラー:", err);
       }
-      if (isDiffMode) refreshDiffFrames();
-      if (detachedModifiedWin && !detachedModifiedWin.closed) loadIntoDetachedModified();
-      alert("原本ファイルを最新状態に再読込しました。");
     }
 
     function buildFileTreeNode(paths) {
@@ -4039,25 +4146,75 @@
       }
 
       renderFileTree();
-      const isMd = isMarkdownFile(name);
+      renderGenerationSelect();
+      await renderCurrentView();
+    }
+
+    let isInlineDiffMode = true; // デフォルトは最新の修正後(Diff)を表示
+
+    function updateDiffToggleButtonUI() {
+      const btn = document.getElementById('toggleInlineDiffBtn');
+      if (!btn) return;
+      if (isInlineDiffMode) {
+        btn.innerHTML = "⏭️ 修正後 (Diff)";
+        btn.style.background = "rgba(34, 197, 94, 0.25)";
+        btn.style.borderColor = "#22c55e";
+        btn.style.color = "#4ade80";
+        btn.title = "現在: 修正後(Diffハイライト)を表示中 (クリックで修正前を表示)";
+      } else {
+        btn.innerHTML = "⏮️ 修正前 (原本)";
+        btn.style.background = "#334155";
+        btn.style.borderColor = "#64748b";
+        btn.style.color = "#cbd5e1";
+        btn.title = "現在: 修正前(原本データ)を表示中 (クリックで修正後を表示)";
+      }
+    }
+
+    async function renderCurrentView() {
+      if (!currentFileName) return;
+      const previewEl = document.getElementById('mainPreview');
+      if (!previewEl) return;
+
+      // isInlineDiffMode が false、またはプルダウンが明示的に v0 の場合は「修正前」を表示
+      const isShowingBefore = (!isInlineDiffMode) || (activeGenerationId === 'v0');
+
+      let targetContent = "";
+      if (isShowingBefore) {
+        if (!backupHtmlMap[currentFileName] && backupFileHandles[currentFileName]) {
+          try {
+            const bf = await backupFileHandles[currentFileName].getFile();
+            backupHtmlMap[currentFileName] = await bf.text();
+          } catch (e) { }
+        }
+        targetContent = backupHtmlMap[currentFileName] || rawHtmlMap[currentFileName] || "";
+      } else {
+        targetContent = rawHtmlMap[currentFileName] || "";
+      }
+
+      const isMd = isMarkdownFile(currentFileName);
       const icon = isMd ? '📝' : '📄';
       const labelEl = document.getElementById('currentViewLabel');
       if (labelEl) {
-        labelEl.innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
-        labelEl.title = `クリックで「${name}」全体への指摘を追加`;
+        const badge = isShowingBefore 
+          ? `<span style="background:#475569; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">修正前(原本)</span>` 
+          : `<span style="background:#22c55e; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">修正後(Diff)</span>`;
+        labelEl.innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(currentFileName)}</strong> ${badge}`;
+        labelEl.title = `クリックで「${currentFileName}」全体への指摘を追加`;
       }
+
+      updateDiffToggleButtonUI();
+
       const copyBtn = document.getElementById('copyFilePathBtn');
       if (copyBtn) {
         copyBtn.style.display = 'inline-flex';
-        copyBtn.title = `クリックしてPCフルパスをコピー:\n${getFullFilePath(name)}`;
+        copyBtn.title = `クリックしてPCフルパスをコピー:\n${getFullFilePath(currentFileName)}`;
       }
       
       const placeholderEl = document.getElementById('emptyPlaceholder');
       if (placeholderEl) placeholderEl.style.display = 'none';
-      const previewEl = document.getElementById('mainPreview');
-      if (previewEl) previewEl.style.display = 'block';
+      previewEl.style.display = 'block';
 
-      await loadIntoFrame(previewEl, rawHtmlMap[name], name, blobUrlMap);
+      await loadIntoFrame(previewEl, targetContent, currentFileName, isShowingBefore ? backupBlobUrlMap : blobUrlMap);
 
       if (isDiffMode) {
         refreshDiffFrames();
@@ -4071,26 +4228,20 @@
       }
     }
 
-    let isInlineDiffMode = false;
-
     async function toggleInlineDiffMode() {
       isInlineDiffMode = !isInlineDiffMode;
-      const btn = document.getElementById('toggleInlineDiffBtn');
-      if (btn) {
-        if (isInlineDiffMode) {
-          btn.innerHTML = "🎨 Diffハイライト";
-          btn.style.background = "rgba(34, 197, 94, 0.25)";
-          btn.style.borderColor = "#22c55e";
-          btn.style.color = "#4ade80";
-          btn.title = "差分ハイライト表示中 (クリックで解除)";
-        } else {
-          btn.innerHTML = "🎨 Diffハイライト";
-          btn.style.background = "";
-          btn.style.borderColor = "";
-          btn.style.color = "";
-          btn.title = "通常プレビュー内で修正前（退避データ）との差分をハイライト";
-        }
+
+      // プルダウンの選択も同期連動（修正前なら v0、修正後なら latest）
+      if (isInlineDiffMode && activeGenerationId === 'v0') {
+        activeGenerationId = 'latest';
+      } else if (!isInlineDiffMode && activeGenerationId === 'latest') {
+        activeGenerationId = 'v0';
       }
+      if (generationManifest) {
+        generationManifest.activeGeneration = activeGenerationId;
+        scheduleSaveManifest();
+      }
+
       if (currentFileName) {
         if (workFileHandles[currentFileName]) {
           try {
@@ -4101,7 +4252,8 @@
             console.warn("最新ファイルの読込スキップ:", e);
           }
         }
-        await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+        renderGenerationSelect();
+        await renderCurrentView();
       }
     }
 
@@ -4119,26 +4271,112 @@
         const f = await fh.getFile();
         rawHtmlMap[currentFileName] = await f.text();
 
-        await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
-        if (isDiffMode) refreshDiffFrames();
-        if (detachedModifiedWin && !detachedModifiedWin.closed) loadIntoDetachedModified();
+        // 最新のディスク実ファイルを確認できるよう「修正後 (Diff)」に切り替え
+        isInlineDiffMode = true;
+        activeGenerationId = 'latest';
+        if (generationManifest) {
+          generationManifest.activeGeneration = 'latest';
+          scheduleSaveManifest();
+        }
+
+        renderGenerationSelect();
+        await renderCurrentView();
 
         const btn = document.getElementById('reloadCurrentFileBtn');
         if (btn) {
           const origText = btn.innerHTML;
-          btn.innerHTML = "✓ 再読込完了";
+          btn.innerHTML = "✓ 最新を表示";
           btn.style.background = "#2563eb";
           setTimeout(() => {
             btn.innerHTML = origText;
             btn.style.background = "";
-          }, 1000);
+          }, 1200);
         }
       } catch (err) {
         alert(`ファイル「${currentFileName}」の再読込エラー: ` + err.message);
       }
     }
 
-    // 単一ファイル用のインライン差分（成型結果に色付け）HTML生成
+    function tokenizeHtml(html) {
+      const tokens = [];
+      const regex = /(<[^>]+>|[^<]+)/g;
+      let match;
+      while ((match = regex.exec(html)) !== null) {
+        tokens.push(match[1]);
+      }
+      return tokens;
+    }
+
+    function diffHtmlTokens(tokens1, tokens2) {
+      if (typeof diff_match_patch === 'undefined') return [];
+      const dmp = new diff_match_patch();
+      const tokenArray = [];
+      const tokenHash = new Map();
+      function tokensToChars(tokens) {
+        let chars = '';
+        for (const t of tokens) {
+          let code = tokenHash.get(t);
+          if (code === undefined) {
+            code = tokenArray.length;
+            tokenArray.push(t);
+            tokenHash.set(t, code);
+          }
+          chars += String.fromCharCode(code % 65535);
+        }
+        return chars;
+      }
+      const chars1 = tokensToChars(tokens1);
+      const chars2 = tokensToChars(tokens2);
+      const diffs = dmp.diff_main(chars1, chars2, false);
+      
+      const result = [];
+      for (const [op, chunk] of diffs) {
+        for (let i = 0; i < chunk.length; i++) {
+          const code = chunk.charCodeAt(i);
+          result.push([op, tokenArray[code]]);
+        }
+      }
+      return result;
+    }
+
+    function renderDecoratedHtml(diffs, isBackup = false) {
+      const skipOp = isBackup ? 1 : -1;
+      const targetOp = isBackup ? -1 : 1;
+      const targetClass = isBackup ? 'winmerge-del' : 'winmerge-add';
+
+      let html = '';
+      let inScriptOrStyle = false;
+      let pendingStyledText = '';
+
+      function flushPending() {
+        if (pendingStyledText) {
+          html += '<span class="' + targetClass + '">' + pendingStyledText + '</span>';
+          pendingStyledText = '';
+        }
+      }
+
+      for (const [op, token] of diffs) {
+        if (op === skipOp) continue;
+        const isTag = token.startsWith('<') && token.endsWith('>');
+        if (isTag) {
+          flushPending();
+          if (/^<(script|style|head)/i.test(token)) inScriptOrStyle = true;
+          if (/^<\/(script|style|head)/i.test(token)) inScriptOrStyle = false;
+          html += token;
+        } else {
+          if (op === targetOp && !inScriptOrStyle) {
+            pendingStyledText += token;
+          } else {
+            flushPending();
+            html += token;
+          }
+        }
+      }
+      flushPending();
+      return html;
+    }
+
+    // 単一ファイル用のインライン差分（HTMLトークン分割 Myers Diff による正確なインライン装飾）
     function buildInlineDiffHtml(currentRawText, backupRawText, fileName) {
       const currentHtml = getRenderableHtml(fileName, currentRawText);
       if (!backupRawText) {
@@ -4165,58 +4403,43 @@
         return infoBar + currentHtml;
       }
 
-      const DIFF_SELECTORS = 'p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, dt, dd, figcaption';
-      let counterpartTexts = [];
-      try {
-        const doc = new DOMParser().parseFromString(backupHtml, 'text/html');
-        if (doc.body) {
-          const allEls = Array.from(doc.body.querySelectorAll(DIFF_SELECTORS));
-          const leafEls = allEls.filter(parent => !allEls.some(child => child !== parent && parent.contains(child)));
-          counterpartTexts = leafEls
-            .map(el => normalizeDiffText(el.textContent || ""))
-            .filter(t => t.length > 1);
-        }
-      } catch (e) {
-        console.error("Diff parse error:", e);
-      }
+      const diffStyles = `
+        <style>
+          .winmerge-add {
+            background-color: rgba(34, 197, 94, 0.22) !important;
+            border-left: 4px solid #22c55e !important;
+            padding-left: 4px !important;
+            padding-right: 4px !important;
+            border-radius: 2px !important;
+          }
+        </style>
+      `;
 
       let decoratedHtml = currentHtml;
       try {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(currentHtml, 'text/html');
-        if (doc.body) {
-          const elements = Array.from(doc.body.querySelectorAll(DIFF_SELECTORS));
-          const diffCandidates = [];
-          elements.forEach(el => {
-            const text = normalizeDiffText(el.textContent || "");
-            if (text.length <= 1) return;
-            if (!counterpartTexts.includes(text)) {
-              diffCandidates.push(el);
-            }
-          });
-
-          // 【二重ハイライト完全防止】子孫に差分要素を持つ親要素を除外し、最深の該当要素のみに付与
-          const leafDiffElements = diffCandidates.filter(parent => {
-            return !diffCandidates.some(child => child !== parent && parent.contains(child));
-          });
-
-          leafDiffElements.forEach(el => {
-            el.classList.add('winmerge-add');
-          });
-
-          const infoBar = `
-            <div style="background:#18191c; border-bottom:1px solid #22c55e; color:#e2e8f0; padding:6px 14px; font-size:12px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:99999; box-shadow:0 2px 8px rgba(0,0,0,0.4);">
-              <span>🎨 <strong>差分ハイライト中（更新後を表示）</strong>: <span style="background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:4px;">緑 = 修正・追加された箇所</span></span>
-              <span style="font-size:11px;color:#9ca3af;">（ツールバーでいつでもOFF可能）</span>
-            </div>
-          `;
-          decoratedHtml = `<!DOCTYPE html><html>${doc.documentElement.innerHTML}</html>`;
-          if (decoratedHtml.includes("<body")) decoratedHtml = decoratedHtml.replace(/(<body[^>]*>)/i, `$1${infoBar}`);
-          else decoratedHtml = infoBar + decoratedHtml;
-        }
+        const tokensBefore = tokenizeHtml(backupHtml);
+        const tokensAfter = tokenizeHtml(currentHtml);
+        const diffResults = diffHtmlTokens(tokensBefore, tokensAfter);
+        decoratedHtml = renderDecoratedHtml(diffResults, false);
       } catch (err) {
-        console.error("Inline diff decoration error:", err);
+        console.warn("Inline diff decoration error:", err);
       }
+
+      const infoBar = `
+        <div style="background:#18191c; border-bottom:1px solid #22c55e; color:#e2e8f0; padding:6px 14px; font-size:12px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:99999; box-shadow:0 2px 8px rgba(0,0,0,0.4);">
+          <span>🎨 <strong>差分ハイライト中（更新後を表示）</strong>: <span style="background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:4px;">緑 = 修正・追加された箇所</span></span>
+          <span style="font-size:11px;color:#9ca3af;">（ツールバーでいつでもOFF可能）</span>
+        </div>
+      `;
+
+      if (decoratedHtml.includes("<head")) {
+        decoratedHtml = decoratedHtml.replace(/(<head[^>]*>)/i, `$1${diffStyles}`);
+      } else {
+        decoratedHtml = diffStyles + decoratedHtml;
+      }
+
+      if (decoratedHtml.includes("<body")) decoratedHtml = decoratedHtml.replace(/(<body[^>]*>)/i, `$1${infoBar}`);
+      else decoratedHtml = infoBar + decoratedHtml;
 
       return decoratedHtml;
     }
@@ -4224,7 +4447,7 @@
     async function loadIntoFrame(frameEl, rawHtml, fileName, resourceMap) {
       if (!rawHtml) return;
       let baseHtml;
-      if (isInlineDiffMode && frameEl && frameEl.id === 'mainPreview') {
+      if (isInlineDiffMode && frameEl && frameEl.id === 'mainPreview' && activeGenerationId !== 'v0') {
         baseHtml = buildInlineDiffHtml(rawHtml, backupHtmlMap[fileName], fileName);
       } else {
         baseHtml = getRenderableHtml(fileName, rawHtml);
@@ -5362,104 +5585,45 @@
         return targetHtml;
       }
 
-      // 比較対象の要素セレクタ（抽出側と判定側で完全統一）
-      const DIFF_SELECTORS = 'p, h1, h2, h3, h4, h5, h6, li, td, th, blockquote, pre, dt, dd, figcaption';
-
-      // 相手側の要素テキストを正規化してSet化
-      let counterpartTexts = [];
-      if (counterpartHtml) {
-        try {
-          const doc = new DOMParser().parseFromString(counterpartHtml, 'text/html');
-          if (doc.body) {
-            const allEls = Array.from(doc.body.querySelectorAll(DIFF_SELECTORS));
-            const leafEls = allEls.filter(parent => !allEls.some(child => child !== parent && parent.contains(child)));
-            counterpartTexts = leafEls
-              .map(el => normalizeDiffText(el.textContent || ""))
-              .filter(t => t.length > 1);
-          }
-        } catch (e) {
-          console.error("Diff parse error:", e);
-        }
-      }
-
       const diffStyles = `
         <style>
           .winmerge-del {
             background-color: #fee2e2 !important;
             border-left: 4px solid #ef4444 !important;
             color: #991b1b !important;
-            padding: 2px 4px !important;
+            padding: 1px 4px !important;
             border-radius: 2px !important;
+            text-decoration: line-through !important;
             box-shadow: 0 0 6px rgba(239, 68, 68, 0.25) !important;
           }
           .winmerge-add {
             background-color: #dcfce7 !important;
             border-left: 4px solid #22c55e !important;
             color: #166534 !important;
-            padding: 2px 4px !important;
+            padding: 1px 4px !important;
             border-radius: 2px !important;
             box-shadow: 0 0 6px rgba(34, 197, 94, 0.25) !important;
           }
         </style>
       `;
 
-      const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
-      const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
-      const counterpartJson = JSON.stringify(counterpartTexts).replace(/</g, '\\u003c');
-
-      const diffMarkerScript = `\n` + sTag + `
-        (function() {
-          function norm(s) {
-            if (!s) return "";
-            return s.replace(/[\\u200B-\\u200D\\uFEFF]/g, '').replace(/\\s+/g, ' ').trim();
-          }
-
-          function markDiffs() {
-            const counterpartSet = new Set(${counterpartJson});
-            const isDel = ${isBackup ? 'true' : 'false'};
-            const targetClass = isDel ? 'winmerge-del' : 'winmerge-add';
-            
-            const candidates = document.body ? Array.from(document.body.querySelectorAll('${DIFF_SELECTORS}')) : [];
-            const matchedCandidates = [];
-            candidates.forEach(el => {
-              const text = norm(el.textContent || "");
-              if (text && text.length > 1 && !counterpartSet.has(text)) {
-                matchedCandidates.push(el);
-              }
-            });
-
-            // 親子入れ子防止：子孫に差分要素を持つ親要素は除外
-            const leafElements = matchedCandidates.filter(parent => {
-              return !matchedCandidates.some(child => child !== parent && parent.contains(child));
-            });
-
-            leafElements.forEach(el => {
-              el.classList.add(targetClass);
-            });
-          }
-
-          if (document.readyState === 'loading') {
-            window.addEventListener('DOMContentLoaded', markDiffs);
-          } else {
-            markDiffs();
-          }
-        })();
-      ` + eTag + `\n`;
-
-      let finalHtml = targetHtml;
-      if (finalHtml.includes("<head")) {
-        finalHtml = finalHtml.replace(/(<head[^>]*>)/i, (m) => m + diffStyles);
-      } else {
-        finalHtml = diffStyles + finalHtml;
+      let decoratedHtml = targetHtml;
+      try {
+        const tokensBefore = tokenizeHtml(isBackup ? targetHtml : counterpartHtml);
+        const tokensAfter = tokenizeHtml(isBackup ? counterpartHtml : targetHtml);
+        const diffResults = diffHtmlTokens(tokensBefore, tokensAfter);
+        decoratedHtml = renderDecoratedHtml(diffResults, isBackup);
+      } catch (err) {
+        console.warn("WinMerge token diff decoration error:", err);
       }
 
-      if (finalHtml.includes("<body")) {
-        finalHtml = finalHtml.replace(/(<body[^>]*>)/i, (m) => m + diffMarkerScript);
+      if (decoratedHtml.includes("<head")) {
+        decoratedHtml = decoratedHtml.replace(/(<head[^>]*>)/i, (m) => m + diffStyles);
       } else {
-        finalHtml = diffMarkerScript + finalHtml;
+        decoratedHtml = diffStyles + decoratedHtml;
       }
 
-      return finalHtml;
+      return decoratedHtml;
     }
 
     async function loadDiffDecoratedFrame(frameEl, html, role, isBackup = false) {
