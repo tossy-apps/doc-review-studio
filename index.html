@@ -4170,9 +4170,9 @@
       try {
         const doc = new DOMParser().parseFromString(backupHtml, 'text/html');
         if (doc.body) {
-          const elements = doc.body.querySelectorAll(DIFF_SELECTORS);
-          counterpartTexts = Array.from(elements)
-            .filter(el => !Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName)))
+          const allEls = Array.from(doc.body.querySelectorAll(DIFF_SELECTORS));
+          const leafEls = allEls.filter(parent => !allEls.some(child => child !== parent && parent.contains(child)));
+          counterpartTexts = leafEls
             .map(el => normalizeDiffText(el.textContent || ""))
             .filter(t => t.length > 1);
         }
@@ -4185,14 +4185,23 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(currentHtml, 'text/html');
         if (doc.body) {
-          const elements = doc.body.querySelectorAll(DIFF_SELECTORS);
+          const elements = Array.from(doc.body.querySelectorAll(DIFF_SELECTORS));
+          const diffCandidates = [];
           elements.forEach(el => {
-            if (Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName))) return;
             const text = normalizeDiffText(el.textContent || "");
             if (text.length <= 1) return;
             if (!counterpartTexts.includes(text)) {
-              el.classList.add('winmerge-add');
+              diffCandidates.push(el);
             }
+          });
+
+          // 【二重ハイライト完全防止】子孫に差分要素を持つ親要素を除外し、最深の該当要素のみに付与
+          const leafDiffElements = diffCandidates.filter(parent => {
+            return !diffCandidates.some(child => child !== parent && parent.contains(child));
+          });
+
+          leafDiffElements.forEach(el => {
+            el.classList.add('winmerge-add');
           });
 
           const infoBar = `
@@ -5362,12 +5371,9 @@
         try {
           const doc = new DOMParser().parseFromString(counterpartHtml, 'text/html');
           if (doc.body) {
-            const elements = doc.body.querySelectorAll(DIFF_SELECTORS);
-            counterpartTexts = Array.from(elements)
-              .filter(el => {
-                // 子要素に別のブロック要素を持つ親要素はスキップ
-                return !Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName));
-              })
+            const allEls = Array.from(doc.body.querySelectorAll(DIFF_SELECTORS));
+            const leafEls = allEls.filter(parent => !allEls.some(child => child !== parent && parent.contains(child)));
+            counterpartTexts = leafEls
               .map(el => normalizeDiffText(el.textContent || ""))
               .filter(t => t.length > 1);
           }
@@ -5413,14 +5419,22 @@
             const isDel = ${isBackup ? 'true' : 'false'};
             const targetClass = isDel ? 'winmerge-del' : 'winmerge-add';
             
-            const candidates = document.body ? document.body.querySelectorAll('${DIFF_SELECTORS}') : [];
+            const candidates = document.body ? Array.from(document.body.querySelectorAll('${DIFF_SELECTORS}')) : [];
+            const matchedCandidates = [];
             candidates.forEach(el => {
-              if (Array.from(el.children).some(c => /^(P|H[1-6]|LI|TD|TH|TABLE|BLOCKQUOTE|DIV)$/i.test(c.tagName))) return;
-              
               const text = norm(el.textContent || "");
               if (text && text.length > 1 && !counterpartSet.has(text)) {
-                el.classList.add(targetClass);
+                matchedCandidates.push(el);
               }
+            });
+
+            // 親子入れ子防止：子孫に差分要素を持つ親要素は除外
+            const leafElements = matchedCandidates.filter(parent => {
+              return !matchedCandidates.some(child => child !== parent && parent.contains(child));
+            });
+
+            leafElements.forEach(el => {
+              el.classList.add(targetClass);
             });
           }
 
