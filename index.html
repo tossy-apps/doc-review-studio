@@ -1145,9 +1145,9 @@
             ◧ ファイル
           </button>
 
-          <div id="currentViewLabel" title="クリックしてファイルパスをコピー"><strong>ファイルを選択してください</strong></div>
-          <button class="btn-copy-path" id="copyFilePathBtn" title="表示中ファイルの相対パスをクリップボードにコピー" style="display: none;">
-            📋 パスコピー
+          <div id="currentViewLabel" title="クリックしてフルパスをコピー"><strong>ファイルを選択してください</strong></div>
+          <button class="btn-copy-path" id="copyFilePathBtn" title="表示中ファイルのフルパスをクリップボードにコピー" style="display: none;">
+            📋 フルパスコピー
           </button>
           <span class="inline-progress-tag" id="backupProgressBadge">
             <span id="backupSpinner">⏳</span>
@@ -1583,10 +1583,89 @@
     document.getElementById('copyFilePathBtn').onclick = copyCurrentFilePath;
     document.getElementById('currentViewLabel').onclick = copyCurrentFilePath;
 
+    function getRootFullPath() {
+      if (!workDirHandle) return '';
+      return localStorage.getItem('doc_review_root_path_' + workDirHandle.name) || '';
+    }
+
+    function setRootFullPath(path) {
+      if (!workDirHandle) return;
+      if (path && path.trim()) {
+        const clean = path.trim().replace(/[\\/]+$/, '');
+        localStorage.setItem('doc_review_root_path_' + workDirHandle.name, clean);
+      } else {
+        localStorage.removeItem('doc_review_root_path_' + workDirHandle.name);
+      }
+      updateFolderLabel();
+    }
+
+    function getFullFilePath(relPath) {
+      if (!relPath) return '';
+      const rootPath = getRootFullPath();
+      if (!rootPath) {
+        const dirName = workDirHandle ? workDirHandle.name : '';
+        return dirName ? `${dirName}/${relPath}` : relPath;
+      }
+      if (rootPath.includes('\\') || /^[a-zA-Z]:/.test(rootPath)) {
+        const normalizedRel = relPath.replace(/\//g, '\\');
+        return `${rootPath}\\${normalizedRel}`;
+      }
+      return `${rootPath}/${relPath}`;
+    }
+
+    function updateFolderLabel() {
+      const label = document.getElementById('folderLabel');
+      if (!label) return;
+      if (!workDirHandle) {
+        label.innerText = "[原本未選択]";
+        label.title = "";
+        return;
+      }
+      const rootPath = getRootFullPath();
+      if (rootPath) {
+        label.innerHTML = `[原本: <span style="color:#60a5fa;" title="${escapeHtml(rootPath)}">${escapeHtml(rootPath.split(/[\\/]/).pop())}</span> ✏️]`;
+        label.title = `設定中PCフルパス: ${rootPath}\n(クリックでフルパスを変更)`;
+      } else {
+        label.innerHTML = `[原本: ${escapeHtml(workDirHandle.name)} ✏️]`;
+        label.title = `クリックしてPCフルパス（例: D:\\...）を設定`;
+      }
+      label.style.cursor = 'pointer';
+    }
+
+    const folderLabelEl = document.getElementById('folderLabel');
+    if (folderLabelEl) {
+      folderLabelEl.onclick = () => {
+        if (!workDirHandle) return;
+        const current = getRootFullPath();
+        const input = prompt(
+          "【原本フォルダのPCフルパス設定】\nクリップボードにコピーするルートパスを入力してください。\n（例: D:\\Downloads\\jdk-27_doc-all\\docs）",
+          current || (workDirHandle ? workDirHandle.name : "")
+        );
+        if (input !== null) {
+          setRootFullPath(input.trim());
+          alert("フルパスを保存しました:\n" + (getRootFullPath() || "フォルダ名のみ"));
+        }
+      };
+    }
+
     async function copyCurrentFilePath() {
       if (!currentFileName) return;
+      let fullPath = getFullFilePath(currentFileName);
+
+      let rootPath = getRootFullPath();
+      if (!rootPath) {
+        const input = prompt(
+          `【フルパス設定】\nPC上のフルパス（例: D:\\Downloads\\jdk-27_doc-all\\docs）を入力すると、次回以降完全なフルパスでコピーされます。\n（空欄のままでも「${workDirHandle ? workDirHandle.name : ''}」結合でコピーします）`,
+          workDirHandle ? workDirHandle.name : ''
+        );
+        if (input && input.trim() && input.trim() !== (workDirHandle ? workDirHandle.name : '')) {
+          setRootFullPath(input.trim());
+          fullPath = getFullFilePath(currentFileName);
+        }
+      }
+
       try {
-        await navigator.clipboard.writeText(currentFileName);
+        await navigator.clipboard.writeText(fullPath);
         const btn = document.getElementById('copyFilePathBtn');
         if (btn) {
           const origText = btn.innerHTML;
@@ -1607,7 +1686,7 @@
         }
       } catch (err) {
         const ta = document.createElement('textarea');
-        ta.value = currentFileName;
+        ta.value = fullPath;
         document.body.appendChild(ta);
         ta.select();
         document.execCommand('copy');
@@ -1626,7 +1705,7 @@
         return;
       }
 
-      document.getElementById('folderLabel').innerText = `[原本: ${workDirHandle.name}]`;
+      updateFolderLabel();
       if (window.DocReviewGuide) window.DocReviewGuide.close();
       await loadWorkFolder();
     }
@@ -2312,10 +2391,13 @@
       const labelEl = document.getElementById('currentViewLabel');
       if (labelEl) {
         labelEl.innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
-        labelEl.title = `クリックしてパスをコピー: ${name}`;
+        labelEl.title = `クリックしてフルパスをコピー:\n${getFullFilePath(name)}`;
       }
       const copyBtn = document.getElementById('copyFilePathBtn');
-      if (copyBtn) copyBtn.style.display = 'inline-flex';
+      if (copyBtn) {
+        copyBtn.style.display = 'inline-flex';
+        copyBtn.title = `クリックしてフルパスをコピー:\n${getFullFilePath(name)}`;
+      }
       
       const placeholderEl = document.getElementById('emptyPlaceholder');
       if (placeholderEl) placeholderEl.style.display = 'none';
