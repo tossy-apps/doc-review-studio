@@ -59,11 +59,11 @@
     header {
       background: var(--bg-header);
       border-bottom: 2px solid var(--border-light);
-      padding: 6px 12px;
+      padding: 4px 10px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      height: 58px;
+      gap: 7px;
+      height: 56px;
       flex-shrink: 0;
       z-index: 100;
       overflow-x: auto;
@@ -162,29 +162,29 @@
       background: var(--bg-group);
       border: 1px solid var(--border-group);
       border-radius: 6px;
-      padding: 4px 8px;
-      gap: 3px;
+      padding: 3px 6px;
+      gap: 2px;
       flex-shrink: 0;
     }
 
     .group-label {
-      font-size: 10px;
+      font-size: 9.5px;
       font-weight: 700;
       color: #cbd5e1;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.5px;
       line-height: 1;
       padding-left: 2px;
     }
 
     .group-buttons {
       display: flex;
-      gap: 5px;
+      gap: 4px;
       align-items: center;
     }
 
     .btn {
-      padding: 4px 10px;
+      padding: 3px 7px;
       cursor: pointer;
       border-radius: 4px;
       border: 1px solid #4b5563;
@@ -194,9 +194,9 @@
       font-size: 11px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       white-space: nowrap;
-      height: 28px;
+      height: 26px;
       transition: background 0.15s ease, border-color 0.15s ease;
     }
 
@@ -209,9 +209,9 @@
     .generation-controls {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      margin-left: 6px;
-      padding-left: 8px;
+      gap: 4px;
+      margin-left: 4px;
+      padding-left: 6px;
       border-left: 1px solid #374151;
     }
 
@@ -222,11 +222,11 @@
       border-radius: 4px;
       font-size: 11px;
       font-weight: 700;
-      padding: 0 6px;
-      height: 28px;
+      padding: 0 4px;
+      height: 26px;
       cursor: pointer;
       outline: none;
-      max-width: 145px;
+      max-width: 125px;
     }
 
     .generation-select:disabled {
@@ -1372,7 +1372,166 @@
       color: #ffffff;
     }
 
+    /* ヘッダー右端: けんさくくん誘導ピル型バッジ */
+    .btn-kensaku-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.16), rgba(5, 150, 105, 0.28));
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.45);
+      border-radius: 9999px;
+      padding: 0 9px;
+      height: 26px;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      flex-shrink: 0;
+    }
+    .btn-kensaku-badge:hover {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.32), rgba(5, 150, 105, 0.44));
+      border-color: #34d399;
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+    }
+    .btn-kensaku-badge .badge-icon {
+      font-size: 11.5px;
+      line-height: 1;
+    }
+    .btn-kensaku-badge .badge-arrow {
+      font-size: 10px;
+      color: #a7f3d0;
+      opacity: 0.85;
+      margin-left: 1px;
+    }
 
+    /* 空状態プレースホルダー: tossy-apps 関連プロダクト案内カード */
+    .partner-promo-card {
+      margin-top: 14px;
+      max-width: 500px;
+      width: 92%;
+      background: linear-gradient(145deg, #17202e 0%, #131822 100%);
+      border: 1px solid rgba(56, 189, 248, 0.26);
+      border-radius: 10px;
+      padding: 14px 18px;
+      text-align: left;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+    }
+    .partner-promo-card:hover {
+      border-color: rgba(52, 211, 153, 0.42);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+    }
+    .partner-promo-header {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin-bottom: 8px;
+    }
+    .partner-promo-badge {
+      font-size: 10px;
+      font-weight: 700;
+      color: #38bdf8;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .partner-promo-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .partner-promo-desc {
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+    .partner-promo-footer {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-partner-promo {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      border-radius: 5px;
+      padding: 5px 13px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .btn-partner-promo:hover {
+      background: #0369a1;
+      border-color: #7dd3fc;
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.4);
+    }
+    .partner-promo-note {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    /* サイドバー下部: けんさくくんリンクボックス */
+    .kensaku-link-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s ease;
+      margin-top: 6px;
+    }
+    .kensaku-link-box:hover {
+      background: rgba(16, 185, 129, 0.22);
+      border-color: #34d399;
+      color: #ffffff;
+    }
+
+    /* 空状態プレースホルダーのスクロール調整 */
+    .empty-center-placeholder {
+      overflow-y: auto !important;
+      max-height: 100% !important;
+      padding: 24px 16px !important;
+      box-sizing: border-box !important;
+    }
+
+    @media (max-width: 1650px) {
+      .btn-kensaku-badge {
+        font-size: 10.5px;
+        padding: 0 6px;
+        gap: 3px;
+      }
+    }
+    @media (max-width: 1450px) {
+      .btn-kensaku-badge .badge-text {
+        max-width: 110px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
   </style>
 </head>
 
@@ -1417,6 +1576,9 @@
       <a href="./manual.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualLink" title="詳細な使い方マニュアルを開く (別タブ)">
         📖 マニュアル (別タブ)
       </a>
+      <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="kensaku-link-box" title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
+        📊 けんさくくん (Excel検索) ↗
+      </a>
       <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="portal-link-box" title="tossy-apps 公式ポータルへ戻る">
         🏠 tossy-apps 公式ポータル
       </a>
@@ -1436,8 +1598,8 @@
         <div class="group-buttons">
           <button class="btn" id="openDirBtn" title="レビュー・校正したいHTML/Markdownが入った作業フォルダを開く">📁 原本を開く</button>
           <button class="btn" id="openRecentBtn" title="最近使用した作業フォルダの履歴から開く">🕒 履歴</button>
-          <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
-          <div class="generation-controls" id="generationControls">
+          <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 再読込</button>
+          <div class="generation-controls" id="generationControls" style="display: none;">
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">世代:</span>
             <select id="generationSelect" class="generation-select" title="差分比較の基準にする世代を選択" disabled>
               <option value="">(原本を開いてください)</option>
@@ -1463,11 +1625,11 @@
       <div class="action-group">
         <div class="group-label">AI Prompt</div>
         <div class="group-buttons">
-          <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみコピー">
-            🤖 選択ファイル指示
+          <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみプロンプトコピー">
+            🤖 選択ファイル
           </button>
-          <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算コピー">
-            🤖 全ファイル指示
+          <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算してプロンプトコピー">
+            🤖 全ファイル
           </button>
         </div>
       </div>
@@ -1479,17 +1641,26 @@
           <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダを2画面ブロック差分検証 (WinMerge風)">
             🔄 WinMerge風Diff
           </button>
-          <button class="btn" id="openDetachedModifiedBtn" title="原本（修正後作業中）を独立別ウィンドウで開く" style="padding: 3px 8px; font-size: 11px;">
+          <button class="btn" id="openDetachedModifiedBtn" title="原本（修正後作業中）を独立別ウィンドウで開く" style="padding: 2px 6px; font-size: 11px;">
             🪟 原本
           </button>
-          <button class="btn" id="openDetachedBackupBtn" title="退避（修正前原本）を独立別ウィンドウで開く" style="padding: 3px 8px; font-size: 11px;">
+          <button class="btn" id="openDetachedBackupBtn" title="退避（修正前原本）を独立別ウィンドウで開く" style="display: none; padding: 2px 6px; font-size: 11px;">
             🪟 修正前
           </button>
           <button class="btn" id="showGuideBtn" title="3ステップの動くスタジオガイドを表示">
-            💡 スタジオガイド
+            💡 ガイド
           </button>
         </div>
       </div>
+
+      <!-- 姉妹ツール誘導: けんさくくん -->
+      <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer"
+        class="btn-kensaku-badge"
+        title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
+        <span class="badge-icon">📊</span>
+        <span class="badge-text">Excel検索: けんさくくん</span>
+        <span class="badge-arrow">↗</span>
+      </a>
     </header>
 
     <div class="main-workspace">
@@ -1560,6 +1731,23 @@
             <button class="btn btn-manual" id="placeholderGuideBtn" style="font-weight: 700; padding: 6px 14px;">
               💡 スタジオガイド
             </button>
+          </div>
+
+          <!-- tossy-apps 関連プロダクト案内カード -->
+          <div class="partner-promo-card">
+            <div class="partner-promo-header">
+              <span class="partner-promo-badge">tossy-apps 関連プロダクト</span>
+              <div class="partner-promo-title">📊 仕様書がExcelでお困りの現場には</div>
+            </div>
+            <div class="partner-promo-desc">
+              数百〜数千の神Excel・方眼紙仕様書から目的のセルを爆速インメモリ全文検索。完全オフライン動作・コード署名済みのWindows専用ツール『けんさくくん』もご利用いただけます。
+            </div>
+            <div class="partner-promo-footer">
+              <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="btn-partner-promo" title="神Excel高速検索ツール「けんさくくん」公式サイトへ (別タブ)">
+                けんさくくん 公式サイトを見る ↗
+              </a>
+              <span class="partner-promo-note">※ 30日無料試用版・PCローカル完結</span>
+            </div>
           </div>
         </div>
 
@@ -1687,6 +1875,16 @@
           <button class="btn btn-accent" id="recentNewFolderBtn" style="font-weight: 600;">
             📁 新しい原本フォルダを開く...
           </button>
+        </div>
+
+        <!-- tossy-apps 関連ツール導線 -->
+        <div style="margin-top: 10px; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(52, 211, 153, 0.25); border-radius: 6px; display: flex; align-items: center; justify-content: space-between;">
+          <span style="font-size: 11px; color: #a7f3d0;">
+            📊 <strong>Excel仕様書の検索でお困りですか？</strong> 神Excelを爆速インメモリ検索
+          </span>
+          <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #34d399; font-weight: 700; text-decoration: none; white-space: nowrap; margin-left: 8px;" title="Excel高速横断検索ツール「けんさくくん」（30日無料試用版あり）">
+            けんさくくん ↗
+          </a>
         </div>
       </div>
 
@@ -2991,6 +3189,7 @@
       const exportBtn = document.getElementById('exportGenerationBtn');
 
       if (!backupDirHandle || !generationManifest || !generationManifest.generations || generationManifest.generations.length === 0) {
+        if (container) container.style.display = 'none';
         if (sel) {
           sel.disabled = true;
           sel.innerHTML = '<option value="">(原本を開いてください)</option>';
@@ -3000,6 +3199,7 @@
         return;
       }
 
+      if (container) container.style.display = 'inline-flex';
       if (sel) {
         sel.disabled = false;
         sel.innerHTML = '';

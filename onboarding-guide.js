@@ -298,7 +298,7 @@
           ]
         },
         {
-          title: '📖 詳細マニュアル ＆ 公式ポータル',
+          title: '📖 マニュアル・ポータル ＆ 姉妹ツール',
           items: [
             {
               id: 'manualHeaderLink',
@@ -313,6 +313,13 @@
               loc: '左サイドバー',
               desc: 'tossy-apps公式ポータル（他ツールや最新リリース情報）を開きます',
               icon: '🏠'
+            },
+            {
+              id: 'btnQuickKensaku',
+              name: '📊 Excel検索: けんさくくん',
+              loc: 'ヘッダー右端 / 左下フッター',
+              desc: '大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール（30日無料試用版あり）',
+              icon: '📊'
             }
           ]
         }
@@ -405,10 +412,13 @@
             <div class="guide-left-footer">
               <div class="footer-quick-links">
                 <a href="./manual.html" target="_blank" class="btn-quick-util" id="btnQuickManual">
-                  <span>📖</span> 詳細マニュアル
+                  <span>📖</span> マニュアル
                 </a>
                 <a href="https://tossy-apps.github.io/" target="_blank" class="btn-quick-util" id="btnQuickPortal">
-                  <span>🏠</span> 公式ポータル
+                  <span>🏠</span> ポータル
+                </a>
+                <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="btn-quick-util btn-quick-kensaku" id="btnQuickKensaku" title="神Excel・方眼紙仕様書を爆速インメモリ全文検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
+                  <span>📊</span> けんさくくん ↗
                 </a>
               </div>
               <label class="guide-dont-show-row" title="チェックを入れると次回ページを開いた時にこのガイドが自動で開かなくなります（ヘッダー右上の💡ガイドからいつでも再開できます）">
