@@ -65,6 +65,9 @@
       height: 58px;
       flex-shrink: 0;
       z-index: 100;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
     }
 
     .sidebar-brand-box {
@@ -222,7 +225,20 @@
       height: 28px;
       cursor: pointer;
       outline: none;
-      max-width: 150px;
+      max-width: 145px;
+    }
+
+    .generation-select:disabled {
+      background: #18191c;
+      color: #64748b;
+      border-color: #334155;
+      cursor: not-allowed;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      pointer-events: none;
     }
 
     .btn-accent {
@@ -291,6 +307,28 @@
       background: #0369a1;
       border-color: #7dd3fc;
       color: #ffffff;
+    }
+
+    .manual-link-box {
+      display: block;
+      padding: 5px 10px;
+      margin-bottom: 6px;
+      background: #1f2937;
+      border: 1px solid #4b5563;
+      border-radius: 6px;
+      color: #e5e7eb;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+      letter-spacing: 0.3px;
+    }
+
+    .manual-link-box:hover {
+      background: #374151;
+      border-color: #9ca3af;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .portal-link-box {
@@ -1190,6 +1228,150 @@
       gap: 10px;
       margin-top: 6px;
     }
+
+    /* 最近使用したフォルダ履歴カード */
+    .recent-item-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #18191c;
+      border: 1px solid #2d3139;
+      border-radius: 8px;
+      padding: 10px 14px;
+      transition: all 0.2s ease;
+      gap: 12px;
+    }
+    .recent-item-card:hover {
+      background: #20232a;
+      border-color: #3b82f6;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    .recent-item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      flex: 1;
+    }
+    .recent-item-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .recent-item-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .recent-item-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .recent-item-sub {
+      font-size: 11px;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: monospace;
+    }
+    .recent-item-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #94a3b8;
+      flex-wrap: wrap;
+    }
+    .recent-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge-gen {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .badge-issue {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .recent-path {
+      color: #64748b;
+      font-family: monospace;
+      font-size: 10px;
+      max-width: 160px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .recent-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .btn-icon-danger {
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 5px 8px;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 12px;
+      line-height: 1;
+      transition: all 0.15s ease;
+    }
+    .btn-icon-danger:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: #ef4444;
+      color: #ef4444;
+    }
+    .recent-empty-state {
+      padding: 30px 20px;
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+      background: #141518;
+      border: 1px dashed #2d3139;
+      border-radius: 8px;
+    }
+
+    /* ファイルツリー・検索拡張スタイル */
+    .pane-files-search {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .file-search-clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1;
+      display: none;
+    }
+    .file-search-clear-btn:hover {
+      color: #ffffff;
+    }
+
+
   </style>
 </head>
 
@@ -1225,11 +1407,15 @@
     </div>
     <div class="pane-files-search">
       <input type="text" id="fileFilterInput" class="file-search-input" placeholder="🔍 ファイル検索 (HTML / MD)..." />
+      <button class="file-search-clear-btn" id="fileFilterClearBtn" title="検索語をクリア">✖</button>
     </div>
     <ul class="file-tree" id="fileTree">
       <li style="color: #9ca3af; cursor: default;">原本フォルダを開いてください</li>
     </ul>
     <div class="pane-files-footer">
+      <a href="./manual.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualLink" title="詳細な使い方マニュアルを開く (別タブ)">
+        📖 マニュアル (別タブ)
+      </a>
       <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="portal-link-box" title="tossy-apps 公式ポータルへ戻る">
         🏠 tossy-apps 公式ポータル
       </a>
@@ -1243,18 +1429,20 @@
   <!-- 右メインカラム（ヘッダー ＋ プレビュー/Diff ＋ 右指摘ログ） -->
   <div class="main-column">
     <header>
-      <!-- グループ1: 原本・退避管理 -->
+      <!-- グループ1: 原本・履歴管理 -->
       <div class="action-group">
-        <div class="group-label">Source & Backup</div>
+        <div class="group-label">Source & History</div>
         <div class="group-buttons">
           <button class="btn" id="openDirBtn" title="レビュー・校正したいHTML/Markdownが入った作業フォルダを開く">📁 原本を開く</button>
-          <button class="btn" id="openBackupDirBtn" title="退避フォルダを指定し世代スナップショットを有効化">📂 退避先を指定</button>
+          <button class="btn" id="openRecentBtn" title="最近使用した作業フォルダの履歴から開く">🕒 履歴</button>
           <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
-          <div class="generation-controls" id="generationControls" style="display: none;">
+          <div class="generation-controls" id="generationControls">
             <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">世代:</span>
-            <select id="generationSelect" class="generation-select" title="差分比較または復元対象の世代を選択"></select>
-            <button class="btn" id="createSnapshotBtn" title="現在の修正状態を新しい世代として差分退避 (省ディスク)" style="padding: 2px 7px; font-size: 11px;">📸 世代退避</button>
-            <button class="btn" id="rollbackGenerationBtn" title="選択した世代のファイルを原本に上書き復元" style="padding: 2px 7px; font-size: 11px;">↩️ 戻す</button>
+            <select id="generationSelect" class="generation-select" title="差分比較の基準にする世代を選択" disabled>
+              <option value="">(原本を開いてください)</option>
+            </select>
+            <button class="btn" id="createSnapshotBtn" title="現在の修正状態を新しい版（チェックポイント）として保存" style="padding: 2px 7px; font-size: 11px;" disabled>📸 セーブ</button>
+            <button class="btn" id="exportGenerationBtn" title="選択中の世代ファイルを安全に別名保存（原本は上書きしません）" style="padding: 2px 7px; font-size: 11px;" disabled>📥 別名保存</button>
           </div>
         </div>
       </div>
@@ -1272,7 +1460,7 @@
 
       <!-- グループ3: AIプロンプト生成 -->
       <div class="action-group">
-        <div class="group-label">AI Prompt & View</div>
+        <div class="group-label">AI Prompt</div>
         <div class="group-buttons">
           <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみコピー">
             🤖 選択ファイル指示
@@ -1280,29 +1468,24 @@
           <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算コピー">
             🤖 全ファイル指示
           </button>
-          <button class="btn" style="margin-left: 6px; padding: 3px 8px; font-size: 11px;" id="openDetachedModifiedBtn"
-            title="原本（修正後作業中）を独立別ウィンドウで開く">
-            🪟 別窓: 原本
-          </button>
-          <button class="btn" style="padding: 3px 8px; font-size: 11px;" id="openDetachedBackupBtn"
-            title="退避（修正前原本）を独立別ウィンドウで開く">
-            🪟 別窓: 修正前
-          </button>
         </div>
       </div>
 
-      <!-- グループ4: 差分検証 & ガイド -->
+      <!-- グループ4: 差分比較・別窓・ガイド -->
       <div class="action-group" style="margin-left: auto;">
-        <div class="group-label">Guide & Diff</div>
+        <div class="group-label">Diff & View</div>
         <div class="group-buttons">
+          <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダを2画面ブロック差分検証 (WinMerge風)">
+            🔄 WinMerge風Diff
+          </button>
+          <button class="btn" id="openDetachedModifiedBtn" title="原本（修正後作業中）を独立別ウィンドウで開く" style="padding: 3px 8px; font-size: 11px;">
+            🪟 原本
+          </button>
+          <button class="btn" id="openDetachedBackupBtn" title="退避（修正前原本）を独立別ウィンドウで開く" style="padding: 3px 8px; font-size: 11px;">
+            🪟 修正前
+          </button>
           <button class="btn" id="showGuideBtn" title="3ステップの動くスタジオガイドを表示">
             💡 スタジオガイド
-          </button>
-          <a href="./manual.html" target="_blank" class="btn btn-manual" title="詳細な使い方マニュアルを開く">
-            📖 マニュアル
-          </a>
-          <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダをブロック差分検証">
-            🔄 Diff検証
           </button>
         </div>
       </div>
@@ -1372,6 +1555,9 @@
           <div class="empty-center-btns">
             <button class="btn btn-accent" id="placeholderOpenDirBtn" style="font-weight: 700; padding: 6px 14px;">
               📁 原本フォルダを開く
+            </button>
+            <button class="btn" id="placeholderRecentBtn" style="font-weight: 600; padding: 6px 14px;">
+              🕒 履歴から開く
             </button>
             <button class="btn btn-manual" id="placeholderGuideBtn" style="font-weight: 700; padding: 6px 14px;">
               💡 スタジオガイド
@@ -1454,7 +1640,7 @@
           <button class="modal-opt-btn btn-opt-overwrite" id="modalOptOverwrite">
             <div class="opt-icon">📸</div>
             <div class="opt-text">
-              <div class="opt-title">新しい世代として差分退避を開始する（安全な追加スナップショット）</div>
+              <div class="opt-title">新しい世代として退避を開始する（安全な世代バックアップ）</div>
               <div class="opt-desc">既存データを消去せず、差分・対象ファイルのみを新世代（v0/v1...）として安全に退避します（省ディスク）。</div>
             </div>
           </button>
@@ -1462,6 +1648,56 @@
       </div>
       <div class="modal-footer">
         <button class="btn" id="modalOptCancel">✖ 処理を中止する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 最近の作業ディレクトリ（スタート / 履歴）モーダル -->
+  <div class="modal-overlay" id="recentWorkspacesModal" style="display: none; z-index: 99999;">
+    <div class="modal-card" style="max-width: 620px; width: 90%;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 20px;">🚀</span>
+          <div>
+            <span class="modal-title" style="font-size: 15px;">作業フォルダを開く / 履歴から再開</span>
+            <div style="font-size: 11px; color: #94a3b8; font-weight: normal; margin-top: 2px;">
+              過去に利用したディレクトリを選択して前回の続きから作業を再開できます
+            </div>
+          </div>
+        </div>
+        <button class="modal-close-btn" id="recentModalCloseBtn" title="閉じる">✖</button>
+      </div>
+
+      <div class="modal-body" style="padding: 16px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <span style="font-size: 12px; font-weight: 600; color: #cbd5e1;">📁 最近使用したフォルダ</span>
+          <button id="clearAllRecentBtn" style="background: none; border: none; color: #ef4444; font-size: 11px; cursor: pointer; text-decoration: underline; padding: 0;">
+            すべての履歴を消去
+          </button>
+        </div>
+
+        <!-- 履歴リスト一覧エリア -->
+        <div id="recentWorkspacesList" class="recent-workspaces-list" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px;">
+          <!-- 動的生成されるカード -->
+        </div>
+
+        <!-- 新規フォルダ選択枠 -->
+        <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid #334155; display: flex; align-items: center; justify-content: space-between;">
+          <div style="font-size: 12px; color: #94a3b8;">
+            一覧にないフォルダで作業する場合：
+          </div>
+          <button class="btn btn-accent" id="recentNewFolderBtn" style="font-weight: 600;">
+            📁 新しい原本フォルダを開く...
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <label style="font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+          <input type="checkbox" id="recentAutoShowChk">
+          <span>起動時にこの画面を自動表示する</span>
+        </label>
+        <button class="btn" id="recentModalCancelBtn">閉じる</button>
       </div>
     </div>
   </div>
@@ -1509,6 +1745,7 @@
     let htmlFileNames = [];
     let currentFileName = "";
     let reviewLogs = [];
+    let fileSearchQuery = "";
 
     let openFolders = new Set();    // 開いているフォルダパスの集合
 
@@ -1956,6 +2193,46 @@
     };
 
     document.getElementById('openDirBtn').onclick = openWorkDirectory;
+
+    const openRecentBtn = document.getElementById('openRecentBtn');
+    if (openRecentBtn) openRecentBtn.onclick = () => showRecentWorkspacesModal(true);
+
+    const phRecentBtn = document.getElementById('placeholderRecentBtn');
+    if (phRecentBtn) phRecentBtn.onclick = () => showRecentWorkspacesModal(true);
+
+    const recentModalCloseBtn = document.getElementById('recentModalCloseBtn');
+    if (recentModalCloseBtn) recentModalCloseBtn.onclick = closeRecentWorkspacesModal;
+
+    const recentModalCancelBtn = document.getElementById('recentModalCancelBtn');
+    if (recentModalCancelBtn) recentModalCancelBtn.onclick = closeRecentWorkspacesModal;
+
+    const recentNewFolderBtn = document.getElementById('recentNewFolderBtn');
+    if (recentNewFolderBtn) {
+      recentNewFolderBtn.onclick = () => {
+        closeRecentWorkspacesModal();
+        openWorkDirectory();
+      };
+    }
+
+    const clearAllRecentBtn = document.getElementById('clearAllRecentBtn');
+    if (clearAllRecentBtn) clearAllRecentBtn.onclick = handleClearAllRecent;
+
+    const recentAutoShowChk = document.getElementById('recentAutoShowChk');
+    if (recentAutoShowChk) {
+      recentAutoShowChk.onchange = (e) => {
+        localStorage.setItem('doc_review_auto_show_recent', e.target.checked ? 'true' : 'false');
+      };
+    }
+
+    // 起動時の最近のワークスペース自動確認
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (localStorage.getItem('doc_review_auto_show_recent') !== 'false' && !workDirHandle) {
+          showRecentWorkspacesModal();
+        }
+      }, 300);
+    });
+
     
     // 待機プレースホルダーのボタン連動
     const phOpenBtn = document.getElementById('placeholderOpenDirBtn');
@@ -1977,23 +2254,55 @@
       };
     }
 
-    document.getElementById('openBackupDirBtn').onclick = openBackupDirectoryExplicit;
-    document.getElementById('copyCurrentBtn').onclick = copyCurrentPrompt;
-    document.getElementById('copyAllBtn').onclick = copyAllPrompt;
-    document.getElementById('toggleDiffBtn').onclick = toggleDiffMode;
+    const openBackupDirBtn = document.getElementById('openBackupDirBtn');
+    if (openBackupDirBtn) openBackupDirBtn.onclick = openBackupDirectoryExplicit;
 
-    document.getElementById('openDetachedModifiedBtn').onclick = openDetachedModified;
-    document.getElementById('openDetachedBackupBtn').onclick = openDetachedBackup;
+    const copyCurrentBtn = document.getElementById('copyCurrentBtn');
+    if (copyCurrentBtn) copyCurrentBtn.onclick = copyCurrentPrompt;
 
-    document.getElementById('clearLogsBtn').onclick = clearLogs;
-    document.getElementById('exportJsonBtn').onclick = exportAsJson;
-    document.getElementById('exportMdBtn').onclick = exportAsMarkdown;
-    document.getElementById('importJsonBtn').onclick = () => document.getElementById('importJsonInput').click();
-    document.getElementById('reloadWorkBtn').onclick = reloadWorkDirectory;
-    document.getElementById('reloadDiffAfterBtn').onclick = reloadWorkDirectory;
-    document.getElementById('reloadCurrentFileBtn').onclick = reloadCurrentFileOnly;
-    document.getElementById('toggleInlineDiffBtn').onclick = toggleInlineDiffMode;
-    document.getElementById('copyFilePathBtn').onclick = copyCurrentFilePath;
+    const copyAllBtn = document.getElementById('copyAllBtn');
+    if (copyAllBtn) copyAllBtn.onclick = copyAllPrompt;
+
+    const toggleDiffBtn = document.getElementById('toggleDiffBtn');
+    if (toggleDiffBtn) toggleDiffBtn.onclick = toggleDiffMode;
+
+    const openDetachedModifiedBtn = document.getElementById('openDetachedModifiedBtn');
+    if (openDetachedModifiedBtn) openDetachedModifiedBtn.onclick = openDetachedModified;
+
+    const openDetachedBackupBtn = document.getElementById('openDetachedBackupBtn');
+    if (openDetachedBackupBtn) openDetachedBackupBtn.onclick = openDetachedBackup;
+
+    const clearLogsBtn = document.getElementById('clearLogsBtn');
+    if (clearLogsBtn) clearLogsBtn.onclick = clearLogs;
+
+    const exportJsonBtn = document.getElementById('exportJsonBtn');
+    if (exportJsonBtn) exportJsonBtn.onclick = exportAsJson;
+
+    const exportMdBtn = document.getElementById('exportMdBtn');
+    if (exportMdBtn) exportMdBtn.onclick = exportAsMarkdown;
+
+    const importJsonBtn = document.getElementById('importJsonBtn');
+    if (importJsonBtn) {
+      importJsonBtn.onclick = () => {
+        const inp = document.getElementById('importJsonInput');
+        if (inp) inp.click();
+      };
+    }
+
+    const reloadWorkBtn = document.getElementById('reloadWorkBtn');
+    if (reloadWorkBtn) reloadWorkBtn.onclick = reloadWorkDirectory;
+
+    const reloadDiffAfterBtn = document.getElementById('reloadDiffAfterBtn');
+    if (reloadDiffAfterBtn) reloadDiffAfterBtn.onclick = reloadWorkDirectory;
+
+    const reloadCurrentFileBtn = document.getElementById('reloadCurrentFileBtn');
+    if (reloadCurrentFileBtn) reloadCurrentFileBtn.onclick = reloadCurrentFileOnly;
+
+    const toggleInlineDiffBtn = document.getElementById('toggleInlineDiffBtn');
+    if (toggleInlineDiffBtn) toggleInlineDiffBtn.onclick = toggleInlineDiffMode;
+
+    const copyFilePathBtn = document.getElementById('copyFilePathBtn');
+    if (copyFilePathBtn) copyFilePathBtn.onclick = copyCurrentFilePath;
     function showFileReviewFloatBtn() {
       if (!currentFileName) return;
       const labelEl = document.getElementById('currentViewLabel');
@@ -2051,7 +2360,8 @@
     });
 
     document.getElementById('createSnapshotBtn').onclick = createNewGenerationSnapshot;
-    document.getElementById('rollbackGenerationBtn').onclick = rollbackToSelectedGeneration;
+    const exportGenBtn = document.getElementById('exportGenerationBtn');
+    if (exportGenBtn) exportGenBtn.onclick = exportSelectedGenerationFile;
     document.getElementById('generationSelect').onchange = onGenerationChange;
 
     function getRootFullPath() {
@@ -2176,9 +2486,55 @@
         return;
       }
 
-      updateFolderLabel();
-      if (window.DocReviewGuide) window.DocReviewGuide.close();
-      await loadWorkFolder();
+      try {
+        updateFolderLabel();
+        if (window.DocReviewGuide) window.DocReviewGuide.close();
+        await loadWorkFolder();
+        await initWorkspaceHistory();
+        await saveRecentWorkspace(workDirHandle);
+      } catch (err) {
+        console.error("原本オープン処理エラー:", err);
+        alert("原本フォルダの読み込み中にエラーが発生しました: " + err.message);
+      }
+    }
+
+    async function initWorkspaceHistory() {
+      if (!workDirHandle) return;
+      try {
+        backupDirHandle = await workDirHandle.getDirectoryHandle('.docreview-history', { create: true });
+        let existingManifest = await loadManifest(backupDirHandle);
+        if (existingManifest && existingManifest.generations && existingManifest.generations.length > 0) {
+          generationManifest = existingManifest;
+          activeGenerationId = existingManifest.activeGeneration || existingManifest.generations[existingManifest.generations.length - 1].id;
+        } else {
+          generationManifest = {
+            version: 1,
+            activeGeneration: 'v0',
+            generations: [
+              {
+                id: 'v0',
+                name: 'v0: 初回原本',
+                createdAt: Date.now(),
+                isLegacyRoot: false,
+                files: []
+              }
+            ]
+          };
+          activeGenerationId = 'v0';
+          await saveManifest(backupDirHandle, generationManifest);
+          await backupDirHandle.getDirectoryHandle('v0', { create: true });
+        }
+        await loadBackupFolder();
+        renderGenerationSelect();
+        const restoredLogs = await loadWorkspaceReviewLogs();
+        if (restoredLogs && restoredLogs.lastActiveFile && workFileHandles[restoredLogs.lastActiveFile]) {
+          selectFile(restoredLogs.lastActiveFile);
+        }
+        const detachedBackupBtn = document.getElementById('openDetachedBackupBtn');
+        if (detachedBackupBtn) detachedBackupBtn.style.display = 'inline-flex';
+      } catch (err) {
+        console.warn(".docreview-history 自動初期化エラー:", err);
+      }
     }
 
     function showBackupChoiceModal(folderName) {
@@ -2218,6 +2574,293 @@
         return JSON.parse(text);
       } catch (e) {
         return null;
+      }
+    }
+
+
+    // ===== IndexedDB による最近使用した作業フォルダ履歴管理 =====
+    function openRecentDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open('doc_review_studio_db', 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains('recent_workspaces')) {
+            db.createObjectStore('recent_workspaces', { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    async function saveRecentWorkspace(handle, extraMeta = {}) {
+      if (!handle || !handle.name) return;
+      try {
+        const db = await openRecentDB();
+        const id = 'ws_' + encodeURIComponent(handle.name);
+        const existing = await getRecentWorkspace(id);
+        const customPath = localStorage.getItem('doc_review_root_path_' + handle.name) || '';
+        const record = {
+          id,
+          name: handle.name,
+          handle,
+          lastOpened: Date.now(),
+          generationCount: extraMeta.generationCount ?? (generationManifest?.generations?.length || existing?.generationCount || 0),
+          issueCount: extraMeta.issueCount ?? (reviewLogs?.length || existing?.issueCount || 0),
+          customPath: customPath || existing?.customPath || '',
+          lastActiveFile: currentFileName || extraMeta.lastActiveFile || existing?.lastActiveFile || ''
+        };
+        const tx = db.transaction('recent_workspaces', 'readwrite');
+        tx.objectStore('recent_workspaces').put(record);
+        await new Promise(r => tx.oncomplete = r);
+      } catch (err) {
+        console.warn("Recent workspace save failed:", err);
+      }
+    }
+
+    async function getRecentWorkspace(id) {
+      try {
+        const db = await openRecentDB();
+        const tx = db.transaction('recent_workspaces', 'readonly');
+        const req = tx.objectStore('recent_workspaces').get(id);
+        return await new Promise((resolve) => {
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        });
+      } catch (err) {
+        return null;
+      }
+    }
+
+    async function getRecentWorkspaces() {
+      try {
+        const db = await openRecentDB();
+        const tx = db.transaction('recent_workspaces', 'readonly');
+        const store = tx.objectStore('recent_workspaces');
+        const req = store.getAll();
+        const items = await new Promise((resolve, reject) => {
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => reject(req.error);
+        });
+        items.sort((a, b) => (b.lastOpened || 0) - (a.lastOpened || 0));
+        return items;
+      } catch (err) {
+        console.warn("Get recent workspaces failed:", err);
+        return [];
+      }
+    }
+
+    async function removeRecentWorkspace(id) {
+      try {
+        const db = await openRecentDB();
+        const tx = db.transaction('recent_workspaces', 'readwrite');
+        tx.objectStore('recent_workspaces').delete(id);
+        await new Promise(r => tx.oncomplete = r);
+      } catch (err) {
+        console.warn("Remove recent workspace failed:", err);
+      }
+    }
+
+    async function clearRecentWorkspaces() {
+      try {
+        const db = await openRecentDB();
+        const tx = db.transaction('recent_workspaces', 'readwrite');
+        tx.objectStore('recent_workspaces').clear();
+        await new Promise(r => tx.oncomplete = r);
+      } catch (err) {
+        console.warn("Clear recent workspaces failed:", err);
+      }
+    }
+
+    // ===== 指摘ログ（review-logs.json）の自動保存・復元 =====
+    let saveReviewLogsTimer = null;
+    function scheduleSaveReviewLogs() {
+      if (!backupDirHandle) return;
+      if (saveReviewLogsTimer) clearTimeout(saveReviewLogsTimer);
+      saveReviewLogsTimer = setTimeout(async () => {
+        try {
+          if (!backupDirHandle) return;
+          const fh = await backupDirHandle.getFileHandle('review-logs.json', { create: true });
+          const writable = await fh.createWritable();
+          const data = {
+            version: 1,
+            updatedAt: Date.now(),
+            project: workDirHandle ? workDirHandle.name : '',
+            lastActiveFile: currentFileName || '',
+            logs: reviewLogs
+          };
+          await writable.write(JSON.stringify(data, null, 2));
+          await writable.close();
+
+          if (workDirHandle) {
+            saveRecentWorkspace(workDirHandle, {
+              issueCount: reviewLogs.length,
+              lastActiveFile: currentFileName || ''
+            });
+          }
+        } catch (e) {
+          console.warn("review-logs.json 自動保存エラー:", e);
+        }
+      }, 500);
+    }
+
+    async function loadWorkspaceReviewLogs() {
+      if (!backupDirHandle) return null;
+      try {
+        const fh = await backupDirHandle.getFileHandle('review-logs.json');
+        const file = await fh.getFile();
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if (data && Array.isArray(data.logs) && data.logs.length > 0) {
+          reviewLogs = data.logs;
+          renderLogs(false);
+          renderFileTree();
+          return data;
+        }
+      } catch (e) {
+        // 新規のため無視
+      }
+      return null;
+    }
+
+    // ===== 最近使用した作業フォルダ（履歴）モーダル制御 =====
+    async function showRecentWorkspacesModal(force = false) {
+      const items = await getRecentWorkspaces();
+      if (!force && items.length === 0) return;
+
+      const modal = document.getElementById('recentWorkspacesModal');
+      const chk = document.getElementById('recentAutoShowChk');
+      if (chk) {
+        chk.checked = localStorage.getItem('doc_review_auto_show_recent') !== 'false';
+      }
+
+      renderRecentWorkspacesList(items);
+      modal.style.display = 'flex';
+    }
+
+    function closeRecentWorkspacesModal() {
+      const modal = document.getElementById('recentWorkspacesModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function renderRecentWorkspacesList(items) {
+      const listEl = document.getElementById('recentWorkspacesList');
+      if (!listEl) return;
+
+      if (!items || items.length === 0) {
+        listEl.innerHTML = `
+          <div class="recent-empty-state">
+            <div style="font-size: 28px; margin-bottom: 6px;">📂</div>
+            <div style="font-weight: 600; color: #cbd5e1; margin-bottom: 4px;">利用履歴がありません</div>
+            <div>「新しい原本フォルダを開く」からフォルダを選択して作業を開始してください。</div>
+          </div>
+        `;
+        return;
+      }
+
+      listEl.innerHTML = items.map(item => {
+        const timeAgo = formatTimeAgo(item.lastOpened);
+        const safeId = encodeURIComponent(item.id);
+        const safeName = (item.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const safeFile = (item.lastActiveFile || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const safePath = (item.customPath || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        return `
+          <div class="recent-item-card" id="card-${safeId}">
+            <div class="recent-item-info">
+              <div class="recent-item-title">
+                <span class="recent-item-icon">📂</span>
+                <span class="recent-item-name" title="${safeName}">${safeName}</span>
+                ${item.lastActiveFile ? `<span class="recent-item-sub" title="${safeFile}">📄 ${safeFile}</span>` : ''}
+              </div>
+              <div class="recent-item-meta">
+                <span>🕒 ${timeAgo}</span>
+                <span class="recent-badge badge-gen">🏷️ ${item.generationCount || 0}世代</span>
+                <span class="recent-badge badge-issue">📝 指摘 ${item.issueCount || 0}件</span>
+                ${item.customPath ? `<span class="recent-path" title="${safePath}">📍 ${safePath}</span>` : ''}
+              </div>
+            </div>
+            <div class="recent-item-actions">
+              <button class="btn btn-accent btn-sm" onclick="handleOpenRecent('${item.id}')" style="font-weight: 600; padding: 4px 10px;">
+                再開
+              </button>
+              <button class="btn-icon-danger" onclick="handleRemoveRecent('${item.id}', event)" title="この履歴を削除">
+                🗑️
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function formatTimeAgo(timestamp) {
+      if (!timestamp) return '以前';
+      const now = Date.now();
+      const diff = now - timestamp;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'たった今';
+      if (mins < 60) return `${mins}分前`;
+      const hours = Math.floor(mins / 60);
+      if (hours < 24) return `${hours}時間前`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days}日前`;
+      return new Date(timestamp).toLocaleDateString();
+    }
+
+    window.handleOpenRecent = async function(id) {
+      const item = await getRecentWorkspace(id);
+      if (!item || !item.handle) {
+        alert("履歴データが見つかりませんでした。");
+        return;
+      }
+      try {
+        let perm = await item.handle.queryPermission({ mode: 'readwrite' });
+        if (perm !== 'granted') {
+          perm = await item.handle.requestPermission({ mode: 'readwrite' });
+        }
+        if (perm !== 'granted') {
+          alert(`フォルダ「${item.name}」へのアクセスが許可されませんでした。`);
+          return;
+        }
+
+        workDirHandle = item.handle;
+        lastChosenDirHandle = workDirHandle;
+
+        closeRecentWorkspacesModal();
+        if (window.DocReviewGuide) window.DocReviewGuide.close();
+
+        updateFolderLabel();
+        await loadWorkFolder();
+        await initWorkspaceHistory();
+
+        // 最終利用日時を更新
+        await saveRecentWorkspace(workDirHandle, {
+          generationCount: generationManifest?.generations?.length || 0,
+          issueCount: reviewLogs?.length || 0,
+          lastActiveFile: item.lastActiveFile || ''
+        });
+
+        // 前回のファイルがあれば自動選択
+        const targetFile = item.lastActiveFile || (generationManifest?.lastActiveFile);
+        if (targetFile && workFileHandles[targetFile]) {
+          selectFile(targetFile);
+        }
+      } catch (err) {
+        console.error("履歴フォルダオープンエラー:", err);
+        alert(`フォルダ「${item.name}」を開けませんでした。\nフォルダが移動・削除された可能性があります。\n(${err.message})`);
+      }
+    };
+
+    window.handleRemoveRecent = async function(id, e) {
+      if (e) e.stopPropagation();
+      await removeRecentWorkspace(id);
+      const items = await getRecentWorkspaces();
+      renderRecentWorkspacesList(items);
+    };
+
+    async function handleClearAllRecent() {
+      if (confirm("最近使用した作業フォルダの履歴をすべて消去しますか？\n（実際のローカルファイルや世代データは削除されません）")) {
+        await clearRecentWorkspaces();
+        renderRecentWorkspacesList([]);
       }
     }
 
@@ -2289,56 +2932,105 @@
       const v0Gen = generationManifest.generations.find(g => g.id === 'v0');
       if (!v0Gen || v0Gen.isLegacyRoot) return;
       if (!v0Gen.files) v0Gen.files = [];
-      if (v0Gen.files.includes(relPath)) return;
 
       try {
         const v0Dir = await backupDirHandle.getDirectoryHandle('v0', { create: true });
         const srcFh = workFileHandles[relPath];
         if (srcFh) {
-          const file = await srcFh.getFile();
-          await saveFileToDirectory(v0Dir, relPath, file);
-          v0Gen.files.push(relPath);
+          if (!v0Gen.files.includes(relPath)) {
+            const file = await srcFh.getFile();
+            await saveFileToDirectory(v0Dir, relPath, file);
+            v0Gen.files.push(relPath);
+            scheduleSaveManifest();
+          }
           const destFh = await getFileHandleFromDirectory(v0Dir, relPath);
-          if (destFh) backupFileHandles[relPath] = destFh;
-          scheduleSaveManifest();
+          if (destFh) {
+            backupFileHandles[relPath] = destFh;
+            if (!backupHtmlMap[relPath]) {
+              const bFile = await destFh.getFile();
+              backupHtmlMap[relPath] = await bFile.text();
+            }
+          }
         }
       } catch (e) {
-        console.warn("v0 自動退避エラー:", relPath, e);
+        console.warn("v0 自動記録エラー:", relPath, e);
       }
     }
 
     function renderGenerationSelect() {
       const container = document.getElementById('generationControls');
       const sel = document.getElementById('generationSelect');
+      const createBtn = document.getElementById('createSnapshotBtn');
+      const exportBtn = document.getElementById('exportGenerationBtn');
+
       if (!backupDirHandle || !generationManifest || !generationManifest.generations || generationManifest.generations.length === 0) {
-        if (container) container.style.display = 'none';
+        if (sel) {
+          sel.disabled = true;
+          sel.innerHTML = '<option value="">(原本を開いてください)</option>';
+        }
+        if (createBtn) createBtn.disabled = true;
+        if (exportBtn) exportBtn.disabled = true;
         return;
       }
-      if (container) container.style.display = 'inline-flex';
-      if (!sel) return;
 
-      sel.innerHTML = '';
-      for (const gen of generationManifest.generations) {
-        const opt = document.createElement('option');
-        opt.value = gen.id;
-        const count = gen.files ? ` (${gen.files.length}件)` : (gen.isLegacyRoot ? ' (全ファイル)' : '');
-        opt.textContent = `${gen.name}${count}`;
-        if (gen.id === activeGenerationId) opt.selected = true;
-        sel.appendChild(opt);
+      if (sel) {
+        sel.disabled = false;
+        sel.innerHTML = '';
+        for (const gen of generationManifest.generations) {
+          const opt = document.createElement('option');
+          opt.value = gen.id;
+          const count = gen.files ? ` (${gen.files.length}件)` : (gen.isLegacyRoot ? ' (全ファイル)' : '');
+          opt.textContent = `${gen.name}${count}`;
+          if (gen.id === activeGenerationId) opt.selected = true;
+          sel.appendChild(opt);
+        }
       }
+      if (createBtn) createBtn.disabled = false;
+      if (exportBtn) exportBtn.disabled = false;
+
       updateDiffBeforeLabel();
+    }
+
+    function exportSelectedGenerationFile() {
+      if (!currentFileName) {
+        alert("ファイルが選択されていません。プレビュー対象のファイルを選択してください。");
+        return;
+      }
+      const backupText = backupHtmlMap[currentFileName];
+      if (!backupText) {
+        alert(`選択中の世代「${activeGenerationId}」には、このファイル（${currentFileName}）の記録がありません。`);
+        return;
+      }
+      const curGen = generationManifest?.generations?.find(g => g.id === activeGenerationId);
+      const genLabel = curGen ? curGen.id : 'v0';
+
+      const lastDot = currentFileName.lastIndexOf('.');
+      const base = lastDot !== -1 ? currentFileName.substring(0, lastDot) : currentFileName;
+      const ext = lastDot !== -1 ? currentFileName.substring(lastDot) : '';
+      const baseNameOnly = base.split('/').pop();
+      const outFileName = `${baseNameOnly}_${genLabel}${ext}`;
+
+      const blob = new Blob([backupText], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = outFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function updateDiffBeforeLabel() {
       const label = document.getElementById('diffBeforeLabel');
       if (!label) return;
       if (!backupDirHandle) {
-        label.innerText = "修正前 (退避フォルダ未指定)";
+        label.innerText = "修正前 (原本未接続)";
         return;
       }
       const curGen = generationManifest?.generations?.find(g => g.id === activeGenerationId);
       const genName = curGen ? curGen.name : '修正前';
-      label.innerText = `修正前: ${genName} (${backupDirHandle.name})`;
+      label.innerText = `修正前: ${genName}`;
     }
 
     async function onGenerationChange(e) {
@@ -2358,17 +3050,17 @@
 
     async function createNewGenerationSnapshot() {
       if (!workDirHandle || !backupDirHandle || !generationManifest) {
-        alert("原本フォルダと退避先フォルダの両方を指定してください。");
+        alert("先に「📁 原本を開く」で原本フォルダを選択してください。");
         return;
       }
 
       const nextNum = generationManifest.generations.length;
       const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const defaultName = `v${nextNum}: 修正版 (${nowStr})`;
-      const genName = prompt("【新規世代の退避 (差分スナップショット)】\n新しい世代の名前を入力してください:", defaultName);
+      const genName = prompt("【チェックポイントの保存（セーブ）】\nこの版の名前を入力してください:", defaultName);
       if (!genName || !genName.trim()) return;
 
-      showScanModal("📸 新しい世代を退避中 (差分抽出)...");
+      showScanModal("📸 チェックポイントを保存中...");
 
       try {
         const genId = `v${nextNum}_${Date.now()}`;
@@ -2413,10 +3105,10 @@
 
         hideScanModal();
         if (isDiffMode) refreshDiffFrames();
-        alert(`新しい世代「${genName.trim()}」を退避しました！（保存ファイル: ${savedFiles.length}件）`);
+        alert(`チェックポイント「${genName.trim()}」を保存しました！（対象ファイル: ${savedFiles.length}件）\n（世代プルダウンからいつでもこの版との差分を比較できます）`);
       } catch (err) {
         hideScanModal();
-        alert("世代退避エラー: " + err.message);
+        alert("チェックポイント保存エラー: " + err.message);
       }
     }
 
@@ -2534,7 +3226,7 @@
         if (choice === 'new_snapshot') mode = 'new_snapshot';
       }
 
-      showScanModal("📂 初代スナップショット (v0: 初回原本) を準備中...");
+      showScanModal("📂 初回バックアップ (v0: 初回原本) を準備中...");
 
       if (mode === 'legacy_root') {
         generationManifest = {
@@ -2608,12 +3300,13 @@
       document.getElementById('openDetachedBackupBtn').style.display = 'inline-flex';
       if (isDiffMode) refreshDiffFrames();
 
-      alert(`退避フォルダ「${backupDirHandle.name}」を接続しました！\n（案A: 差分スナップショット方式で世代管理が開始されました）`);
+      alert(`退避フォルダ「${backupDirHandle.name}」を接続しました！\n（原本の世代バックアップ管理が有効になりました）`);
     }
 
     function shouldIgnoreEntry(name) {
       if (!name) return true;
       const lower = name.toLowerCase();
+      if (lower.startsWith('.docreview') || lower === '.docreview-history') return true;
       if (lower === '.git' || lower.startsWith('.git/')) return true;
       if (lower === '.svn' || lower === '.hg' || lower === 'node_modules' || lower === '.ds_store' || lower === '.vscode') return true;
       if (lower.endsWith('.lnk')) return true;
@@ -2824,14 +3517,71 @@
       return rawText;
     }
 
-    let fileSearchQuery = "";
-    const fileFilterInput = document.getElementById('fileFilterInput');
-    if (fileFilterInput) {
-      fileFilterInput.addEventListener('input', (e) => {
-        fileSearchQuery = e.target.value.toLowerCase().trim();
-        renderFileTree();
+    // fileSearchQuery & isFlatViewMode are initialized at top of script
+
+    function normalizeSearchQuery(str) {
+      return (str || '')
+        .toLowerCase()
+        .replace(/[\\／]/g, '/')          // バックスラッシュ・全角スラッシュを / に統一
+        .replace(/^[\"'「『]+|[\"'」』]+$/g, '') // 前後の引用符を除去
+        .trim();
+    }
+
+    function testFileMatchesQuery(fullPath, query) {
+      if (!query) return true;
+      const cleanQ = normalizeSearchQuery(query);
+      if (!cleanQ) return true;
+
+      const normPath = fullPath.toLowerCase().replace(/[\\／]/g, '/');
+      const fileName = normPath.split('/').pop();
+
+      // 半角・全角スペースで分割してAND検索（すべてのキーワードを含む）
+      const tokens = cleanQ.split(/[\s　]+/).filter(t => t.length > 0);
+      if (tokens.length === 0) return true;
+
+      return tokens.every(token => {
+        return normPath.includes(token) || fileName.includes(token);
       });
     }
+
+    const fileFilterInput = document.getElementById('fileFilterInput');
+    const fileFilterClearBtn = document.getElementById('fileFilterClearBtn');
+
+    function updateSearchClearBtn() {
+      if (fileFilterClearBtn) {
+        fileFilterClearBtn.style.display = fileFilterInput && fileFilterInput.value ? 'block' : 'none';
+      }
+    }
+
+    if (fileFilterInput) {
+      fileFilterInput.addEventListener('input', (e) => {
+        fileSearchQuery = e.target.value;
+        updateSearchClearBtn();
+        renderFileTree();
+      });
+
+      fileFilterInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          fileFilterInput.value = "";
+          fileSearchQuery = "";
+          updateSearchClearBtn();
+          renderFileTree();
+          fileFilterInput.blur();
+        }
+      });
+    }
+
+    if (fileFilterClearBtn) {
+      fileFilterClearBtn.addEventListener('click', () => {
+        if (fileFilterInput) fileFilterInput.value = "";
+        fileSearchQuery = "";
+        updateSearchClearBtn();
+        renderFileTree();
+        if (fileFilterInput) fileFilterInput.focus();
+      });
+    }
+
+
 
     function showScanModal(title) {
       const modal = document.getElementById('scanProgressModal');
@@ -2953,9 +3703,41 @@
         return;
       }
 
-      renderFileTree();
+      // フォルダ階層の初期展開:
+      // 全ファイル数が150件以下の小中規模プロジェクトなら全フォルダ自動展開
+      // 150件を超える大規模プロジェクトでも第1階層フォルダを展開して直下のサブフォルダやファイルを可視化
+      if (htmlFileNames.length <= 150) {
+        htmlFileNames.forEach(fn => {
+          const parts = fn.split('/');
+          for (let i = 1; i < parts.length; i++) {
+            openFolders.add(parts.slice(0, i).join('/'));
+          }
+        });
+      } else {
+        htmlFileNames.forEach(fn => {
+          const parts = fn.split('/');
+          if (parts.length > 1) {
+            openFolders.add(parts[0]);
+          }
+        });
+      }
+
       const defaultFile = htmlFileNames.find(f => f.toLowerCase() === 'index.html') || htmlFileNames[0];
-      await selectFile(defaultFile);
+      if (defaultFile) {
+        const parts = defaultFile.split('/');
+        for (let i = 1; i < parts.length; i++) {
+          openFolders.add(parts.slice(0, i).join('/'));
+        }
+      }
+
+      renderFileTree();
+      if (defaultFile) {
+        try {
+          await selectFile(defaultFile);
+        } catch (e) {
+          console.warn("初期ファイル自動選択エラー:", e);
+        }
+      }
     }
 
     async function loadBackupFolder() {
@@ -3067,16 +3849,15 @@
 
     function renderFileTree() {
       const ul = document.getElementById('fileTree');
+      if (!ul) return;
       ul.innerHTML = "";
 
-      const filtered = htmlFileNames.filter(name => {
-        if (!fileSearchQuery) return true;
-        return name.toLowerCase().includes(fileSearchQuery);
-      });
+      const hasQuery = !!(fileSearchQuery && fileSearchQuery.trim());
+      const filtered = htmlFileNames.filter(name => testFileMatchesQuery(name, fileSearchQuery));
 
       const totalLabel = document.getElementById('fileTotalCount');
       if (totalLabel) {
-        if (fileSearchQuery) {
+        if (hasQuery) {
           totalLabel.innerText = `${filtered.length}/${htmlFileNames.length}`;
         } else {
           totalLabel.innerText = htmlFileNames.length;
@@ -3087,28 +3868,47 @@
         const emptyLi = document.createElement('li');
         emptyLi.style.color = '#9ca3af';
         emptyLi.style.cursor = 'default';
-        emptyLi.innerText = htmlFileNames.length === 0 ? '原本フォルダを開いてください' : '一致するファイルがありません';
+        emptyLi.style.padding = '16px 10px';
+        emptyLi.style.textAlign = 'center';
+        emptyLi.style.fontSize = '11px';
+
+        if (htmlFileNames.length === 0) {
+          emptyLi.innerText = '原本フォルダを開いてください';
+        } else {
+          emptyLi.innerHTML = `
+            <div style="font-size: 16px; margin-bottom: 4px;">🔍</div>
+            <div style="color: #cbd5e1; font-weight: 600; margin-bottom: 2px;">一致するファイルがありません</div>
+            <div style="color: #64748b; font-size: 10px; margin-bottom: 8px;">検索語: "${escapeHtml(fileSearchQuery)}"</div>
+            <button class="btn btn-secondary" onclick="document.getElementById('fileFilterClearBtn').click()" style="font-size: 10px; padding: 2px 8px;">
+              ✖ 検索をクリアして全ファイル表示
+            </button>
+          `;
+        }
         ul.appendChild(emptyLi);
         return;
       }
 
-      if (fileSearchQuery) {
-        const displayList = filtered.slice(0, 300);
+      // 検索ワード入力時のみ絞り込み結果を平坦リストで表示（最大500件）
+      if (hasQuery) {
+        const maxDisplay = 500;
+        const displayList = filtered.slice(0, maxDisplay);
         displayList.forEach(name => {
-          const li = createFileTreeItem(name);
+          const li = createFileTreeItem(name, false);
           ul.appendChild(li);
         });
-        if (filtered.length > 300) {
+        if (filtered.length > maxDisplay) {
           const moreLi = document.createElement('li');
           moreLi.style.color = '#eab308';
           moreLi.style.fontSize = '11px';
           moreLi.style.cursor = 'default';
-          moreLi.innerText = `...他 ${filtered.length - 300} 件一致（検索語を絞り込んでください）`;
+          moreLi.style.padding = '8px 12px';
+          moreLi.innerText = `...他 ${filtered.length - maxDisplay} 件一致（検索語を絞り込んでください）`;
           ul.appendChild(moreLi);
         }
         return;
       }
 
+      // 通常時: フォルダ階層ツリーで表示
       const treeRoot = buildFileTreeNode(filtered);
       renderTreeNode(treeRoot, ul, 0);
     }
@@ -3203,6 +4003,7 @@
         }
       }
       ensureV0Backup(name);
+      scheduleSaveReviewLogs();
 
       // リダイレクト用HTML（meta http-equiv="refresh"）の自動遷移
       const fileContent = rawHtmlMap[name] || "";
@@ -3289,6 +4090,15 @@
         }
       }
       if (currentFileName) {
+        if (workFileHandles[currentFileName]) {
+          try {
+            const fh = workFileHandles[currentFileName];
+            const f = await fh.getFile();
+            rawHtmlMap[currentFileName] = await f.text();
+          } catch (e) {
+            console.warn("最新ファイルの読込スキップ:", e);
+          }
+        }
         await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
       }
     }
@@ -3385,7 +4195,7 @@
 
           const infoBar = `
             <div style="background:#18191c; border-bottom:1px solid #22c55e; color:#e2e8f0; padding:6px 14px; font-size:12px; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:99999; box-shadow:0 2px 8px rgba(0,0,0,0.4);">
-              <span>🎨 <strong>差分ハイライト中</strong>: <span style="background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:4px;">緑 = 修正・追加された箇所</span></span>
+              <span>🎨 <strong>差分ハイライト中（更新後を表示）</strong>: <span style="background:#dcfce7;color:#166534;padding:1px 6px;border-radius:3px;font-weight:bold;margin-left:4px;">緑 = 修正・追加された箇所</span></span>
               <span style="font-size:11px;color:#9ca3af;">（ツールバーでいつでもOFF可能）</span>
             </div>
           `;
@@ -3416,7 +4226,7 @@
 
       // 本文が空（またはタグのみでテキストなし）の場合の視覚案内
       const textOnly = finalHtml.replace(/<style[\s\S]*?<\/style>/gi, '')
-                                .replace(/<script[\s\S]*?<\/script>/gi, '')
+                                .replace(new RegExp("<script[\\s\\S]*?<" + "\/script>", "gi"), "")
                                 .replace(/<[^>]*>/g, '')
                                 .trim();
       if (textOnly.length === 0) {
@@ -4183,6 +4993,7 @@
 
     window.updateType = function (idx, val) {
       reviewLogs[idx].type = val;
+      scheduleSaveReviewLogs();
       const card = document.getElementById(`card-${idx}`);
       if (card) {
         card.querySelectorAll('.radio-chip').forEach(lbl => {
@@ -4191,7 +5002,7 @@
         });
       }
     };
-    window.updateInst = function (idx, val) { reviewLogs[idx].instruction = val; };
+    window.updateInst = function (idx, val) { reviewLogs[idx].instruction = val; scheduleSaveReviewLogs(); };
     window.removeLog = function (idx) {
       reviewLogs.splice(idx, 1);
       renderLogs(false);
@@ -4441,7 +5252,7 @@
       });
     }
 
-    function toggleDiffMode() {
+    async function toggleDiffMode() {
       isDiffMode = !isDiffMode;
       const normal = document.getElementById('normalContainer');
       const diff = document.getElementById('diffContainer');
@@ -4453,21 +5264,31 @@
         btn.innerText = "✖ 通常モードへ戻る";
         btn.style.background = "#4b5563";
 
-        refreshDiffFrames();
+        await refreshDiffFrames();
       } else {
         normal.style.display = 'block';
         diff.style.display = 'none';
-        btn.innerText = "🔄 Diff検証";
+        btn.innerText = "🔄 WinMerge風Diff";
         btn.style.background = "var(--success)";
 
         // Diffを閉じて通常モードに戻った際、最新の原本データでプレビューを確実に再読込
         if (currentFileName && rawHtmlMap[currentFileName]) {
-          loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+          await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
         }
       }
     }
 
     async function refreshDiffFrames() {
+      if (currentFileName && workFileHandles[currentFileName]) {
+        try {
+          const fh = workFileHandles[currentFileName];
+          const f = await fh.getFile();
+          rawHtmlMap[currentFileName] = await f.text();
+        } catch (e) {
+          console.warn("Diff最新ファイルの読込スキップ:", e);
+        }
+      }
+
       const beforeRaw = backupHtmlMap[currentFileName] || "";
       const afterRaw = rawHtmlMap[currentFileName] || "";
 

@@ -80,17 +80,17 @@
           items: [
             {
               id: 'openDirBtn',
-              name: '📁 原本フォルダを開く',
+              name: '📁 原本を開く',
               loc: 'ヘッダー左',
-              desc: '校正対象のHTML/Markdownフォルダを指定。左ツリーに一括読込',
+              desc: '校正対象フォルダを指定。開いたファイルの初期状態（v0）が自動記録され、Diff差分検証の基準になります',
               icon: '📁'
             },
             {
-              id: 'openBackupDirBtn',
-              name: '📂 退避先を指定',
+              id: 'createSnapshotBtn',
+              name: '📸 セーブ（チェックポイント）',
               loc: 'ヘッダー左',
-              desc: '差分スナップショット方式で世代退避（v0, v1...）。ディスク節約＆いつでも復元可能',
-              icon: '📂'
+              desc: 'AI修正が完了した節目に保存。いつでも過去の版（v0, v1...）を選んで差分比較が可能',
+              icon: '📸'
             }
           ]
         },
@@ -172,8 +172,8 @@
           items: [
             {
               id: 'toggleDiffBtn',
-              name: '🔄 左右Diff検証',
-              loc: '中央ツールバー',
+              name: '🔄 WinMerge風Diff',
+              loc: 'ヘッダー右',
               desc: '左右2画面で退避原本とAI修正原本を並列比較し、ブロック差分を検証',
               icon: '🔄'
             },
@@ -264,15 +264,15 @@
           items: [
             {
               id: 'openDetachedBackupBtn',
-              name: '🪟 別窓: 修正前',
-              loc: 'ヘッダー中央',
+              name: '🪟 修正前',
+              loc: 'ヘッダー右',
               desc: '退避データ（修正前原本）を別ウィンドウで開き、別画面で常に比較参照',
               icon: '🪟'
             },
             {
               id: 'openDetachedModifiedBtn',
-              name: '🪟 別窓: 原本',
-              loc: 'ヘッダー中央',
+              name: '🪟 原本',
+              loc: 'ヘッダー右',
               desc: '作業中の原本プレビューを別ウィンドウで開き、サブディスプレイで常時閲覧',
               icon: '🪟'
             }
@@ -303,7 +303,7 @@
             {
               id: 'manualHeaderLink',
               name: '📖 詳細マニュアル',
-              loc: 'ヘッダー右',
+              loc: '左下フッター',
               desc: '全機能の使い方、便利なショートカットキー一覧を別タブで確認',
               icon: '📖'
             },
@@ -606,7 +606,7 @@
     let targetEl = document.getElementById(targetId);
     if (!targetEl) {
       if (targetId === 'manualHeaderLink') {
-        targetEl = document.querySelector('header a.btn-manual');
+        targetEl = document.getElementById('sidebarManualLink') || document.querySelector('.manual-link-box') || document.querySelector('header a.btn-manual');
       } else if (targetId === 'btnPortalWide') {
         targetEl = document.querySelector('.btn-portal-wide');
       }
