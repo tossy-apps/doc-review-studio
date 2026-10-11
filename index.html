@@ -202,6 +202,29 @@
       color: #ffffff;
     }
 
+    .generation-controls {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: 6px;
+      padding-left: 8px;
+      border-left: 1px solid #374151;
+    }
+
+    .generation-select {
+      background: #1f2937;
+      color: #60a5fa;
+      border: 1px solid #3b82f6;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 0 6px;
+      height: 28px;
+      cursor: pointer;
+      outline: none;
+      max-width: 150px;
+    }
+
     .btn-accent {
       background: var(--accent);
       color: #ffffff;
@@ -759,6 +782,69 @@
       background: #111214;
     }
 
+    /* ミニズーム操作ウィジェット (左・中・右ペイン用) */
+    .pane-zoom-widget {
+      display: inline-flex;
+      align-items: center;
+      background: #18191c;
+      border: 1px solid #334155;
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-size: 11px;
+      gap: 2px;
+      user-select: none;
+      flex-shrink: 0;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .pane-zoom-widget:hover {
+      border-color: #475569;
+      background: #202227;
+    }
+
+    .zoom-pane-tag {
+      font-size: 9.5px;
+      color: #94a3b8;
+      margin-right: 2px;
+      font-weight: 600;
+    }
+
+    .zoom-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-weight: bold;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 0 4px;
+      line-height: 1.2;
+      border-radius: 2px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .zoom-btn:hover {
+      color: #60a5fa;
+      background: rgba(96, 165, 250, 0.15);
+    }
+
+    .zoom-val {
+      font-size: 10.5px;
+      font-family: monospace;
+      color: #94a3b8;
+      cursor: pointer;
+      padding: 1px 3px;
+      border-radius: 2px;
+      min-width: 34px;
+      text-align: center;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .zoom-val:hover {
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      text-decoration: underline;
+    }
+
     .card {
       background: #2b2d35;
       border: 1px solid var(--border-group);
@@ -1061,8 +1147,15 @@
 
     <!-- ファイルツリーヘッダー -->
     <div class="pane-files-header">
-      <span>Files</span>
-      <span id="fileTotalCount" style="color: #60a5fa; font-weight: bold;">0</span>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span>Files</span>
+        <span id="fileTotalCount" style="color: #60a5fa; font-weight: bold;">0</span>
+      </div>
+      <div class="pane-zoom-widget" id="zoomWidgetLeft" title="ファイルツリーの拡大縮小 (Alt+ホイール または ＋/−ボタン / クリックで100%リセット)">
+        <button class="zoom-btn" data-pane="left" data-dir="-1" title="縮小 (Alt+ホイール下 または クリック)">−</button>
+        <span class="zoom-val" id="zoomValLeft" data-pane="left" title="クリックで100%にリセット">100%</span>
+        <button class="zoom-btn" data-pane="left" data-dir="1" title="拡大 (Alt+ホイール上 または クリック)">＋</button>
+      </div>
     </div>
     <div class="pane-files-search">
       <input type="text" id="fileFilterInput" class="file-search-input" placeholder="🔍 ファイル検索 (HTML / MD)..." />
@@ -1089,8 +1182,14 @@
         <div class="group-label">Source & Backup</div>
         <div class="group-buttons">
           <button class="btn" id="openDirBtn" title="レビュー・校正したいHTML/Markdownが入った作業フォルダを開く">📁 原本を開く</button>
+          <button class="btn" id="openBackupDirBtn" title="退避フォルダを指定し世代スナップショットを有効化">📂 退避先を指定</button>
           <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
-          <button class="btn" id="openBackupDirBtn" title="退避フォルダを指定し原本をバックアップ">📂 退避先を指定</button>
+          <div class="generation-controls" id="generationControls" style="display: none;">
+            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">世代:</span>
+            <select id="generationSelect" class="generation-select" title="差分比較または復元対象の世代を選択"></select>
+            <button class="btn" id="createSnapshotBtn" title="現在の修正状態を新しい世代として差分退避 (省ディスク)" style="padding: 2px 7px; font-size: 11px;">📸 世代退避</button>
+            <button class="btn" id="rollbackGenerationBtn" title="選択した世代のファイルを原本に上書き復元" style="padding: 2px 7px; font-size: 11px;">↩️ 戻す</button>
+          </div>
         </div>
       </div>
 
@@ -1180,6 +1279,13 @@
             別窓: 修正前
           </button>
 
+          <div class="pane-zoom-widget" id="zoomWidgetCenter" title="ドキュメントプレビューの拡大縮小 (Alt+ホイール または ＋/−ボタン / クリックで100%リセット)">
+            <span class="zoom-pane-tag">本文</span>
+            <button class="zoom-btn" data-pane="center" data-dir="-1" title="縮小 (Alt+ホイール下 または クリック)">−</button>
+            <span class="zoom-val" id="zoomValCenter" data-pane="center" title="クリックで100%にリセット">100%</span>
+            <button class="zoom-btn" data-pane="center" data-dir="1" title="拡大 (Alt+ホイール上 または クリック)">＋</button>
+          </div>
+
           <button class="btn btn-toggle-active" id="toggleLogsBtn" title="指摘エビデンス欄の表示/非表示を切り替え (Alt+2)">
             ◨ 指摘一覧
           </button>
@@ -1236,7 +1342,14 @@
     <div class="pane-logs" id="paneLogs">
       <div class="pane-logs-header">
         <strong id="logCountLabel" style="font-size: 12px; color: #ffffff;">指摘 (0件)</strong>
-        <button class="btn btn-danger" id="clearLogsBtn">全消去</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="pane-zoom-widget" id="zoomWidgetRight" title="指摘一覧の拡大縮小 (Alt+ホイール または ＋/−ボタン / クリックで100%リセット)">
+            <button class="zoom-btn" data-pane="right" data-dir="-1" title="縮小 (Alt+ホイール下 または クリック)">−</button>
+            <span class="zoom-val" id="zoomValRight" data-pane="right" title="クリックで100%にリセット">100%</span>
+            <button class="zoom-btn" data-pane="right" data-dir="1" title="拡大 (Alt+ホイール上 または クリック)">＋</button>
+          </div>
+          <button class="btn btn-danger" id="clearLogsBtn">全消去</button>
+        </div>
       </div>
       <div class="log-list" id="logList">
         <div class="empty-logs">テキストを選択して画面上部の追記ボタンを押すと、ここに指摘が蓄積されます。</div>
@@ -1265,16 +1378,16 @@
           <button class="modal-opt-btn btn-opt-use-existing" id="modalOptUseExisting">
             <div class="opt-icon">📂</div>
             <div class="opt-text">
-              <div class="opt-title">既存のバックアップをそのまま使う（Diff比較）</div>
-              <div class="opt-desc">退避先ファイルを上書きせず、保存済みの修正前原本データと現在の原本の差分を検証します。</div>
+              <div class="opt-title">既存のバックアップ世代を読み込む（Diff検証・世代復元）</div>
+              <div class="opt-desc">退避先内の既存ファイルや世代履歴をそのまま使用し、差分比較や過去世代への復元を行えるようにします。</div>
             </div>
           </button>
 
           <button class="modal-opt-btn btn-opt-overwrite" id="modalOptOverwrite">
-            <div class="opt-icon">🔄</div>
+            <div class="opt-icon">📸</div>
             <div class="opt-text">
-              <div class="opt-title">現在の原本データで上書き退避する（新規退避）</div>
-              <div class="opt-desc">現在の原本フォルダ全体を退避先へコピーし、退避データを最新状態に置き換えます。</div>
+              <div class="opt-title">新しい世代として差分退避を開始する（安全な追加スナップショット）</div>
+              <div class="opt-desc">既存データを消去せず、差分・対象ファイルのみを新世代（v0/v1...）として安全に退避します（省ディスク）。</div>
             </div>
           </button>
         </div>
@@ -1318,6 +1431,9 @@
     let backupFileHandles = {};     // relPath -> FileSystemFileHandle
     let backupResourceHandles = {}; // relPath / baseName -> FileSystemFileHandle
 
+    let generationManifest = null;  // 世代管理マニフェスト { version, activeGeneration, generations }
+    let activeGenerationId = 'v0';  // 現在選択中の世代ID
+
     let rawHtmlMap = {};            // relPath -> text (オンデマンド読み込み・キャッシュ)
     let backupHtmlMap = {};         // relPath -> text
     let blobUrlMap = {};            // key -> Blob URL (オンデマンド生成・キャッシュ)
@@ -1337,8 +1453,113 @@
 
     const TYPES = ["修正", "追加", "削除", "質問", "検討中"];
 
+    // --- ペイン別ズーム管理 (左/中/右) ---
+    const paneZoomState = {
+      left: parseFloat(localStorage.getItem('doc_review_zoom_left') || '1.0'),
+      center: parseFloat(localStorage.getItem('doc_review_zoom_center') || '1.0'),
+      right: parseFloat(localStorage.getItem('doc_review_zoom_right') || '1.0')
+    };
+
+    function normalizeZoom(val) {
+      const rounded = Math.round(val * 10) / 10;
+      return Math.max(0.7, Math.min(1.8, rounded));
+    }
+
+    function setPaneZoom(pane, val) {
+      const normalized = normalizeZoom(val);
+      paneZoomState[pane] = normalized;
+      localStorage.setItem('doc_review_zoom_' + pane, normalized.toString());
+      applyPaneZoom(pane);
+      updateZoomUI(pane);
+    }
+
+    function changePaneZoom(pane, delta) {
+      setPaneZoom(pane, (paneZoomState[pane] || 1.0) + delta);
+    }
+
+    function handlePaneZoomWheel(pane, deltaY) {
+      const delta = deltaY < 0 ? 0.1 : -0.1;
+      changePaneZoom(pane, delta);
+    }
+
+    function applyPaneZoom(pane) {
+      const val = paneZoomState[pane];
+      if (pane === 'left') {
+        const el = document.getElementById('fileTree');
+        if (el) el.style.zoom = val;
+      } else if (pane === 'center') {
+        const mainFrame = document.getElementById('mainPreview');
+        if (mainFrame && mainFrame.contentDocument && mainFrame.contentDocument.body) {
+          mainFrame.contentDocument.body.style.zoom = val;
+        }
+        const diffBefore = document.getElementById('diffBefore');
+        if (diffBefore && diffBefore.contentDocument && diffBefore.contentDocument.body) {
+          diffBefore.contentDocument.body.style.zoom = val;
+        }
+        const diffAfter = document.getElementById('diffAfter');
+        if (diffAfter && diffAfter.contentDocument && diffAfter.contentDocument.body) {
+          diffAfter.contentDocument.body.style.zoom = val;
+        }
+        if (isDiffMode) {
+          setTimeout(renderDiffBridgeLines, 80);
+        }
+      } else if (pane === 'right') {
+        const el = document.getElementById('logList');
+        if (el) el.style.zoom = val;
+      }
+    }
+
+    function updateZoomUI(pane) {
+      const val = paneZoomState[pane] || 1.0;
+      const pct = Math.round(val * 100) + '%';
+      let valElId = '';
+      if (pane === 'left') valElId = 'zoomValLeft';
+      else if (pane === 'center') valElId = 'zoomValCenter';
+      else if (pane === 'right') valElId = 'zoomValRight';
+
+      const el = document.getElementById(valElId);
+      if (el) {
+        el.innerText = pct;
+        if (Math.abs(val - 1.0) < 0.01) {
+          el.style.color = '#94a3b8';
+          el.style.fontWeight = 'normal';
+        } else {
+          el.style.color = '#38bdf8';
+          el.style.fontWeight = 'bold';
+        }
+      }
+    }
+
+    function initAllPaneZooms() {
+      ['left', 'center', 'right'].forEach(p => {
+        applyPaneZoom(p);
+        updateZoomUI(p);
+      });
+
+      document.querySelectorAll('.pane-zoom-widget .zoom-btn').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const pane = btn.getAttribute('data-pane');
+          const dir = parseFloat(btn.getAttribute('data-dir') || '0');
+          if (pane && dir) changePaneZoom(pane, dir * 0.1);
+        };
+      });
+
+      document.querySelectorAll('.pane-zoom-widget .zoom-val').forEach(span => {
+        span.onclick = (e) => {
+          e.stopPropagation();
+          const pane = span.getAttribute('data-pane');
+          if (pane) setPaneZoom(pane, 1.0);
+        };
+      });
+    }
+
     window.addEventListener('message', function (e) {
-      if (e.data && e.data.type === 'AI_REVIEW_ADD_LOG') {
+      if (e.data && e.data.type === 'PANE_ZOOM_WHEEL') {
+        handlePaneZoomWheel(e.data.pane || 'center', e.data.deltaY);
+      } else if (e.data && e.data.type === 'PANE_ZOOM_RESET') {
+        setPaneZoom(e.data.pane || 'center', 1.0);
+      } else if (e.data && e.data.type === 'AI_REVIEW_ADD_LOG') {
         processAddLog(e.data);
       } else if (e.data && e.data.type === 'DIFF_SCROLL_NOTIFY') {
         handleDiffScrollNotify(e.data);
@@ -1390,6 +1611,8 @@
         instruction: "",
         timestamp: new Date().toISOString()
       });
+
+      ensureV0Backup(targetFile);
 
       renderLogs(true);
       renderFileTree();
@@ -1497,6 +1720,29 @@
 
     initPaneResizers();
 
+    // グローバル ホイールによるペイン個別ズーム (Alt+ホイール推奨・Chrome完全非干渉 / Ctrl+ホイールもキャプチャ抑止)
+    document.addEventListener('wheel', (e) => {
+      if (e.altKey || e.ctrlKey) {
+        e.preventDefault();
+        e.stopPropagation();
+        let pane = 'center';
+        if (e.target && e.target.closest('#paneFiles')) pane = 'left';
+        else if (e.target && e.target.closest('#paneLogs')) pane = 'right';
+        handlePaneZoomWheel(pane, e.deltaY);
+      }
+    }, { passive: false, capture: true });
+
+    // 中クリックによるペインズーム100%リセット (AltまたはCtrl + 中クリック)
+    document.addEventListener('mousedown', (e) => {
+      if ((e.altKey || e.ctrlKey) && e.button === 1) {
+        e.preventDefault();
+        let pane = 'center';
+        if (e.target && e.target.closest('#paneFiles')) pane = 'left';
+        else if (e.target && e.target.closest('#paneLogs')) pane = 'right';
+        setPaneZoom(pane, 1.0);
+      }
+    }, { capture: true });
+
     window.addEventListener('keydown', (e) => {
       if (e.altKey && e.key === '1') {
         e.preventDefault();
@@ -1504,8 +1750,17 @@
       } else if (e.altKey && e.key === '2') {
         e.preventDefault();
         toggleLogsPane();
+      } else if ((e.ctrlKey || e.altKey) && (e.key === '0' || e.key === 'Numpad0')) {
+        e.preventDefault();
+        const hovered = document.querySelector(':hover');
+        let pane = 'center';
+        if (hovered && hovered.closest('#paneFiles')) pane = 'left';
+        else if (hovered && hovered.closest('#paneLogs')) pane = 'right';
+        setPaneZoom(pane, 1.0);
       }
     });
+
+    initAllPaneZooms();
 
     document.getElementById('addIssueFromParentBtn').onclick = function () {
       const frameEl = document.getElementById('mainPreview');
@@ -1582,6 +1837,10 @@
     document.getElementById('toggleInlineDiffBtn').onclick = toggleInlineDiffMode;
     document.getElementById('copyFilePathBtn').onclick = copyCurrentFilePath;
     document.getElementById('currentViewLabel').onclick = copyCurrentFilePath;
+
+    document.getElementById('createSnapshotBtn').onclick = createNewGenerationSnapshot;
+    document.getElementById('rollbackGenerationBtn').onclick = rollbackToSelectedGeneration;
+    document.getElementById('generationSelect').onchange = onGenerationChange;
 
     function getRootFullPath() {
       if (!workDirHandle) return '';
@@ -1730,12 +1989,278 @@
         document.addEventListener('keydown', onKeyDown);
 
         document.getElementById('modalOptUseExisting').onclick = () => cleanup('use_existing');
-        document.getElementById('modalOptOverwrite').onclick = () => cleanup('overwrite');
+        document.getElementById('modalOptOverwrite').onclick = () => cleanup('new_snapshot');
         document.getElementById('modalOptCancel').onclick = () => cleanup('cancel');
         document.getElementById('modalCloseBtn').onclick = () => cleanup('cancel');
 
         modal.style.display = 'flex';
       });
+    }
+
+    async function loadManifest(dirH) {
+      if (!dirH) return null;
+      try {
+        const fh = await dirH.getFileHandle('manifest.json');
+        const file = await fh.getFile();
+        const text = await file.text();
+        return JSON.parse(text);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function saveManifest(dirH, manifest) {
+      if (!dirH || !manifest) return;
+      try {
+        const fh = await dirH.getFileHandle('manifest.json', { create: true });
+        const writable = await fh.createWritable();
+        await writable.write(JSON.stringify(manifest, null, 2));
+        await writable.close();
+      } catch (e) {
+        console.error("manifest.json 保存エラー:", e);
+      }
+    }
+
+    let saveManifestTimer = null;
+    function scheduleSaveManifest() {
+      if (saveManifestTimer) clearTimeout(saveManifestTimer);
+      saveManifestTimer = setTimeout(() => {
+        if (backupDirHandle && generationManifest) {
+          saveManifest(backupDirHandle, generationManifest);
+        }
+      }, 500);
+    }
+
+    async function saveFileToDirectory(rootDirH, relPath, contentOrFile) {
+      const parts = relPath.replace(/\\/g, '/').split('/');
+      let currentDir = rootDirH;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!parts[i]) continue;
+        currentDir = await currentDir.getDirectoryHandle(parts[i], { create: true });
+      }
+      const fileName = parts[parts.length - 1];
+      const fh = await currentDir.getFileHandle(fileName, { create: true });
+      const writable = await fh.createWritable();
+      if (typeof contentOrFile === 'string') {
+        await writable.write(contentOrFile);
+      } else if (contentOrFile instanceof Blob || contentOrFile instanceof File) {
+        await writable.write(contentOrFile);
+      } else if (contentOrFile && contentOrFile.getFile) {
+        const f = await contentOrFile.getFile();
+        await writable.write(f);
+      }
+      await writable.close();
+      return fh;
+    }
+
+    async function getFileHandleFromDirectory(rootDirH, relPath) {
+      const parts = relPath.replace(/\\/g, '/').split('/');
+      let currentDir = rootDirH;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!parts[i]) continue;
+        try {
+          currentDir = await currentDir.getDirectoryHandle(parts[i]);
+        } catch (e) {
+          return null;
+        }
+      }
+      const fileName = parts[parts.length - 1];
+      try {
+        return await currentDir.getFileHandle(fileName);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function ensureV0Backup(relPath) {
+      if (!backupDirHandle || !generationManifest || !relPath) return;
+      const v0Gen = generationManifest.generations.find(g => g.id === 'v0');
+      if (!v0Gen || v0Gen.isLegacyRoot) return;
+      if (!v0Gen.files) v0Gen.files = [];
+      if (v0Gen.files.includes(relPath)) return;
+
+      try {
+        const v0Dir = await backupDirHandle.getDirectoryHandle('v0', { create: true });
+        const srcFh = workFileHandles[relPath];
+        if (srcFh) {
+          const file = await srcFh.getFile();
+          await saveFileToDirectory(v0Dir, relPath, file);
+          v0Gen.files.push(relPath);
+          const destFh = await getFileHandleFromDirectory(v0Dir, relPath);
+          if (destFh) backupFileHandles[relPath] = destFh;
+          scheduleSaveManifest();
+        }
+      } catch (e) {
+        console.warn("v0 自動退避エラー:", relPath, e);
+      }
+    }
+
+    function renderGenerationSelect() {
+      const container = document.getElementById('generationControls');
+      const sel = document.getElementById('generationSelect');
+      if (!backupDirHandle || !generationManifest || !generationManifest.generations || generationManifest.generations.length === 0) {
+        if (container) container.style.display = 'none';
+        return;
+      }
+      if (container) container.style.display = 'inline-flex';
+      if (!sel) return;
+
+      sel.innerHTML = '';
+      for (const gen of generationManifest.generations) {
+        const opt = document.createElement('option');
+        opt.value = gen.id;
+        const count = gen.files ? ` (${gen.files.length}件)` : (gen.isLegacyRoot ? ' (全ファイル)' : '');
+        opt.textContent = `${gen.name}${count}`;
+        if (gen.id === activeGenerationId) opt.selected = true;
+        sel.appendChild(opt);
+      }
+      updateDiffBeforeLabel();
+    }
+
+    function updateDiffBeforeLabel() {
+      const label = document.getElementById('diffBeforeLabel');
+      if (!label) return;
+      if (!backupDirHandle) {
+        label.innerText = "修正前 (退避フォルダ未指定)";
+        return;
+      }
+      const curGen = generationManifest?.generations?.find(g => g.id === activeGenerationId);
+      const genName = curGen ? curGen.name : '修正前';
+      label.innerText = `修正前: ${genName} (${backupDirHandle.name})`;
+    }
+
+    async function onGenerationChange(e) {
+      activeGenerationId = e.target.value;
+      if (generationManifest) {
+        generationManifest.activeGeneration = activeGenerationId;
+        scheduleSaveManifest();
+      }
+      const selectedText = e.target.options[e.target.selectedIndex]?.text || activeGenerationId;
+      showScanModal(`📂 世代「${selectedText}」に切替中...`);
+      await loadBackupFolder();
+      hideScanModal();
+      updateDiffBeforeLabel();
+      if (isDiffMode) refreshDiffFrames();
+      if (detachedBackupWin && !detachedBackupWin.closed) loadIntoDetachedBackup();
+    }
+
+    async function createNewGenerationSnapshot() {
+      if (!workDirHandle || !backupDirHandle || !generationManifest) {
+        alert("原本フォルダと退避先フォルダの両方を指定してください。");
+        return;
+      }
+
+      const nextNum = generationManifest.generations.length;
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const defaultName = `v${nextNum}: 修正版 (${nowStr})`;
+      const genName = prompt("【新規世代の退避 (差分スナップショット)】\n新しい世代の名前を入力してください:", defaultName);
+      if (!genName || !genName.trim()) return;
+
+      showScanModal("📸 新しい世代を退避中 (差分抽出)...");
+
+      try {
+        const genId = `v${nextNum}_${Date.now()}`;
+        const genDir = await backupDirHandle.getDirectoryHandle(genId, { create: true });
+
+        const targetFiles = new Set();
+        if (currentFileName) targetFiles.add(currentFileName);
+        for (const item of (reviewLogs || [])) {
+          if (item.file) targetFiles.add(item.file);
+        }
+        for (const name of Object.keys(rawHtmlMap)) {
+          targetFiles.add(name);
+        }
+
+        const savedFiles = [];
+        for (const relPath of targetFiles) {
+          const fh = workFileHandles[relPath];
+          if (fh) {
+            try {
+              const file = await fh.getFile();
+              await saveFileToDirectory(genDir, relPath, file);
+              savedFiles.push(relPath);
+            } catch (e) {
+              console.error("スナップショット保存エラー:", relPath, e);
+            }
+          }
+        }
+
+        generationManifest.generations.push({
+          id: genId,
+          name: genName.trim(),
+          createdAt: Date.now(),
+          isLegacyRoot: false,
+          files: savedFiles
+        });
+        generationManifest.activeGeneration = genId;
+        activeGenerationId = genId;
+
+        await saveManifest(backupDirHandle, generationManifest);
+        await loadBackupFolder();
+        renderGenerationSelect();
+
+        hideScanModal();
+        if (isDiffMode) refreshDiffFrames();
+        alert(`新しい世代「${genName.trim()}」を退避しました！（保存ファイル: ${savedFiles.length}件）`);
+      } catch (err) {
+        hideScanModal();
+        alert("世代退避エラー: " + err.message);
+      }
+    }
+
+    async function rollbackToSelectedGeneration() {
+      if (!workDirHandle || !backupDirHandle || !generationManifest) {
+        alert("原本フォルダと退避先フォルダが接続されていません。");
+        return;
+      }
+      const curGen = generationManifest.generations.find(g => g.id === activeGenerationId);
+      if (!curGen) return;
+
+      const fileCountText = curGen.files ? `${curGen.files.length} ファイル` : '全ファイル';
+      const ok = confirm(
+        `⚠️ 【世代復元（ロールバック）の確認】\n` +
+        `原本フォルダ（${workDirHandle.name}）のファイルを、選択中の世代「${curGen.name}」の状態に戻しますか？\n\n` +
+        `対象: ${fileCountText}\n` +
+        `※作業フォルダ内の該当ファイルが上書き復元されます。`
+      );
+      if (!ok) return;
+
+      showScanModal("↩️ 世代データを原本フォルダへ復元中...");
+
+      try {
+        let restoredCount = 0;
+        if (curGen.isLegacyRoot) {
+          for (const [relPath, fh] of Object.entries(backupFileHandles)) {
+            try {
+              const file = await fh.getFile();
+              await saveFileToDirectory(workDirHandle, relPath, file);
+              restoredCount++;
+            } catch (e) { }
+          }
+        } else {
+          const genDir = await backupDirHandle.getDirectoryHandle(curGen.id);
+          const filesToRestore = curGen.files && curGen.files.length > 0 ? curGen.files : Object.keys(backupFileHandles);
+          for (const relPath of filesToRestore) {
+            const fh = await getFileHandleFromDirectory(genDir, relPath);
+            if (fh) {
+              try {
+                const file = await fh.getFile();
+                await saveFileToDirectory(workDirHandle, relPath, file);
+                restoredCount++;
+              } catch (e) {
+                console.error("復元書き込みエラー:", relPath, e);
+              }
+            }
+          }
+        }
+
+        hideScanModal();
+        await reloadWorkDirectory();
+        alert(`原本フォルダを世代「${curGen.name}」の状態に復元しました！（復元完了: ${restoredCount}件）`);
+      } catch (err) {
+        hideScanModal();
+        alert("世代復元エラー: " + err.message);
+      }
     }
 
     async function openBackupDirectoryExplicit() {
@@ -1764,76 +2289,114 @@
         } catch (e) { }
       }
 
+      showScanModal("📂 退避フォルダの世代履歴を確認中...");
+      let existingManifest = await loadManifest(backupDirHandle);
+
+      if (existingManifest && existingManifest.generations && existingManifest.generations.length > 0) {
+        generationManifest = existingManifest;
+        activeGenerationId = existingManifest.activeGeneration || existingManifest.generations[existingManifest.generations.length - 1].id;
+        await loadBackupFolder();
+        renderGenerationSelect();
+        hideScanModal();
+        document.getElementById('openDetachedBackupBtn').style.display = 'inline-flex';
+        if (isDiffMode) refreshDiffFrames();
+        alert(`退避フォルダ「${backupDirHandle.name}」の世代履歴（${generationManifest.generations.length}世代）を接続しました！`);
+        return;
+      }
+
       let hasFiles = false;
       for await (const entry of backupDirHandle.values()) {
-        hasFiles = true;
-        break;
+        if (!shouldIgnoreEntry(entry.name)) {
+          hasFiles = true;
+          break;
+        }
       }
 
-      let doCopy = true;
+      hideScanModal();
+
+      let mode = 'new_snapshot';
       if (hasFiles) {
         const choice = await showBackupChoiceModal(backupDirHandle.name);
-        if (choice === 'cancel') {
-          return; // キャンセル時は何もしない
-        }
-        doCopy = (choice === 'overwrite');
+        if (choice === 'cancel') return;
+        if (choice === 'use_existing') mode = 'legacy_root';
+        if (choice === 'new_snapshot') mode = 'new_snapshot';
       }
 
-      const badge = document.getElementById('backupProgressBadge');
-      const progressText = document.getElementById('backupProgressText');
-      const spinner = document.getElementById('backupSpinner');
+      showScanModal("📂 初代スナップショット (v0: 初回原本) を準備中...");
 
-      if (doCopy) {
-        badge.style.display = 'inline-flex';
-        spinner.innerText = "⏳";
-        progressText.innerText = "退避準備中...";
-
-        const fileEntries = [];
-        await collectAllFiles(workDirHandle, backupDirHandle, fileEntries, 0);
-        const total = fileEntries.length;
-
-        let completed = 0;
-        const updateUI = () => {
-          const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
-          progressText.innerText = `退避中: ${completed} / ${total} (${percent}%)`;
-        };
-
-        const CONCURRENCY = 6;
-        let index = 0;
-
-        async function worker() {
-          while (index < fileEntries.length) {
-            const task = fileEntries[index++];
-            try {
-              const file = await task.srcHandle.getFile();
-              const destFileHandle = await task.destDirHandle.getFileHandle(task.name, { create: true });
-              const writable = await destFileHandle.createWritable();
-              await writable.write(file);
-              await writable.close();
-            } catch (err) {
-              console.error("Copy error:", task.name, err);
+      if (mode === 'legacy_root') {
+        generationManifest = {
+          version: 1,
+          activeGeneration: 'v0',
+          generations: [
+            {
+              id: 'v0',
+              name: 'v0: 既存退避原本',
+              createdAt: Date.now(),
+              isLegacyRoot: true
             }
-            completed++;
-            if (completed % 3 === 0 || completed === total) {
-              updateUI();
+          ]
+        };
+        activeGenerationId = 'v0';
+        await saveManifest(backupDirHandle, generationManifest);
+        await loadBackupFolder();
+      } else {
+        const v0Dir = await backupDirHandle.getDirectoryHandle('v0', { create: true });
+        const initialFiles = [];
+
+        if (currentFileName && workFileHandles[currentFileName]) {
+          try {
+            const f = await workFileHandles[currentFileName].getFile();
+            await saveFileToDirectory(v0Dir, currentFileName, f);
+            initialFiles.push(currentFileName);
+          } catch (e) { }
+        }
+        for (const item of (reviewLogs || [])) {
+          if (item.file && !initialFiles.includes(item.file) && workFileHandles[item.file]) {
+            try {
+              const f = await workFileHandles[item.file].getFile();
+              await saveFileToDirectory(v0Dir, item.file, f);
+              initialFiles.push(item.file);
+            } catch (e) { }
+          }
+        }
+
+        if (htmlFileNames.length > 0 && htmlFileNames.length <= 50) {
+          for (const relPath of htmlFileNames) {
+            if (!initialFiles.includes(relPath) && workFileHandles[relPath]) {
+              try {
+                const f = await workFileHandles[relPath].getFile();
+                await saveFileToDirectory(v0Dir, relPath, f);
+                initialFiles.push(relPath);
+              } catch (e) { }
             }
           }
         }
 
-        const workers = Array.from({ length: Math.min(CONCURRENCY, fileEntries.length) }, () => worker());
-        await Promise.all(workers);
-
-        spinner.innerText = "✅";
-        progressText.innerText = `退避完了: ${total} files`;
-        setTimeout(() => { badge.style.display = 'none'; }, 3000);
+        generationManifest = {
+          version: 1,
+          activeGeneration: 'v0',
+          generations: [
+            {
+              id: 'v0',
+              name: 'v0: 初回原本 (ベース)',
+              createdAt: Date.now(),
+              isLegacyRoot: false,
+              files: initialFiles
+            }
+          ]
+        };
+        activeGenerationId = 'v0';
+        await saveManifest(backupDirHandle, generationManifest);
+        await loadBackupFolder();
       }
 
-      document.getElementById('diffBeforeLabel').innerText = `修正前 (${backupDirHandle.name})`;
+      renderGenerationSelect();
+      hideScanModal();
       document.getElementById('openDetachedBackupBtn').style.display = 'inline-flex';
-      await loadBackupFolder();
-
       if (isDiffMode) refreshDiffFrames();
-      alert(`退避フォルダ「${backupDirHandle.name}」の同期が完了しました！`);
+
+      alert(`退避フォルダ「${backupDirHandle.name}」を接続しました！\n（案A: 差分スナップショット方式で世代管理が開始されました）`);
     }
 
     function shouldIgnoreEntry(name) {
@@ -2190,6 +2753,8 @@
       backupFileHandles = {};
       backupResourceHandles = {};
 
+      const curGen = generationManifest?.generations?.find(g => g.id === activeGenerationId);
+
       const state = {
         docCount: 0,
         resCount: 0,
@@ -2198,9 +2763,40 @@
       };
 
       try {
-        await scanDirTree(backupDirHandle, "", state, backupFileHandles, backupResourceHandles);
+        if (!curGen || curGen.isLegacyRoot) {
+          // ルート直下スキャン (既存レガシー退避)
+          await scanDirTree(backupDirHandle, "", state, backupFileHandles, backupResourceHandles);
+        } else {
+          // 世代スナップショット方式 (Plan A)
+          // 1. 初代 v0 のファイルをベースラインとして読込
+          try {
+            const v0Dir = await backupDirHandle.getDirectoryHandle('v0');
+            await scanDirTree(v0Dir, "", state, backupFileHandles, backupResourceHandles);
+          } catch (e) { }
+
+          // 2. 選択世代が v0 以外なら、その世代の変更ファイルを上書き読込
+          if (curGen.id !== 'v0') {
+            try {
+              const activeDir = await backupDirHandle.getDirectoryHandle(curGen.id);
+              await scanDirTree(activeDir, "", state, backupFileHandles, backupResourceHandles);
+            } catch (e) { }
+          }
+
+          // 3. 画像やCSSなどのリソースは原本から自動フォールバック解決（リンク切れゼロ）
+          for (const [k, v] of Object.entries(workResourceHandles)) {
+            if (!backupResourceHandles[k]) backupResourceHandles[k] = v;
+          }
+        }
       } catch (err) {
         console.error("退避フォルダ走査エラー:", err);
+      }
+
+      // 現在開いているファイルがあれば、その世代の退避データをキャッシュ
+      if (currentFileName && backupFileHandles[currentFileName]) {
+        try {
+          const bf = await backupFileHandles[currentFileName].getFile();
+          backupHtmlMap[currentFileName] = await bf.text();
+        } catch (e) { }
       }
     }
 
@@ -2394,6 +2990,7 @@
           console.error("原本ファイル読み込みエラー:", e);
         }
       }
+      ensureV0Backup(name);
 
       // リダイレクト用HTML（meta http-equiv="refresh"）の自動遷移
       const fileContent = rawHtmlMap[name] || "";
@@ -2630,6 +3227,7 @@
           html, body {
             background-color: #ffffff;
             color: #1f2937;
+            zoom: ${paneZoomState.center};
           }
           .winmerge-add {
             background-color: rgba(34, 197, 94, 0.22) !important;
@@ -3029,6 +3627,30 @@
             }, '*');
           }, true);
 
+          // Alt+マウスホイール (またはCtrl+ホイール) による中央ペインズームの親ウィンドウ連携
+          window.addEventListener('wheel', (e) => {
+            if (e.altKey || e.ctrlKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.parent.postMessage({
+                type: 'PANE_ZOOM_WHEEL',
+                pane: 'center',
+                deltaY: e.deltaY
+              }, '*');
+            }
+          }, { passive: false, capture: true });
+
+          // 中クリックによる100%リセット
+          window.addEventListener('mousedown', (e) => {
+            if ((e.altKey || e.ctrlKey) && e.button === 1) {
+              e.preventDefault();
+              window.parent.postMessage({
+                type: 'PANE_ZOOM_RESET',
+                pane: 'center'
+              }, '*');
+            }
+          }, { capture: true });
+
           function highlightAndScrollTo(targetText, targetContext) {
             if (!targetText) return;
             
@@ -3155,6 +3777,11 @@
       }
 
       frameEl.srcdoc = finalHtml;
+      setTimeout(() => {
+        if (frameEl.contentDocument && frameEl.contentDocument.body) {
+          frameEl.contentDocument.body.style.zoom = paneZoomState.center;
+        }
+      }, 50);
     }
 
     function calculateApproxLine(rawText, targetText) {
@@ -3532,6 +4159,11 @@
 
     function generatePrompt(logs, titleHeader) {
       if (logs.length === 0) { alert("指摘が登録されていません。"); return; }
+
+      for (const item of logs) {
+        if (item.file) ensureV0Backup(item.file);
+      }
+
       let out = `${titleHeader}\n以下のドキュメント（HTML / Markdown）の指定箇所について、指摘内容を反映してください。\n`;
       out += "※指示のない既存のタグ構造、属性、クラス名、前後の文言は一切変更しないこと。\n\n";
 
@@ -3785,6 +4417,30 @@
               e.preventDefault();
             }
           }, true);
+
+          // Alt+マウスホイール (またはCtrl+ホイール) によるDiff中央ペインズーム連携
+          window.addEventListener('wheel', (e) => {
+            if (e.altKey || e.ctrlKey) {
+              e.preventDefault();
+              e.stopPropagation();
+              window.parent.postMessage({
+                type: 'PANE_ZOOM_WHEEL',
+                pane: 'center',
+                deltaY: e.deltaY
+              }, '*');
+            }
+          }, { passive: false, capture: true });
+
+          // 中クリックによる100%リセット
+          window.addEventListener('mousedown', (e) => {
+            if ((e.altKey || e.ctrlKey) && e.button === 1) {
+              e.preventDefault();
+              window.parent.postMessage({
+                type: 'PANE_ZOOM_RESET',
+                pane: 'center'
+              }, '*');
+            }
+          }, { capture: true });
         })();
       ` + eTag + `\n`;
       if (finalHtml.includes("<body")) {
