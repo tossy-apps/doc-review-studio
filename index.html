@@ -504,6 +504,76 @@
       font-weight: bold;
     }
 
+    /* 階層ツリー & フォルダ開閉用スタイル */
+    .tree-folder {
+      padding: 6px 10px;
+      font-size: 11.5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #93c5fd;
+      font-weight: 600;
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+      border-radius: 4px;
+      margin: 1px 4px;
+    }
+
+    .tree-folder:hover {
+      background: #282b30;
+      color: #bfdbfe;
+    }
+
+    .folder-main-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .folder-arrow {
+      display: inline-block;
+      width: 12px;
+      font-size: 9px;
+      color: #64748b;
+      transition: transform 0.15s ease;
+      text-align: center;
+    }
+
+    .tree-folder.open .folder-arrow {
+      transform: rotate(90deg);
+      color: #93c5fd;
+    }
+
+    .folder-count-badge {
+      font-size: 9.5px;
+      color: #64748b;
+      background: #18191c;
+      padding: 1px 6px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      font-weight: normal;
+    }
+
+    .folder-children-container {
+      margin-left: 12px;
+      border-left: 1px dashed #374151;
+      padding-left: 2px;
+    }
+
+    .tree-file-item {
+      padding: 5px 8px 5px 12px !important;
+      font-size: 11.5px !important;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     /* 中央ペイン */
     .pane-center {
       flex: 1;
@@ -530,8 +600,48 @@
     .toolbar-left-area {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       overflow: hidden;
+    }
+
+    #currentViewLabel {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+      padding: 3px 6px;
+      border-radius: 4px;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    #currentViewLabel:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-copy-path {
+      background: #232428;
+      border: 1px solid #3f4248;
+      color: #94a3b8;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .btn-copy-path:hover {
+      background: #2f3136;
+      color: #60a5fa;
+      border-color: #60a5fa;
     }
 
     .inline-progress-tag {
@@ -567,6 +677,7 @@
       width: 100%;
       height: 100%;
       border: none;
+      background-color: #ffffff;
     }
 
     .diff-view-container {
@@ -1034,7 +1145,10 @@
             ◧ ファイル
           </button>
 
-          <div id="currentViewLabel"><strong>ファイルを選択してください</strong></div>
+          <div id="currentViewLabel" title="クリックしてファイルパスをコピー"><strong>ファイルを選択してください</strong></div>
+          <button class="btn-copy-path" id="copyFilePathBtn" title="表示中ファイルの相対パスをクリップボードにコピー" style="display: none;">
+            📋 パスコピー
+          </button>
           <span class="inline-progress-tag" id="backupProgressBadge">
             <span id="backupSpinner">⏳</span>
             <span id="backupProgressText">退避中...</span>
@@ -1171,18 +1285,48 @@
     </div>
   </div>
 
+  <!-- フォルダ高速スキャン進捗モーダル -->
+  <div class="modal-overlay" id="scanProgressModal" style="display: none; z-index: 1000000;">
+    <div class="modal-card" style="max-width: 440px; text-align: center;">
+      <div class="modal-header" style="justify-content: center; background: #1e293b; border-bottom: 1px solid #334155;">
+        <span class="modal-title" id="scanModalTitle">⚡ フォルダを高速スキャン中...</span>
+      </div>
+      <div class="modal-body" style="padding: 24px 20px;">
+        <div style="font-size: 36px; margin-bottom: 12px; animation: spin 1.5s infinite linear; display: inline-block;">⚙️</div>
+        <p id="scanProgressPath" style="margin: 0 0 12px; color: #94a3b8; font-size: 12px; font-family: monospace; word-break: break-all; min-height: 18px; max-height: 36px; overflow: hidden;">
+          フォルダを走査中...
+        </p>
+        <div style="background: #0f172a; border: 1px solid #334155; border-radius: 6px; height: 8px; overflow: hidden; margin-bottom: 14px;">
+          <div id="scanProgressBar" style="background: linear-gradient(90deg, #3b82f6, #60a5fa); width: 0%; height: 100%; transition: width 0.15s ease;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-around; font-size: 12px; color: #cbd5e1; background: #18191c; padding: 8px 12px; border-radius: 6px; border: 1px solid #282a30;">
+          <span id="scanCountDoc" style="color: #60a5fa; font-weight: bold;">HTML/MD: 0 件</span>
+          <span id="scanCountRes" style="color: #a78bfa;">他ファイル: 0 件</span>
+          <span id="scanCountTotal" style="color: #94a3b8;">合計: 0</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     let lastChosenDirHandle = null;
     let workDirHandle = null;
     let backupDirHandle = null;
 
-    let rawHtmlMap = {};
-    let backupHtmlMap = {};
-    let blobUrlMap = {};
-    let backupBlobUrlMap = {};
+    let workFileHandles = {};       // relPath -> FileSystemFileHandle (ドキュメント)
+    let workResourceHandles = {};   // relPath / baseName -> FileSystemFileHandle (リソース)
+    let backupFileHandles = {};     // relPath -> FileSystemFileHandle
+    let backupResourceHandles = {}; // relPath / baseName -> FileSystemFileHandle
+
+    let rawHtmlMap = {};            // relPath -> text (オンデマンド読み込み・キャッシュ)
+    let backupHtmlMap = {};         // relPath -> text
+    let blobUrlMap = {};            // key -> Blob URL (オンデマンド生成・キャッシュ)
+    let backupBlobUrlMap = {};      // key -> Blob URL
     let htmlFileNames = [];
     let currentFileName = "";
     let reviewLogs = [];
+
+    let openFolders = new Set();    // 開いているフォルダパスの集合
 
     let detachedModifiedWin = null;
     let detachedBackupWin = null;
@@ -1201,8 +1345,20 @@
       } else if (e.data && e.data.type === 'NAVIGATE_TO_FILE') {
         const { targetFile, hash } = e.data;
         if (!targetFile) return;
-        const matched = htmlFileNames.find(f => f.toLowerCase() === targetFile.toLowerCase()) ||
-          htmlFileNames.find(f => f.toLowerCase().endsWith('/' + targetFile.toLowerCase()) || f.toLowerCase().endsWith(targetFile.toLowerCase()));
+
+        let matched = htmlFileNames.find(f => f.toLowerCase() === targetFile.toLowerCase());
+
+        if (!matched && currentFileName) {
+          const lastSlash = currentFileName.lastIndexOf('/');
+          const fileDir = lastSlash !== -1 ? currentFileName.substring(0, lastSlash) : "";
+          const resolved = normalizeRelativePath(fileDir ? `${fileDir}/${targetFile}` : targetFile);
+          matched = htmlFileNames.find(f => f.toLowerCase() === resolved.toLowerCase());
+        }
+
+        if (!matched) {
+          matched = htmlFileNames.find(f => f.toLowerCase().endsWith('/' + targetFile.toLowerCase()) || f.toLowerCase().endsWith(targetFile.toLowerCase()));
+        }
+
         if (matched) {
           selectFile(matched);
           if (hash) {
@@ -1424,6 +1580,40 @@
     document.getElementById('reloadDiffAfterBtn').onclick = reloadWorkDirectory;
     document.getElementById('reloadCurrentFileBtn').onclick = reloadCurrentFileOnly;
     document.getElementById('toggleInlineDiffBtn').onclick = toggleInlineDiffMode;
+    document.getElementById('copyFilePathBtn').onclick = copyCurrentFilePath;
+    document.getElementById('currentViewLabel').onclick = copyCurrentFilePath;
+
+    async function copyCurrentFilePath() {
+      if (!currentFileName) return;
+      try {
+        await navigator.clipboard.writeText(currentFileName);
+        const btn = document.getElementById('copyFilePathBtn');
+        if (btn) {
+          const origText = btn.innerHTML;
+          btn.innerHTML = "✓ コピー完了";
+          btn.style.borderColor = "#22c55e";
+          btn.style.color = "#4ade80";
+          setTimeout(() => {
+            btn.innerHTML = origText;
+            btn.style.borderColor = "";
+            btn.style.color = "";
+          }, 1200);
+        }
+        const labelEl = document.getElementById('currentViewLabel');
+        if (labelEl) {
+          const origBg = labelEl.style.background;
+          labelEl.style.background = "rgba(34, 197, 94, 0.25)";
+          setTimeout(() => { labelEl.style.background = origBg; }, 400);
+        }
+      } catch (err) {
+        const ta = document.createElement('textarea');
+        ta.value = currentFileName;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+    }
 
     async function openWorkDirectory() {
       try {
@@ -1561,6 +1751,7 @@
       if (!name) return true;
       if (name === '.git' || name.startsWith('.git/')) return true;
       if (name === '.svn' || name === '.hg' || name === 'node_modules' || name === '.DS_Store' || name === '.vscode') return true;
+      if (name.toLowerCase().endsWith('.lnk')) return true;
       if (name.includes('_backup')) return true;
       return false;
     }
@@ -1761,92 +1952,189 @@
       });
     }
 
+    function showScanModal(title) {
+      const modal = document.getElementById('scanProgressModal');
+      if (modal) {
+        const titleEl = document.getElementById('scanModalTitle');
+        if (titleEl) titleEl.innerText = title || "⚡ フォルダを高速スキャン中...";
+        const barEl = document.getElementById('scanProgressBar');
+        if (barEl) barEl.style.width = "0%";
+        const pathEl = document.getElementById('scanProgressPath');
+        if (pathEl) pathEl.innerText = "フォルダ階層を走査中...";
+        const docEl = document.getElementById('scanCountDoc');
+        if (docEl) docEl.innerText = "HTML/MD: 0 件";
+        const resEl = document.getElementById('scanCountRes');
+        if (resEl) resEl.innerText = "他ファイル: 0 件";
+        const totalEl = document.getElementById('scanCountTotal');
+        if (totalEl) totalEl.innerText = "合計: 0";
+        modal.style.display = 'flex';
+      }
+    }
+
+    function updateScanModalUI(state, currentPath) {
+      const pathEl = document.getElementById('scanProgressPath');
+      if (pathEl) pathEl.innerText = currentPath || "";
+      const docEl = document.getElementById('scanCountDoc');
+      if (docEl) docEl.innerText = `HTML/MD: ${state.docCount} 件`;
+      const resEl = document.getElementById('scanCountRes');
+      if (resEl) resEl.innerText = `他ファイル: ${state.resCount} 件`;
+      const totalEl = document.getElementById('scanCountTotal');
+      if (totalEl) totalEl.innerText = `合計: ${state.totalCount}`;
+      const barEl = document.getElementById('scanProgressBar');
+      if (barEl) {
+        const progressPct = Math.min(95, Math.floor(Math.log10(state.totalCount + 1) * 23));
+        barEl.style.width = `${progressPct}%`;
+      }
+    }
+
+    function hideScanModal() {
+      const barEl = document.getElementById('scanProgressBar');
+      if (barEl) barEl.style.width = "100%";
+      setTimeout(() => {
+        const modal = document.getElementById('scanProgressModal');
+        if (modal) modal.style.display = 'none';
+      }, 150);
+    }
+
+    async function scanDirTree(dirH, pathPrefix, state, fileHandlesMap, resHandlesMap) {
+      for await (const entry of dirH.values()) {
+        if (shouldIgnoreEntry(entry.name)) continue;
+        const relPath = pathPrefix ? `${pathPrefix}/${entry.name}` : entry.name;
+
+        if (entry.kind === 'file') {
+          state.totalCount++;
+          if (isDocFile(entry.name)) {
+            fileHandlesMap[relPath] = entry;
+            state.docCount++;
+          } else {
+            resHandlesMap[relPath] = entry;
+            resHandlesMap[entry.name] = entry;
+            state.resCount++;
+          }
+
+          const now = performance.now();
+          if (now - state.lastYieldTime > 25) {
+            state.lastYieldTime = now;
+            updateScanModalUI(state, relPath);
+            await new Promise(r => setTimeout(r, 0));
+          }
+        } else if (entry.kind === 'directory') {
+          await scanDirTree(entry, relPath, state, fileHandlesMap, resHandlesMap);
+        }
+      }
+    }
+
     async function loadWorkFolder() {
       rawHtmlMap = {};
       blobUrlMap = {};
+      workFileHandles = {};
+      workResourceHandles = {};
       htmlFileNames = [];
+      openFolders.clear();
 
-      for await (const entry of workDirHandle.values()) {
-        if (shouldIgnoreEntry(entry.name)) continue;
+      showScanModal("⚡ 原本フォルダを高速スキャン中...");
 
-        if (entry.kind === 'file') {
-          const file = await entry.getFile();
-          if (isDocFile(file.name)) {
-            rawHtmlMap[file.name] = await file.text();
-            htmlFileNames.push(file.name);
-          } else {
-            blobUrlMap[file.name] = URL.createObjectURL(file);
-          }
-        } else if (entry.kind === 'directory') {
-          await scanResourcesOnly(entry, entry.name, blobUrlMap);
-        }
+      const state = {
+        docCount: 0,
+        resCount: 0,
+        totalCount: 0,
+        lastYieldTime: performance.now()
+      };
+
+      try {
+        await scanDirTree(workDirHandle, "", state, workFileHandles, workResourceHandles);
+      } catch (err) {
+        hideScanModal();
+        alert("原本フォルダの走査エラー: " + err.message);
+        return;
       }
+
+      htmlFileNames = Object.keys(workFileHandles).sort();
+      hideScanModal();
 
       if (htmlFileNames.length === 0) {
         alert("選択した原本フォルダ内にドキュメントファイル (HTML / Markdown) が見つかりませんでした。");
+        renderFileTree();
         return;
       }
 
       renderFileTree();
-      selectFile(htmlFileNames[0]);
+      const defaultFile = htmlFileNames.find(f => f.toLowerCase() === 'index.html') || htmlFileNames[0];
+      await selectFile(defaultFile);
     }
 
     async function loadBackupFolder() {
       if (!backupDirHandle) return;
       backupHtmlMap = {};
       backupBlobUrlMap = {};
+      backupFileHandles = {};
+      backupResourceHandles = {};
 
-      for await (const entry of backupDirHandle.values()) {
-        if (shouldIgnoreEntry(entry.name)) continue;
+      const state = {
+        docCount: 0,
+        resCount: 0,
+        totalCount: 0,
+        lastYieldTime: performance.now()
+      };
 
-        if (entry.kind === 'file') {
-          const file = await entry.getFile();
-          if (isDocFile(file.name)) {
-            backupHtmlMap[file.name] = await file.text();
-          } else {
-            backupBlobUrlMap[file.name] = URL.createObjectURL(file);
-          }
-        } else if (entry.kind === 'directory') {
-          await scanResourcesOnly(entry, entry.name, backupBlobUrlMap);
-        }
-      }
-    }
-
-    async function scanResourcesOnly(dirH, pathPrefix, targetMap) {
-      for await (const entry of dirH.values()) {
-        if (shouldIgnoreEntry(entry.name)) continue;
-        const fullRel = pathPrefix ? `${pathPrefix}/${entry.name}` : entry.name;
-        if (entry.kind === 'file') {
-          const file = await entry.getFile();
-          const url = URL.createObjectURL(file);
-          targetMap[entry.name] = url;
-          targetMap[fullRel] = url;
-        } else if (entry.kind === 'directory') {
-          await scanResourcesOnly(entry, fullRel, targetMap);
-        }
+      try {
+        await scanDirTree(backupDirHandle, "", state, backupFileHandles, backupResourceHandles);
+      } catch (err) {
+        console.error("退避フォルダ走査エラー:", err);
       }
     }
 
     async function reloadWorkDirectory() {
       if (!workDirHandle) return;
-      for (const name of htmlFileNames) {
+      const cachedNames = Object.keys(rawHtmlMap);
+      for (const name of cachedNames) {
         try {
-          const fh = await workDirHandle.getFileHandle(name);
-          const f = await fh.getFile();
-          rawHtmlMap[name] = await f.text();
+          const fh = workFileHandles[name];
+          if (fh) {
+            const f = await fh.getFile();
+            rawHtmlMap[name] = await f.text();
+          }
         } catch (e) { }
       }
-      // 通常プレビューを常に最新データで再読込
-      if (currentFileName && rawHtmlMap[currentFileName]) {
-        loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+      if (currentFileName) {
+        if (!rawHtmlMap[currentFileName] && workFileHandles[currentFileName]) {
+          try {
+            const f = await workFileHandles[currentFileName].getFile();
+            rawHtmlMap[currentFileName] = await f.text();
+          } catch (e) { }
+        }
+        await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
       }
-      if (isDiffMode) {
-        refreshDiffFrames();
-      }
-      if (detachedModifiedWin && !detachedModifiedWin.closed) {
-        loadIntoDetachedModified();
-      }
+      if (isDiffMode) refreshDiffFrames();
+      if (detachedModifiedWin && !detachedModifiedWin.closed) loadIntoDetachedModified();
       alert("原本ファイルを最新状態に再読込しました。");
+    }
+
+    function buildFileTreeNode(paths) {
+      const root = { name: "", path: "", isFolder: true, children: {}, files: [], totalDocCount: 0 };
+      for (const fullPath of paths) {
+        const parts = fullPath.split('/');
+        let current = root;
+        current.totalDocCount++;
+        for (let i = 0; i < parts.length - 1; i++) {
+          const part = parts[i];
+          const subPath = parts.slice(0, i + 1).join('/');
+          if (!current.children[part]) {
+            current.children[part] = {
+              name: part,
+              path: subPath,
+              isFolder: true,
+              children: {},
+              files: [],
+              totalDocCount: 0
+            };
+          }
+          current = current.children[part];
+          current.totalDocCount++;
+        }
+        current.files.push(fullPath);
+      }
+      return root;
     }
 
     function renderFileTree() {
@@ -1876,41 +2164,165 @@
         return;
       }
 
-      filtered.forEach(name => {
-        const count = reviewLogs.filter(l => l.file === name).length;
-        const isMd = isMarkdownFile(name);
-        const badgeHtml = isMd
-          ? '<span class="file-type-badge badge-md">MD</span>'
-          : '<span class="file-type-badge badge-html">HTML</span>';
+      if (fileSearchQuery) {
+        const displayList = filtered.slice(0, 300);
+        displayList.forEach(name => {
+          const li = createFileTreeItem(name);
+          ul.appendChild(li);
+        });
+        if (filtered.length > 300) {
+          const moreLi = document.createElement('li');
+          moreLi.style.color = '#eab308';
+          moreLi.style.fontSize = '11px';
+          moreLi.style.cursor = 'default';
+          moreLi.innerText = `...他 ${filtered.length - 300} 件一致（検索語を絞り込んでください）`;
+          ul.appendChild(moreLi);
+        }
+        return;
+      }
 
-        const li = document.createElement('li');
-        if (name === currentFileName) li.classList.add('active');
-
-        li.innerHTML = `
-          <span class="file-name" title="${escapeHtml(name)}">
-            ${badgeHtml}${escapeHtml(name)}
-          </span>
-          ${count > 0 ? `<span class="file-badge">${count}</span>` : ''}
-        `;
-
-        li.addEventListener('click', () => selectFile(name));
-        ul.appendChild(li);
-      });
+      const treeRoot = buildFileTreeNode(filtered);
+      renderTreeNode(treeRoot, ul, 0);
     }
 
-    function selectFile(name) {
+    function renderTreeNode(node, containerEl, depth) {
+      const folderKeys = Object.keys(node.children).sort();
+      for (const fKey of folderKeys) {
+        const childNode = node.children[fKey];
+        const isOpen = openFolders.has(childNode.path);
+
+        const folderDiv = document.createElement('div');
+        folderDiv.className = `tree-folder ${isOpen ? 'open' : ''}`;
+        folderDiv.title = childNode.path;
+
+        folderDiv.innerHTML = `
+          <div class="folder-main-label">
+            <span class="folder-arrow">▶</span>
+            <span class="folder-icon">${isOpen ? '📂' : '📁'}</span>
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHtml(childNode.name)}</span>
+          </div>
+          <span class="folder-count-badge">${childNode.totalDocCount}</span>
+        `;
+
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'folder-children-container';
+        childrenContainer.style.display = isOpen ? 'block' : 'none';
+
+        folderDiv.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (openFolders.has(childNode.path)) {
+            openFolders.delete(childNode.path);
+          } else {
+            openFolders.add(childNode.path);
+          }
+          renderFileTree();
+        });
+
+        containerEl.appendChild(folderDiv);
+        containerEl.appendChild(childrenContainer);
+
+        if (isOpen) {
+          renderTreeNode(childNode, childrenContainer, depth + 1);
+        }
+      }
+
+      for (const fileName of node.files) {
+        const li = createFileTreeItem(fileName, depth > 0);
+        containerEl.appendChild(li);
+      }
+    }
+
+    function createFileTreeItem(name, isSubItem = false) {
+      const count = reviewLogs.filter(l => l.file === name).length;
+      const isMd = isMarkdownFile(name);
+      const badgeHtml = isMd
+        ? '<span class="file-type-badge badge-md">MD</span>'
+        : '<span class="file-type-badge badge-html">HTML</span>';
+
+      const li = document.createElement('li');
+      if (isSubItem) li.classList.add('tree-file-item');
+      if (name === currentFileName) li.classList.add('active');
+
+      const displayName = isSubItem ? name.split('/').pop() : name;
+
+      li.innerHTML = `
+        <span class="file-name" title="${escapeHtml(name)}">
+          ${badgeHtml}${escapeHtml(displayName)}
+        </span>
+        ${count > 0 ? `<span class="file-badge">${count}</span>` : ''}
+      `;
+
+      li.addEventListener('click', () => selectFile(name));
+      return li;
+    }
+
+    async function selectFile(name) {
+      if (!name) return;
       currentFileName = name;
+
+      const parts = name.split('/');
+      for (let i = 1; i < parts.length; i++) {
+        const parentPath = parts.slice(0, i).join('/');
+        openFolders.add(parentPath);
+      }
+
+      if (!rawHtmlMap[name] && workFileHandles[name]) {
+        try {
+          const file = await workFileHandles[name].getFile();
+          rawHtmlMap[name] = await file.text();
+        } catch (e) {
+          console.error("原本ファイル読み込みエラー:", e);
+        }
+      }
+
+      // リダイレクト用HTML（meta http-equiv="refresh"）の自動遷移
+      const fileContent = rawHtmlMap[name] || "";
+      const metaRefreshMatch = fileContent.match(/<meta[^>]*http-equiv=["']refresh["'][^>]*content=["']\d+;\s*url=([^"'>]+)["']/i);
+      if (metaRefreshMatch) {
+        const targetRel = metaRefreshMatch[1].trim().split('?')[0].split('#')[0];
+        const lastSlash = name.lastIndexOf('/');
+        const fileDir = lastSlash !== -1 ? name.substring(0, lastSlash) : "";
+        const resolvedTarget = normalizeRelativePath(fileDir ? `${fileDir}/${targetRel}` : targetRel);
+
+        const matchedTarget = htmlFileNames.find(f => f.toLowerCase() === resolvedTarget.toLowerCase()) ||
+                              htmlFileNames.find(f => f.toLowerCase().endsWith('/' + targetRel.toLowerCase()));
+
+        if (matchedTarget && matchedTarget !== name) {
+          const labelEl = document.getElementById('currentViewLabel');
+          if (labelEl) {
+            labelEl.innerHTML = `↪️ リダイレクト: <strong style="color:#60a5fa;">${escapeHtml(matchedTarget)}</strong> へ移動中...`;
+          }
+          setTimeout(() => {
+            selectFile(matchedTarget);
+          }, 80);
+          return;
+        }
+      }
+
+      if (backupFileHandles[name] && !backupHtmlMap[name]) {
+        try {
+          const bf = await backupFileHandles[name].getFile();
+          backupHtmlMap[name] = await bf.text();
+        } catch (e) { }
+      }
+
       renderFileTree();
       const isMd = isMarkdownFile(name);
       const icon = isMd ? '📝' : '📄';
-      document.getElementById('currentViewLabel').innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
+      const labelEl = document.getElementById('currentViewLabel');
+      if (labelEl) {
+        labelEl.innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(name)}</strong>`;
+        labelEl.title = `クリックしてパスをコピー: ${name}`;
+      }
+      const copyBtn = document.getElementById('copyFilePathBtn');
+      if (copyBtn) copyBtn.style.display = 'inline-flex';
       
       const placeholderEl = document.getElementById('emptyPlaceholder');
       if (placeholderEl) placeholderEl.style.display = 'none';
       const previewEl = document.getElementById('mainPreview');
       if (previewEl) previewEl.style.display = 'block';
 
-      loadIntoFrame(previewEl, rawHtmlMap[name], name, blobUrlMap);
+      await loadIntoFrame(previewEl, rawHtmlMap[name], name, blobUrlMap);
 
       if (isDiffMode) {
         refreshDiffFrames();
@@ -1926,7 +2338,7 @@
 
     let isInlineDiffMode = false;
 
-    function toggleInlineDiffMode() {
+    async function toggleInlineDiffMode() {
       isInlineDiffMode = !isInlineDiffMode;
       const btn = document.getElementById('toggleInlineDiffBtn');
       if (btn) {
@@ -1943,7 +2355,7 @@
         }
       }
       if (currentFileName) {
-        loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+        await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
       }
     }
 
@@ -1953,11 +2365,15 @@
         return;
       }
       try {
-        const fh = await workDirHandle.getFileHandle(currentFileName);
+        const fh = workFileHandles[currentFileName];
+        if (!fh) {
+          alert(`ファイルハンドルが見つかりません: ${currentFileName}`);
+          return;
+        }
         const f = await fh.getFile();
         rawHtmlMap[currentFileName] = await f.text();
 
-        loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
+        await loadIntoFrame(document.getElementById('mainPreview'), rawHtmlMap[currentFileName], currentFileName, blobUrlMap);
         if (isDiffMode) refreshDiffFrames();
         if (detachedModifiedWin && !detachedModifiedWin.closed) loadIntoDetachedModified();
 
@@ -2050,7 +2466,7 @@
       return decoratedHtml;
     }
 
-    function loadIntoFrame(frameEl, rawHtml, fileName, resourceMap) {
+    async function loadIntoFrame(frameEl, rawHtml, fileName, resourceMap) {
       if (!rawHtml) return;
       let baseHtml;
       if (isInlineDiffMode && frameEl && frameEl.id === 'mainPreview') {
@@ -2058,10 +2474,40 @@
       } else {
         baseHtml = getRenderableHtml(fileName, rawHtml);
       }
-      let finalHtml = resolveResourceUrls(baseHtml, resourceMap);
+      const isBackup = frameEl && (frameEl.id === 'diffBefore' || frameEl.id === 'detachedBackup');
+      let finalHtml = await resolveResourceUrlsAsync(baseHtml, fileName, isBackup);
+
+      // iframe内でのブラウザ直リダイレクト（file: スキームoriginブロック等）を防止
+      finalHtml = finalHtml.replace(/<meta([^>]*http-equiv=["']refresh["'][^>]*)>/gi, '<!-- $& -->');
+
+      // 本文が空（またはタグのみでテキストなし）の場合の視覚案内
+      const textOnly = finalHtml.replace(/<style[\s\S]*?<\/style>/gi, '')
+                                .replace(/<script[\s\S]*?<\/script>/gi, '')
+                                .replace(/<[^>]*>/g, '')
+                                .trim();
+      if (textOnly.length === 0) {
+        const emptyNotice = `
+          <div style="margin: 40px auto; max-width: 480px; padding: 24px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+            <div style="font-size: 32px; margin-bottom: 8px;">ℹ️</div>
+            <h3 style="margin: 0 0 8px; font-size: 15px; color: #60a5fa;">表示可能なコンテンツがありません</h3>
+            <p style="margin: 0; font-size: 12px; color: #94a3b8; line-height: 1.6;">
+              このファイル（<code style="color:#e2e8f0;">${escapeHtml(fileName)}</code>）は転送専用または空のドキュメントです。
+            </p>
+          </div>
+        `;
+        if (finalHtml.includes("<body")) {
+          finalHtml = finalHtml.replace(/(<body[^>]*>)/i, `$1${emptyNotice}`);
+        } else {
+          finalHtml = emptyNotice + finalHtml;
+        }
+      }
 
       const injectedStyles = `
         <style>
+          html, body {
+            background-color: #ffffff;
+            color: #1f2937;
+          }
           .winmerge-add {
             background-color: rgba(34, 197, 94, 0.22) !important;
             border-left: 4px solid #22c55e !important;
@@ -2595,12 +3041,73 @@
       return rawText.substring(0, idx).split('\n').length;
     }
 
+    function normalizeRelativePath(path) {
+      if (!path) return "";
+      const parts = path.replace(/\\/g, '/').split('/');
+      const stack = [];
+      for (const p of parts) {
+        if (!p || p === '.') continue;
+        if (p === '..') {
+          if (stack.length > 0) stack.pop();
+        } else {
+          stack.push(p);
+        }
+      }
+      return stack.join('/');
+    }
+
+    async function resolveResourceUrlsAsync(html, fileName, isBackup = false) {
+      if (!html) return "";
+      const targetResourceHandles = isBackup ? backupResourceHandles : workResourceHandles;
+      const targetBlobMap = isBackup ? backupBlobUrlMap : blobUrlMap;
+
+      const currentFile = fileName || currentFileName || "";
+      const lastSlash = currentFile.lastIndexOf('/');
+      const fileDir = lastSlash !== -1 ? currentFile.substring(0, lastSlash) : "";
+
+      // HTML内の src="..." / href="..." / url(...) の抽出
+      const urlPattern = /(?:src|href)=["']([^"']+)["']|url\(\s*["']?([^"')]+)["']?\s*\)/gi;
+      const refs = new Set();
+      let m;
+      while ((m = urlPattern.exec(html)) !== null) {
+        const raw = m[1] || m[2];
+        if (raw && !raw.startsWith('data:') && !raw.startsWith('http:') && !raw.startsWith('https:') && !raw.startsWith('#') && !raw.startsWith('javascript:')) {
+          refs.add(raw);
+        }
+      }
+
+      let res = html;
+      for (const ref of refs) {
+        const cleanRef = ref.split('?')[0].split('#')[0];
+        if (isDocFile(cleanRef)) continue; // HTML等の別ページリンクは除外
+
+        const resolvedRelPath = normalizeRelativePath(fileDir ? `${fileDir}/${cleanRef}` : cleanRef);
+        const baseName = cleanRef.split('/').pop();
+
+        const handle = targetResourceHandles[resolvedRelPath] || targetResourceHandles[cleanRef] || targetResourceHandles[baseName];
+        if (handle) {
+          if (!targetBlobMap[cleanRef]) {
+            try {
+              const f = await handle.getFile();
+              targetBlobMap[cleanRef] = URL.createObjectURL(f);
+            } catch (err) {
+              console.warn("Resource blob creation failed:", cleanRef, err);
+            }
+          }
+          const blobUrl = targetBlobMap[cleanRef];
+          if (blobUrl) {
+            res = res.replaceAll(ref, blobUrl);
+          }
+        }
+      }
+      return res;
+    }
+
     function resolveResourceUrls(html, resourceMap) {
       if (!html) return "";
       let res = html;
-      const map = resourceMap || blobUrlMap;
+      const map = (resourceMap && typeof resourceMap === 'object') ? resourceMap : blobUrlMap;
       const sortedKeys = Object.keys(map).sort((a, b) => b.length - a.length);
-
       for (const key of sortedKeys) {
         const blobUrl = map[key];
         const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -2755,7 +3262,7 @@
 
     function pad(n) { return n < 10 ? '0' + n : n; }
 
-    function openDetachedModified() {
+    async function openDetachedModified() {
       if (!currentFileName || !rawHtmlMap[currentFileName]) {
         alert("ファイルが選択されていないか、内容が読み込まれていません。");
         return;
@@ -2763,11 +3270,12 @@
       const isMd = isMarkdownFile(currentFileName);
       const icon = isMd ? '📝' : '📄';
       const baseHtml = getRenderableHtml(currentFileName, rawHtmlMap[currentFileName]);
-      let finalHtml = resolveResourceUrls(baseHtml, blobUrlMap);
+      let finalHtml = await resolveResourceUrlsAsync(baseHtml, currentFileName, false);
       const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
       const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
 
       const headerBar = `
+        <style>html, body { background-color: #ffffff; color: #1f2937; }</style>
         <div style="position:fixed;top:0;left:0;width:100%;height:38px;background:#18191c;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:9999999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;border-bottom:1px solid #374151;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
           <span style="color:#60a5fa; font-weight:bold; font-size:13px;">${icon} [原本] ${escapeHtml(currentFileName)}</span>
           <button id="detachedAddBtn" style="background:#16a34a;color:#fff;border:1px solid #22c55e;border-radius:4px;padding:4px 12px;font-weight:bold;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
@@ -2843,13 +3351,13 @@
       }
     }
 
-    function loadIntoDetachedModified() {
+    async function loadIntoDetachedModified() {
       if (detachedModifiedWin && !detachedModifiedWin.closed) {
-        openDetachedModified();
+        await openDetachedModified();
       }
     }
 
-    function openDetachedBackup() {
+    async function openDetachedBackup() {
       if (!currentFileName || !backupHtmlMap[currentFileName]) {
         alert("退避フォルダ内に該当ファイルが存在しません。");
         return;
@@ -2857,8 +3365,9 @@
       const isMd = isMarkdownFile(currentFileName);
       const icon = isMd ? '📝' : '📄';
       const baseHtml = getRenderableHtml(currentFileName, backupHtmlMap[currentFileName]);
-      let finalHtml = resolveResourceUrls(baseHtml, backupBlobUrlMap);
+      let finalHtml = await resolveResourceUrlsAsync(baseHtml, currentFileName, true);
       const headerBar = `
+        <style>html, body { background-color: #ffffff; color: #1f2937; }</style>
         <div style="position:fixed;top:0;left:0;width:100%;height:38px;background:#374151;color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-sizing:border-box;z-index:9999999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;border-bottom:1px solid #4b5563;box-shadow:0 2px 8px rgba(0,0,0,0.5);">
           <span style="color:#f87171; font-weight:bold; font-size:13px;">${icon} [修正前/退避原本] ${escapeHtml(currentFileName)}</span>
           <span style="color:#d1d5db; font-size:11px;">(参照専用)</span>
@@ -2882,9 +3391,9 @@
       }
     }
 
-    function loadIntoDetachedBackup() {
+    async function loadIntoDetachedBackup() {
       if (detachedBackupWin && !detachedBackupWin.closed) {
-        openDetachedBackup();
+        await openDetachedBackup();
       }
     }
 
@@ -2943,7 +3452,7 @@
       }
     }
 
-    function refreshDiffFrames() {
+    async function refreshDiffFrames() {
       const beforeRaw = backupHtmlMap[currentFileName] || "";
       const afterRaw = rawHtmlMap[currentFileName] || "";
 
@@ -2953,8 +3462,8 @@
       const decoratedBefore = buildWinMergeDecoratedHtml(beforeHtml, afterHtml, true);
       const decoratedAfter = buildWinMergeDecoratedHtml(afterHtml, beforeHtml, false);
 
-      loadDiffDecoratedFrame(document.getElementById('diffBefore'), decoratedBefore, 'DIFF_LEFT', backupBlobUrlMap);
-      loadDiffDecoratedFrame(document.getElementById('diffAfter'), decoratedAfter, 'DIFF_RIGHT', blobUrlMap);
+      await loadDiffDecoratedFrame(document.getElementById('diffBefore'), decoratedBefore, 'DIFF_LEFT', true);
+      await loadDiffDecoratedFrame(document.getElementById('diffAfter'), decoratedAfter, 'DIFF_RIGHT', false);
 
       setTimeout(renderDiffBridgeLines, 400);
     }
@@ -3096,8 +3605,8 @@
       return finalHtml;
     }
 
-    function loadDiffDecoratedFrame(frameEl, html, role, resourceMap) {
-      let finalHtml = resolveResourceUrls(html, resourceMap);
+    async function loadDiffDecoratedFrame(frameEl, html, role, isBackup = false) {
+      let finalHtml = await resolveResourceUrlsAsync(html, currentFileName, isBackup);
       const sTag = String.fromCharCode(60) + 'script' + String.fromCharCode(62);
       const eTag = String.fromCharCode(60) + '/script' + String.fromCharCode(62);
 
