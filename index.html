@@ -1424,8 +1424,26 @@
       box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
     }
     .btn-kensaku-badge .badge-icon {
-      font-size: 11.5px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       line-height: 1;
+    }
+    .badge-icon-img {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      object-fit: contain;
+      vertical-align: middle;
+      display: block;
+    }
+    .kensaku-link-img {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      object-fit: contain;
+      vertical-align: -2px;
+      margin-right: 4px;
     }
     .btn-kensaku-badge .badge-arrow {
       font-size: 10px;
@@ -1701,7 +1719,7 @@
         </a>
       </div>
       <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="kensaku-link-box" id="sidebarKensakuLink" title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
-        📊 けんさくくん (Excel検索) ↗
+        <img src="kensaku-favicon.png" alt="けんさくくん" class="kensaku-link-img"> けんさくくん (Excel検索) ↗
       </a>
       <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="portal-link-box" title="tossy-apps 公式ポータルへ戻る">
         🏠 tossy-apps 公式ポータル
@@ -1797,7 +1815,7 @@
       <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer"
         class="btn-kensaku-badge"
         title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
-        <span class="badge-icon">📊</span>
+        <span class="badge-icon"><img src="kensaku-favicon.png" alt="けんさくくん" class="badge-icon-img"></span>
         <span class="badge-text"><span class="badge-prefix" id="kensakuBadgePrefix">Excel検索: </span>けんさくくん</span>
         <span class="badge-arrow">↗</span>
       </a>
@@ -1882,14 +1900,14 @@
           <div class="partner-promo-card">
             <div class="partner-promo-header">
               <span class="partner-promo-badge" id="promoBadge">tossy-apps 関連プロダクト</span>
-              <div class="partner-promo-title" id="promoTitle">📊 仕様書がExcelでお困りの現場には</div>
+              <div class="partner-promo-title" id="promoTitle"><img src="kensaku-favicon.png" alt="けんさくくん" style="width: 18px; height: 18px; border-radius: 50%; vertical-align: -3px; margin-right: 4px;"> 仕様書がExcelでお困りの現場には</div>
             </div>
             <div class="partner-promo-desc" id="promoDesc">
               数百〜数千の神Excel・方眼紙仕様書から目的のセルを爆速インメモリ全文検索。完全オフライン動作・コード署名済みのWindows専用ツール『けんさくくん』もご利用いただけます。
             </div>
             <div class="partner-promo-footer">
               <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="btn-partner-promo" id="promoBtn" title="神Excel高速検索ツール「けんさくくん」公式サイトへ (別タブ)">
-                けんさくくん 公式サイトを見る ↗
+                <img src="kensaku-favicon.png" alt="けんさくくん" style="width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; margin-right: 4px;"> けんさくくん 公式サイトを見る ↗
               </a>
               <span class="partner-promo-note" id="promoNote">※ 30日無料試用版・PCローカル完結</span>
             </div>
@@ -2027,8 +2045,8 @@
           <span style="font-size: 11px; color: #a7f3d0;">
             📊 <strong>Excel仕様書の検索でお困りですか？</strong> 神Excelを爆速インメモリ検索
           </span>
-          <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #34d399; font-weight: 700; text-decoration: none; white-space: nowrap; margin-left: 8px;" title="Excel高速横断検索ツール「けんさくくん」（30日無料試用版あり）">
-            けんさくくん ↗
+          <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #34d399; font-weight: 700; text-decoration: none; white-space: nowrap; margin-left: 8px; display: inline-flex; align-items: center; gap: 4px;" title="Excel高速横断検索ツール「けんさくくん」（30日無料試用版あり）">
+            <img src="kensaku-favicon.png" alt="けんさくくん" style="width: 14px; height: 14px; border-radius: 50%; vertical-align: middle;"> けんさくくん ↗
           </a>
         </div>
       </div>

@@ -316,10 +316,10 @@
             },
             {
               id: 'sidebarKensakuLink',
-              name: '📊 Excel検索: けんさくくん',
+              name: 'Excel検索: けんさくくん',
               loc: '左下フッター / ヘッダー右',
               desc: '大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール（30日無料試用版あり）',
-              icon: '📊'
+              icon: '<img src="kensaku-favicon.png" alt="けんさくくん" style="width:20px;height:20px;border-radius:50%;object-fit:contain;vertical-align:middle;">'
             }
           ]
         }
@@ -418,7 +418,7 @@
                   <span>🏠</span> ポータル
                 </a>
                 <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="btn-quick-util btn-quick-kensaku" id="btnQuickKensaku" title="神Excel・方眼紙仕様書を爆速インメモリ全文検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
-                  <span>📊</span> けんさくくん ↗
+                  <span><img src="kensaku-favicon.png" alt="けんさくくん" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;margin-right:2px;"></span> けんさくくん ↗
                 </a>
               </div>
               <label class="guide-dont-show-row" title="チェックを入れると次回ページを開いた時にこのガイドが自動で開かなくなります（ヘッダー右上の💡ガイドからいつでも再開できます）">
