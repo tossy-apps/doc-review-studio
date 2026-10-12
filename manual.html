@@ -110,6 +110,28 @@
       transform: translateY(-1px);
     }
 
+    .lang-switch-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-light);
+      color: #e2e8f0 !important;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .lang-switch-link:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--accent);
+      color: #ffffff !important;
+      transform: translateY(-1px);
+    }
+
     h1 {
       font-size: 28px;
       font-weight: 800;
@@ -305,9 +327,14 @@
       <div class="doc-badge">
         <span>📖 DocReview Studio Official Manual</span>
       </div>
-      <a href="./index.html" class="launch-link" target="_blank" rel="noopener">
-        <span>🚀 Webアプリを起動</span>
-      </a>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <a href="./manual.en.html" class="lang-switch-link" title="Switch to English Version">
+          <span>🌐 English</span>
+        </a>
+        <a href="./index.html" class="launch-link" target="_blank" rel="noopener">
+          <span>🚀 Webアプリを起動</span>
+        </a>
+      </div>
     </div>
 
     <!-- Document Body -->
@@ -351,9 +378,10 @@
       <li>オフラインでも動作するローカル内蔵パーサー（<code>marked.min.js</code>）を同梱。</li>
     </ul>
 
-    <h3>🚀 インストーラー不要・即座に起動</h3>
+    <h3>🚀 インストーラー不要・Windows / macOS 即座に起動</h3>
     <ul>
-      <li>Chromium系ブラウザ（<strong>Google Chrome</strong>、<strong>Microsoft Edge</strong>、<strong>Brave</strong> 等）があれば、インストール作業や環境構築なしで即座に利用可能です。</li>
+      <li>Chromium系ブラウザ（<strong>Google Chrome</strong>、<strong>Microsoft Edge</strong>、<strong>Brave</strong> 等）があれば、<strong>Windows</strong>、<strong>macOS</strong> のどちらでもインストール作業や開発環境構築なしで即座に動作します。</li>
+      <li>※ File System Access API を直接利用するため、Chromium 系ブラウザをご利用ください（Safari および Firefox は API 未サポート）。</li>
     </ul>
 
     <hr />
@@ -550,30 +578,35 @@
     <h2 id="sec-shortcuts">8. 便利な操作・ショートカット・IDE拡張機能</h2>
     <p><img alt="サイドバー折りたたみ" src="./images/06_pane_toggle.png" /></p>
 
-    <h3>⌨️ キーボードショートカット</h3>
+    <h3>⌨️ キーボードショートカット (Windows &amp; Mac 両対応)</h3>
     <table>
       <thead>
         <tr>
-          <th>ショートカット</th>
           <th>機能</th>
+          <th>Windows</th>
+          <th>macOS (Mac)</th>
         </tr>
       </thead>
       <tbody>
         <tr>
+          <td><strong>左ペイン（ファイルツリー）</strong> 表示 / 非表示トグル</td>
           <td><code>Alt + 1</code></td>
-          <td>左ペイン（ファイルツリー）の表示 / 非表示トグル</td>
+          <td><code>Option + 1</code> (<code>⌥1</code>)</td>
         </tr>
         <tr>
+          <td><strong>右ペイン（指摘一覧）</strong> 表示 / 非表示トグル</td>
           <td><code>Alt + 2</code></td>
-          <td>右ペイン（指摘一覧）の表示 / 非表示トグル</td>
+          <td><code>Option + 2</code> (<code>⌥2</code>)</td>
         </tr>
         <tr>
-          <td><code>Ctrl + ホイール</code> (または <code>Alt + ホイール</code>)</td>
-          <td>カーソルが乗っているペイン（左/中/右）を個別に拡大縮小</td>
+          <td><strong>カーソル下ペインの個別拡大縮小 (ズーム)</strong></td>
+          <td><code>Ctrl + ホイール</code><br /><small style="color:var(--text-muted);">または <code>Alt + ホイール</code></small></td>
+          <td><code>Cmd + スクロール</code> (<code>⌘</code>)<br /><small style="color:var(--text-muted);">または <code>Option + スクロール</code> (<code>⌥</code>)</small></td>
         </tr>
         <tr>
-          <td><code>Ctrl + 0</code> (または 中クリック)</td>
-          <td>各ペインのズーム倍率を 100% にリセット</td>
+          <td><strong>各ペインのズーム倍率を 100% にリセット</strong></td>
+          <td><code>Ctrl + 0</code><br /><small style="color:var(--text-muted);">または 中クリック / <code>Alt + 0</code></small></td>
+          <td><code>Cmd + 0</code> (<code>⌘0</code>)<br /><small style="color:var(--text-muted);">または 中クリック / <code>Option + 0</code></small></td>
         </tr>
       </tbody>
     </table>

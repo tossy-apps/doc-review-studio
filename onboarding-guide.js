@@ -315,9 +315,9 @@
               icon: '🏠'
             },
             {
-              id: 'btnQuickKensaku',
+              id: 'sidebarKensakuLink',
               name: '📊 Excel検索: けんさくくん',
-              loc: 'ヘッダー右端 / 左下フッター',
+              loc: '左下フッター / ヘッダー右',
               desc: '大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール（30日無料試用版あり）',
               icon: '📊'
             }
@@ -613,13 +613,15 @@
       return;
     }
 
-    let targetEl = document.getElementById(targetId);
-    if (!targetEl) {
-      if (targetId === 'manualHeaderLink') {
-        targetEl = document.getElementById('sidebarManualLink') || document.querySelector('.manual-link-box') || document.querySelector('header a.btn-manual');
-      } else if (targetId === 'btnPortalWide') {
-        targetEl = document.querySelector('.btn-portal-wide');
-      }
+    let targetEl = null;
+    if (targetId === 'manualHeaderLink' || targetId === 'sidebarManualLink') {
+      targetEl = document.getElementById('sidebarManualLink') || document.querySelector('.manual-link-box') || document.querySelector('header a.btn-manual');
+    } else if (targetId === 'sidebarKensakuLink' || targetId === 'btnQuickKensaku') {
+      targetEl = document.getElementById('sidebarKensakuLink') || document.querySelector('.kensaku-link-box') || document.querySelector('.btn-kensaku-badge');
+    } else if (targetId === 'btnPortalWide') {
+      targetEl = document.querySelector('.btn-portal-wide') || document.querySelector('.portal-link-box');
+    } else {
+      targetEl = document.getElementById(targetId);
     }
     if (!targetEl) return;
 
@@ -641,7 +643,7 @@
     const windowEl = document.getElementById('guideWindow');
 
     const targetRect = targetEl.getBoundingClientRect();
-    const winRect = windowEl ? windowEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: 104 };
+    const winRect = windowEl ? windowEl.getBoundingClientRect() : { left: window.innerWidth / 2, top: 104, width: 800, height: 600 };
 
     // 1. スポットライト枠に対象ボタンのクローンを配置して最前面パルス発光
     if (spotlightBox) {
@@ -652,6 +654,23 @@
       clone.style.pointerEvents = 'auto';
       clone.style.cursor = 'pointer';
       clone.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.95)';
+
+      // 実物のスタイル（幅・高さ・パディング）を精密に同期
+      const origStyle = window.getComputedStyle(targetEl);
+      clone.style.width = `${Math.round(targetRect.width)}px`;
+      clone.style.height = `${Math.round(targetRect.height)}px`;
+      clone.style.padding = origStyle.padding;
+      clone.style.boxSizing = 'border-box';
+      clone.style.overflow = 'hidden';
+
+      // 実物側で非表示になっているテキスト要素（小ボタン・アイコン化モード時）をクローン側でも確実に同期
+      targetEl.querySelectorAll('.btn-text, .badge-text, .badge-prefix, .badge-arrow').forEach((el, idx) => {
+        if (window.getComputedStyle(el).display === 'none') {
+          const cloneEl = clone.querySelectorAll('.btn-text, .badge-text, .badge-prefix, .badge-arrow')[idx];
+          if (cloneEl) cloneEl.style.display = 'none';
+        }
+      });
+
       clone.onclick = (e) => {
         e.stopPropagation();
         closeGuideModal();
@@ -666,41 +685,62 @@
       spotlightBox.classList.add('active');
     }
 
-    // 2. 矢印線の始点（クリックされたカードからダイレクトに出発）
-    let startX, startY;
-    if (sourceEl && typeof sourceEl.getBoundingClientRect === 'function') {
-      const srcRect = sourceEl.getBoundingClientRect();
-      startX = Math.round(srcRect.left + srcRect.width / 2);
-      startY = Math.round(srcRect.top + 4);
-    } else {
-      startX = Math.round(winRect.left + winRect.width / 2);
-      startY = Math.round(winRect.top + 20);
-    }
+    // 2. 矢印線の始点と終点の計算（上部ヘッダー案内と下部フッター案内で基点を切り替え）
+    const srcRect = (sourceEl && typeof sourceEl.getBoundingClientRect === 'function')
+      ? sourceEl.getBoundingClientRect()
+      : { left: winRect.left + winRect.width / 2, top: winRect.top + 20, right: winRect.left + winRect.width / 2, bottom: winRect.top + 20, width: 0, height: 0 };
 
-    // 矢印の終点（対象ボタン下端中央）
+    // 対象要素がクリック元カード（またはモーダル枠中央）より下にあるか判定
+    const isTargetBelow = targetRect.top > (srcRect.bottom || (winRect.top + (winRect.height || 400) / 2));
     const targetCenterX = Math.round(targetRect.left + targetRect.width / 2);
-    const endX = targetCenterX;
-    const endY = Math.round(targetRect.bottom + 4);
 
-    // ベジェ曲線の制御点（始点カードから上向きにスムーズに弧を描く）
-    const midX = Math.round(endX + (startX - endX) * 0.35);
-    const midY = Math.round(endY + (startY - endY) * 0.45);
+    let startX, startY, endX, endY, midX, midY;
+
+    if (isTargetBelow) {
+      // 画面下部のボタン（フッター等）を指す場合：基点はカードの【下側】！
+      startX = Math.round(srcRect.left + (srcRect.width ? srcRect.width / 2 : 0));
+      startY = Math.round(srcRect.bottom - 4);
+
+      // 終点は対象ボタンの上端中央
+      endX = targetCenterX;
+      endY = Math.round(targetRect.top - 4);
+
+      // 下向きに滑らかな弧を描く
+      midX = Math.round(startX + (endX - startX) * 0.45);
+      midY = Math.round(startY + (endY - startY) * 0.55);
+    } else {
+      // 画面上部のボタン（ヘッダー等）を指す場合：基点はカードの【上側】！
+      startX = Math.round(srcRect.left + (srcRect.width ? srcRect.width / 2 : 0));
+      startY = Math.round(srcRect.top + 4);
+
+      // 終点は対象ボタンの下端中央
+      endX = targetCenterX;
+      endY = Math.round(targetRect.bottom + 4);
+
+      // 上向きに滑らかな弧を描く
+      midX = Math.round(endX + (startX - endX) * 0.35);
+      midY = Math.round(endY + (startY - endY) * 0.45);
+    }
 
     const pathData = `M ${startX} ${startY} Q ${midX} ${midY} ${endX} ${endY}`;
     if (pathEl) pathEl.setAttribute('d', pathData);
 
-    // 3. ナビ吹き出し（ボタンの位置に応じてガイドダイアログに絶対に被らない安全位置に配置）
+    // 3. ナビ吹き出し（pinEl）の位置と向き
     if (pinEl) {
-      const pinWidth = 230;
+      const pinWidth = 240;
       const leftPos = Math.max(10, Math.min(window.innerWidth - pinWidth - 10, Math.round(targetCenterX - pinWidth / 2)));
       pinEl.style.left = `${leftPos}px`;
 
-      // ツールバー等(top >= 52px)のボタンは、ボタンの上側に「👇」吹き出しを出すことでガイド枠(top:104px)と一切干渉しない
-      if (targetRect.top >= 52) {
+      if (isTargetBelow) {
+        // 下部のボタンを指す場合：ボタンの上側に「👇」吹き出しを配置
+        pinEl.innerHTML = '<span>👇</span> <span>このボタンです！(クリックで即実行)</span>';
+        pinEl.style.top = `${Math.max(10, Math.round(targetRect.top - 40))}px`;
+      } else if (targetRect.top >= 52) {
+        // ツールバー等(top >= 52px)のボタン：上側に「👇」吹き出し
         pinEl.innerHTML = '<span>👇</span> <span>このボタンです！(クリックで即実行)</span>';
         pinEl.style.top = `${Math.max(6, Math.round(targetRect.top - 36))}px`;
       } else {
-        // ヘッダー(top < 52px)のボタンは、ボタンの下側に「👆」吹き出しを出す（ガイド上部との隙間にすっきり収まる）
+        // ヘッダー(top < 52px)のボタン：下側に「👆」吹き出し
         pinEl.innerHTML = '<span>👆</span> <span>このボタンです！(クリックで即実行)</span>';
         pinEl.style.top = `${Math.round(targetRect.bottom + 8)}px`;
       }
@@ -709,7 +749,6 @@
 
     if (svgLayer) svgLayer.classList.add('active');
 
-    // 前版と同じく、十分な時間（15秒間）線がしっかり残り続ける
     activeArrowTimeout = setTimeout(() => {
       clearHighlight();
     }, 15000);

@@ -464,17 +464,18 @@
 .action-card-name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  flex-wrap: wrap;
+  gap: 4px 6px;
   min-width: 0;
 }
 
 .action-card-name {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 800;
   color: #0f172a;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
 .action-card-loc-tag {

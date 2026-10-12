@@ -1,5 +1,7 @@
 # DocReview Studio ユーザーズマニュアル
 
+> 🌐 **[English Manual is available here (manual.en.md)](manual.en.md)** / **[HTML Version (manual.en.html)](manual.en.html)**
+
 DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアルやMarkdownドキュメント（`.md` / `.markdown`）を読み込み、直感的なレビュー指摘の記録、AI修正指示プロンプトの一括自動生成、インライン差分ハイライト、およびWinMerge風の左右Diff差分検証を行える**完全クライアントサイド型 AI協働ドキュメント校正スタジオ**です。
 
 ---
@@ -33,8 +35,9 @@ DocReview Studio は、ブラウザ単体でローカルのHTMLマニュアル�
 - HTMLファイルだけでなく、Markdownドキュメント（`.md` / `.markdown`）も自動でGitHub風スタイル付きHTMLに高速変換してプレビュー表示・差分検証できます。
 - オフラインでも動作するローカル内蔵パーサー（`marked.min.js`）を同梱。
 
-### 🚀 インストーラー不要・即座に起動
-- Chromium系ブラウザ（**Google Chrome**、**Microsoft Edge**、**Brave** 等）があれば、インストール作業や環境構築なしで即座に利用可能です。
+### 🚀 インストーラー不要・Windows / macOS 即座に起動
+- Chromium系ブラウザ（**Google Chrome**、**Microsoft Edge**、**Brave** 等）があれば、**Windows**、**macOS** のどちらでもインストール作業や開発環境構築なしで即座に利用可能です。
+- ※ File System Access API を直接利用するため、Chromium 系ブラウザでご利用ください（Safari および Firefox は API 未サポート）。
 
 ---
 
@@ -185,13 +188,13 @@ DocReview Studio では、Gitなどのバージョン管理ツールを開くこ
 
 ![サイドバー折りたたみ](./images/06_pane_toggle.png)
 
-### ⌨️ キーボードショートカット
-| ショートカット | 機能 |
-| :--- | :--- |
-| `Alt + 1` | 左ペイン（ファイルツリー）の表示 / 非表示トグル |
-| `Alt + 2` | 右ペイン（指摘一覧）の表示 / 非表示トグル |
-| `Ctrl + ホイール` (または `Alt + ホイール`) | カーソルが乗っているペイン（左/中/右）を個別に拡大縮小 |
-| `Ctrl + 0` (または 中クリック) | 各ペインのズーム倍率を 100% にリセット |
+### ⌨️ キーボードショートカット (Windows & Mac 両対応)
+| 機能 | Windows | macOS (Mac) |
+| :--- | :--- | :--- |
+| **左ペイン（ファイルツリー）** 表示 / 非表示トグル | `Alt + 1` | `Option + 1` (`⌥1`) |
+| **右ペイン（指摘一覧）** 表示 / 非表示トグル | `Alt + 2` | `Option + 2` (`⌥2`) |
+| **カーソル下ペインの個別拡大縮小 (ズーム)** | `Ctrl + ホイール`<br><small>または `Alt + ホイール`</small> | `Cmd + スクロール` (`⌘`)<br><small>または `Option + スクロール` (`⌥`)</small> |
+| **各ペインのズーム倍率を 100% にリセット** | `Ctrl + 0`<br><small>または 中クリック / `Alt + 0`</small> | `Cmd + 0` (`⌘0`)<br><small>または 中クリック / `Option + 0`</small> |
 
 ### 🔍 ペイン別独立ズーム機能
 左（ファイルツリー）、中央（本文）、右（指摘一覧）のヘッダーにそれぞれ **ズームウィジェット（`−` `100%` `＋`）** を搭載。

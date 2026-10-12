@@ -206,6 +206,31 @@
       color: #ffffff;
     }
 
+    .btn-lang-toggle {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 4px;
+      font-size: 11.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+      height: 26px;
+      transition: all 0.15s ease;
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    .btn-lang-toggle:hover {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
     .generation-controls {
       display: inline-flex;
       align-items: center;
@@ -1518,7 +1543,23 @@
       box-sizing: border-box !important;
     }
 
-    @media (max-width: 1550px) {
+    /* ヘッダーボタンのアイコンとテキスト分離 */
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05em;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .btn-text {
+      display: inline;
+      white-space: nowrap;
+    }
+
+    /* ヘッダー・段階的レスポンシブ設計 (A/B案: 英語短縮 + アイコン化で1行維持) */
+    @media (max-width: 1600px) {
       .btn-kensaku-badge .badge-prefix {
         display: none;
       }
@@ -1527,11 +1568,88 @@
         padding: 0 7px;
         gap: 3px;
       }
+      /* Evidence / 世代 / 原本別窓 / ガイドをアイコン化 */
+      #exportJsonBtn .btn-text,
+      #exportMdBtn .btn-text,
+      #importJsonBtn .btn-text,
+      #createSnapshotBtn .btn-text,
+      #exportGenerationBtn .btn-text,
+      #openDetachedModifiedBtn .btn-text,
+      #openDetachedBackupBtn .btn-text,
+      #showGuideBtn .btn-text {
+        display: none;
+      }
+      #exportJsonBtn,
+      #exportMdBtn,
+      #importJsonBtn,
+      #createSnapshotBtn,
+      #exportGenerationBtn,
+      #openDetachedModifiedBtn,
+      #openDetachedBackupBtn,
+      #showGuideBtn {
+        padding: 3px 6px;
+        gap: 0;
+      }
+      .generation-select {
+        max-width: 95px;
+      }
     }
-    @media (max-width: 1350px) {
+
+    /* 段階2: 1380px以下 - 履歴・リロード・言語切替・けんさくくんテキストをアイコン化 */
+    @media (max-width: 1380px) {
+      #openRecentBtn .btn-text,
+      #reloadWorkBtn .btn-text,
+      #langToggleBtn .btn-text {
+        display: none;
+      }
+      #openRecentBtn,
+      #reloadWorkBtn,
+      #langToggleBtn {
+        padding: 2px 6px;
+        gap: 0;
+      }
+      .btn-kensaku-badge .badge-text {
+        display: none;
+      }
       .btn-kensaku-badge {
         font-size: 10.5px;
         padding: 0 5px;
+      }
+      .action-group {
+        padding: 2px 5px;
+        gap: 1px;
+      }
+      .group-label {
+        font-size: 8.5px;
+      }
+      .generation-select {
+        max-width: 80px;
+      }
+    }
+
+    /* 段階3: 1240px以下 - AIプロンプト・Diffボタンもアイコン化 & 余白最小化 */
+    @media (max-width: 1240px) {
+      #copyCurrentBtn .btn-text,
+      #copyAllBtn .btn-text,
+      #toggleDiffBtn .btn-text {
+        display: none;
+      }
+      #copyCurrentBtn,
+      #copyAllBtn,
+      #toggleDiffBtn {
+        padding: 2px 6px;
+        gap: 0;
+      }
+      .btn-kensaku-badge .badge-arrow {
+        display: none;
+      }
+      header {
+        gap: 4px;
+        padding: 4px 6px;
+      }
+      .btn {
+        padding: 3px 5px;
+        font-size: 10.5px;
       }
     }
   </style>
@@ -1574,11 +1692,15 @@
     <ul class="file-tree" id="fileTree">
       <li style="color: #9ca3af; cursor: default;">原本フォルダを開いてください</li>
     </ul>
-    <div class="pane-files-footer">
-      <a href="./manual.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualLink" title="詳細な使い方マニュアルを開く (別タブ)">
-        📖 マニュアル (別タブ)
-      </a>
-      <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="kensaku-link-box" title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
+      <div style="display: flex; gap: 4px; margin-bottom: 4px;">
+        <a href="./manual.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualLink" title="詳細な使い方マニュアルを開く (日本語 / 別タブ)" style="flex: 1; text-align: center; margin-bottom: 0;">
+          📖 マニュアル (JA)
+        </a>
+        <a href="./manual.en.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualEnLink" title="Open Detailed User Manual in English (New Tab)" style="flex: 1; text-align: center; margin-bottom: 0;">
+          🌐 Manual (EN)
+        </a>
+      </div>
+      <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="kensaku-link-box" id="sidebarKensakuLink" title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
         📊 けんさくくん (Excel検索) ↗
       </a>
       <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="portal-link-box" title="tossy-apps 公式ポータルへ戻る">
@@ -1598,16 +1720,26 @@
       <div class="action-group">
         <div class="group-label">Source & History</div>
         <div class="group-buttons">
-          <button class="btn" id="openDirBtn" title="レビュー・校正したいHTML/Markdownが入った作業フォルダを開く">📁 原本を開く</button>
-          <button class="btn" id="openRecentBtn" title="最近使用した作業フォルダの履歴から開く">🕒 履歴</button>
-          <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">🔄 原本再読込</button>
+          <button class="btn" id="openDirBtn" title="レビュー・校正したいHTML/Markdownが入った作業フォルダを開く">
+            <span class="btn-icon">📁</span><span class="btn-text">原本を開く</span>
+          </button>
+          <button class="btn" id="openRecentBtn" title="最近使用した作業フォルダの履歴から開く">
+            <span class="btn-icon">🕒</span><span class="btn-text">履歴</span>
+          </button>
+          <button class="btn" id="reloadWorkBtn" title="原本フォルダ内の最新変更を再読込 (F5不要)">
+            <span class="btn-icon">🔄</span><span class="btn-text">原本再読込</span>
+          </button>
           <div class="generation-controls" id="generationControls">
-            <span style="font-size: 11px; color: #94a3b8; font-weight: 600;">世代:</span>
+            <span id="generationLabelText" style="font-size: 11px; color: #94a3b8; font-weight: 600;">世代:</span>
             <select id="generationSelect" class="generation-select" title="差分比較の基準にする世代を選択" disabled>
               <option value="">(原本を開いてください)</option>
             </select>
-            <button class="btn" id="createSnapshotBtn" title="現在の修正状態を新しい版（チェックポイント）として保存" style="padding: 2px 7px; font-size: 11px;" disabled>📸 セーブ</button>
-            <button class="btn" id="exportGenerationBtn" title="選択中の世代ファイルを安全に別名保存（原本は上書きしません）" style="padding: 2px 7px; font-size: 11px;" disabled>📥 別名保存</button>
+            <button class="btn" id="createSnapshotBtn" title="現在の修正状態を新しい版（チェックポイント）として保存" style="padding: 2px 7px; font-size: 11px;" disabled>
+              <span class="btn-icon">📸</span><span class="btn-text">セーブ</span>
+            </button>
+            <button class="btn" id="exportGenerationBtn" title="選択中の世代ファイルを安全に別名保存（原本は上書きしません）" style="padding: 2px 7px; font-size: 11px;" disabled>
+              <span class="btn-icon">📥</span><span class="btn-text">別名保存</span>
+            </button>
           </div>
         </div>
       </div>
@@ -1616,9 +1748,15 @@
       <div class="action-group">
         <div class="group-label">Evidence</div>
         <div class="group-buttons">
-          <button class="btn" id="exportJsonBtn" title="指摘データをJSON保存">💾 JSON</button>
-          <button class="btn" id="exportMdBtn" title="指摘データをMarkdown表保存">📝 MD表</button>
-          <button class="btn" id="importJsonBtn" title="過去の指摘JSONを復元">📂 読込</button>
+          <button class="btn" id="exportJsonBtn" title="指摘データをJSON保存">
+            <span class="btn-icon">💾</span><span class="btn-text">JSON</span>
+          </button>
+          <button class="btn" id="exportMdBtn" title="指摘データをMarkdown表保存">
+            <span class="btn-icon">📝</span><span class="btn-text">MD表</span>
+          </button>
+          <button class="btn" id="importJsonBtn" title="過去の指摘JSONを復元">
+            <span class="btn-icon">📂</span><span class="btn-text">読込</span>
+          </button>
           <input type="file" id="importJsonInput" accept=".json" style="display: none;">
         </div>
       </div>
@@ -1628,10 +1766,10 @@
         <div class="group-label">AI Prompt</div>
         <div class="group-buttons">
           <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみコピー">
-            🤖 選択ファイル指示
+            <span class="btn-icon">🤖</span><span class="btn-text">選択中</span>
           </button>
           <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算コピー">
-            🤖 全ファイル指示
+            <span class="btn-icon">🤖</span><span class="btn-text">全ファイル</span>
           </button>
         </div>
       </div>
@@ -1641,16 +1779,16 @@
         <div class="group-label">Diff & View</div>
         <div class="group-buttons">
           <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダを2画面ブロック差分検証 (WinMerge風)">
-            🔄 WinMerge風Diff
+            <span class="btn-icon">🔄</span><span class="btn-text">WinMerge Diff</span>
           </button>
           <button class="btn" id="openDetachedModifiedBtn" title="原本（修正後作業中）を独立別ウィンドウで開く" style="padding: 2px 6px; font-size: 11px;">
-            🪟 原本
+            <span class="btn-icon">🪟</span><span class="btn-text">原本</span>
           </button>
           <button class="btn" id="openDetachedBackupBtn" title="退避（修正前原本）を独立別ウィンドウで開く" style="display: none; padding: 2px 6px; font-size: 11px;">
-            🪟 修正前
+            <span class="btn-icon">🪟</span><span class="btn-text">修正前</span>
           </button>
           <button class="btn" id="showGuideBtn" title="3ステップの動くスタジオガイドを表示">
-            💡 スタジオガイド
+            <span class="btn-icon">💡</span><span class="btn-text">ガイド</span>
           </button>
         </div>
       </div>
@@ -1660,9 +1798,14 @@
         class="btn-kensaku-badge"
         title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
         <span class="badge-icon">📊</span>
-        <span class="badge-text"><span class="badge-prefix">Excel検索: </span>けんさくくん</span>
+        <span class="badge-text"><span class="badge-prefix" id="kensakuBadgePrefix">Excel検索: </span>けんさくくん</span>
         <span class="badge-arrow">↗</span>
       </a>
+
+      <!-- 言語切替トグル (EN / 日本語) -->
+      <button class="btn-lang-toggle" id="langToggleBtn" title="Switch Language / 言語切替 (EN / 日本語)">
+        <span class="btn-icon">🌐</span><span class="btn-text">EN</span>
+      </button>
     </header>
 
     <div class="main-workspace">
@@ -1702,7 +1845,7 @@
           </button>
 
           <div class="pane-zoom-widget" id="zoomWidgetCenter" title="ドキュメントプレビューの拡大縮小 (Ctrl+ホイール / ＋/−ボタン / クリックで100%リセット)">
-            <span class="zoom-pane-tag">本文</span>
+            <span class="zoom-pane-tag" id="zoomPaneTagCenter">本文</span>
             <button class="zoom-btn" data-pane="center" data-dir="-1" title="縮小 (Ctrl+ホイール下 または クリック)">−</button>
             <span class="zoom-val" id="zoomValCenter" data-pane="center" title="クリックで100%にリセット">100%</span>
             <button class="zoom-btn" data-pane="center" data-dir="1" title="拡大 (Ctrl+ホイール上 または クリック)">＋</button>
@@ -1718,8 +1861,8 @@
         <!-- ファイル未選択時の中央プレースホルダー -->
         <div class="empty-center-placeholder" id="emptyPlaceholder">
           <div class="empty-center-icon">📄</div>
-          <div class="empty-center-title">ドキュメントが選択されていません</div>
-          <div class="empty-center-desc">
+          <div class="empty-center-title" id="phTitle">ドキュメントが選択されていません</div>
+          <div class="empty-center-desc" id="phDesc">
             校正・レビューしたいHTMLやMarkdownが格納された作業フォルダを「原本フォルダを開く」から指定してください。<br>
             完全ローカル完結のため社外秘ドキュメントも安全に読み込め、ツリーから自由に選択・AI指示作成できます。
           </div>
@@ -1738,17 +1881,17 @@
           <!-- tossy-apps 関連プロダクト案内カード -->
           <div class="partner-promo-card">
             <div class="partner-promo-header">
-              <span class="partner-promo-badge">tossy-apps 関連プロダクト</span>
-              <div class="partner-promo-title">📊 仕様書がExcelでお困りの現場には</div>
+              <span class="partner-promo-badge" id="promoBadge">tossy-apps 関連プロダクト</span>
+              <div class="partner-promo-title" id="promoTitle">📊 仕様書がExcelでお困りの現場には</div>
             </div>
-            <div class="partner-promo-desc">
+            <div class="partner-promo-desc" id="promoDesc">
               数百〜数千の神Excel・方眼紙仕様書から目的のセルを爆速インメモリ全文検索。完全オフライン動作・コード署名済みのWindows専用ツール『けんさくくん』もご利用いただけます。
             </div>
             <div class="partner-promo-footer">
-              <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="btn-partner-promo" title="神Excel高速検索ツール「けんさくくん」公式サイトへ (別タブ)">
+              <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="btn-partner-promo" id="promoBtn" title="神Excel高速検索ツール「けんさくくん」公式サイトへ (別タブ)">
                 けんさくくん 公式サイトを見る ↗
               </a>
-              <span class="partner-promo-note">※ 30日無料試用版・PCローカル完結</span>
+              <span class="partner-promo-note" id="promoNote">※ 30日無料試用版・PCローカル完結</span>
             </div>
           </div>
         </div>
@@ -1953,6 +2096,285 @@
     let isDiffMode = false;
     let isFilesVisible = true;
     let isLogsVisible = true;
+
+    // ==========================================
+    // ボタン用アイコン/テキスト分離ヘルパー
+    // ==========================================
+    function formatBtnHtml(str) {
+      if (!str) return '';
+      const match = str.match(/^([\p{Extended_Pictographic}\u25A0-\u2BFF\u2300-\u23FF\uD83C-\uDBFF\uDC00-\uDFFF\u2700-\u27BF]+)\s*(.*)$/u);
+      if (match && match[2]) {
+        const icon = match[1].trim();
+        const label = match[2].trim();
+        return `<span class="btn-icon">${icon}</span><span class="btn-text">${label}</span>`;
+      }
+      return `<span class="btn-text">${str}</span>`;
+    }
+
+    // ==========================================
+    // 多言語（i18n）リソース辞書 (日本語 / 英語)
+    // ==========================================
+    let currentLang = localStorage.getItem('doc_review_lang') || 
+                      (new URLSearchParams(window.location.search).get('lang') === 'en' ? 'en' : 'ja');
+
+    const I18N = {
+      ja: {
+        openDirBtn: "📁 原本を開く",
+        openDirTitle: "レビュー・校正したいHTML/Markdownが入った作業フォルダを開く",
+        openRecentBtn: "🕒 履歴",
+        openRecentTitle: "最近使用した作業フォルダの履歴から開く",
+        reloadWorkBtn: "🔄 原本再読込",
+        reloadWorkTitle: "原本フォルダ内の最新変更を再読込 (F5不要)",
+        genLabel: "世代:",
+        genDefault: "(原本を開いてください)",
+        createSnapshotBtn: "📸 セーブ",
+        createSnapshotTitle: "現在の修正状態を新しい版（チェックポイント）として保存",
+        exportGenBtn: "📥 別名保存",
+        exportGenTitle: "選択中の世代ファイルを安全に別名保存（原本は上書きしません）",
+        exportJsonBtn: "💾 JSON",
+        exportJsonTitle: "指摘データをJSON保存",
+        exportMdBtn: "📝 MD表",
+        exportMdTitle: "指摘データをMarkdown表保存",
+        importJsonBtn: "📂 読込",
+        importJsonTitle: "過去の指摘JSONを復元",
+        copyCurrentBtn: "🤖 選択中",
+        copyCurrentTitle: "選択中ファイルの指摘のみコピー",
+        copyAllBtn: "🤖 全ファイル",
+        copyAllTitle: "全ファイルの指摘を合算コピー",
+        toggleDiffBtn: "🔄 WinMerge Diff",
+        toggleDiffBtnTitle: "原本と並列退避フォルダを2画面ブロック差分検証 (WinMerge風)",
+        toggleDiffBtnActive: "✖ 通常モード",
+        openDetachedModifiedBtn: "🪟 原本",
+        openDetachedModifiedTitle: "原本（修正後作業中）を独立別ウィンドウで開く",
+        openDetachedBackupBtn: "🪟 修正前",
+        openDetachedBackupTitle: "退避（修正前原本）を独立別ウィンドウで開く",
+        showGuideBtn: "💡 ガイド",
+        showGuideTitle: "3ステップの動くスタジオガイドを表示",
+        kensakuPrefix: "Excel検索: ",
+        fileSearchPlaceholder: "🔍 ファイル検索 (HTML / MD)...",
+        fileSearchClearTitle: "検索語をクリア",
+        fileTreeEmpty: "原本フォルダを開いてください",
+        fileTreeNoMatch: "一致するファイルがありません",
+        fileTreeQueryLabel: "検索語: ",
+        fileTreeClearBtn: "✖ 検索をクリアして全ファイル表示",
+        toggleFilesBtn: "◧ ファイル",
+        toggleFilesTitle: "ファイルツリーの表示/非表示を切り替え (Alt+1 / Option+1)",
+        viewLabelDefault: "ファイルを選択してください",
+        reloadCurrentFileBtn: "🔄 ファイル再読込",
+        reloadCurrentFileTitle: "現在開いているこのファイルのみをディスクから高速再読込 (原本全体の走査なし)",
+        reloadCurrentFileSuccess: "✓ 最新を表示",
+        diffBtnModified: "⏭️ 修正後 (Diff)",
+        diffBtnModifiedTitle: "現在: 修正後(Diffハイライト)を表示中 (クリックで修正前を表示)",
+        diffBtnOriginal: "⏮️ 修正前 (原本)",
+        diffBtnOriginalTitle: "現在: 修正前(原本データ)を表示中 (クリックで修正後を表示)",
+        addIssueBtn: "📌 指摘リストに追加",
+        addIssueTitle: "本文選択テキスト、またはファイル全体を指摘リストへ追加",
+        zoomCenterTag: "本文",
+        toggleLogsBtn: "◨ 指摘一覧",
+        toggleLogsTitle: "指摘エビデンス欄の表示/非表示を切り替え (Alt+2 / Option+2)",
+        phTitle: "ドキュメントが選択されていません",
+        phDesc: "校正・レビューしたいHTMLやMarkdownが格納された作業フォルダを「原本フォルダを開く」から指定してください。<br>完全ローカル完結のため社外秘ドキュメントも安全に読み込め、ツリーから自由に選択・AI指示作成できます。",
+        phOpenBtn: "📁 原本フォルダを開く",
+        phRecentBtn: "🕒 履歴から開く",
+        phGuideBtn: "💡 ガイド",
+        promoBadge: "tossy-apps 関連プロダクト",
+        promoTitle: "📊 仕様書がExcelでお困りの現場には",
+        promoDesc: "数百〜数千の神Excel・方眼紙仕様書から目的のセルを爆速インメモリ全文検索。完全オフライン動作・コード署名済みのWindows専用ツール『けんさくくん』もご利用いただけます。",
+        promoBtn: "けんさくくん 公式サイトを見る ↗",
+        promoNote: "※ 30日無料試用版・PCローカル完結",
+        logCountPrefix: "指摘",
+        clearLogsBtn: "全消去",
+        emptyLogsMsg: "テキストを選択して画面上部の追記ボタンを押すと、ここに指摘が蓄積されます。",
+        cardDeleteBtn: "削除",
+        cardLinePrefix: "L.",
+        cardLineSuffix: "付近",
+        cardEntireTag: "📁 ファイル全体",
+        cardPlaceholder: "指示を入力",
+        typeLabels: { "修正": "修正", "追加": "追加", "削除": "削除", "質問": "質問", "検討中": "検討中" },
+        diffBeforeDefault: "修正前 (退避フォルダ未指定)",
+        diffAfterLabel: "修正後 (原本作業フォルダ - AI修正後)",
+        diffReloadBtn: "🔄 原本再読込",
+        noIssuesAlert: "指摘が登録されていません。",
+        copyPromptSuccess: "件のAI指示プロンプトをクリップボードにコピーしました！",
+        langSwitchBtn: "🌐 EN",
+        langSwitchTitle: "Switch UI to English"
+      },
+      en: {
+        openDirBtn: "📁 Open",
+        openDirTitle: "Open folder containing HTML/Markdown files for review",
+        openRecentBtn: "🕒 History",
+        openRecentTitle: "Open from recently used workspaces",
+        reloadWorkBtn: "🔄 Reload",
+        reloadWorkTitle: "Rescan and reload source folder from disk",
+        genLabel: "Gen:",
+        genDefault: "(Open source folder)",
+        createSnapshotBtn: "📸 Save",
+        createSnapshotTitle: "Save current revisions as a new version checkpoint",
+        exportGenBtn: "📥 Export",
+        exportGenTitle: "Safely export selected snapshot under a new filename",
+        exportJsonBtn: "💾 JSON",
+        exportJsonTitle: "Export feedback evidence as JSON",
+        exportMdBtn: "📝 MD",
+        exportMdTitle: "Export feedback evidence as Markdown table",
+        importJsonBtn: "📂 Import",
+        importJsonTitle: "Import and restore feedback JSON",
+        copyCurrentBtn: "🤖 Active",
+        copyCurrentTitle: "Copy prompts for active file only",
+        copyAllBtn: "🤖 All",
+        copyAllTitle: "Copy all feedback prompts across entire project",
+        toggleDiffBtn: "🔄 WinMerge Diff",
+        toggleDiffBtnTitle: "Toggle WinMerge-style synchronized 2-pane visual diff comparison",
+        toggleDiffBtnActive: "✖ Exit Diff",
+        openDetachedModifiedBtn: "🪟 Working",
+        openDetachedModifiedTitle: "Open working document in detached external window",
+        openDetachedBackupBtn: "🪟 Original",
+        openDetachedBackupTitle: "Open baseline original in detached external window",
+        showGuideBtn: "💡 Guide",
+        showGuideTitle: "Open interactive 3-step studio walkthrough",
+        kensakuPrefix: "Excel: ",
+        fileSearchPlaceholder: "🔍 Filter files (HTML / MD)...",
+        fileSearchClearTitle: "Clear search query",
+        fileTreeEmpty: "Please open a source directory",
+        fileTreeNoMatch: "No matching files found",
+        fileTreeQueryLabel: "Query: ",
+        fileTreeClearBtn: "✖ Clear query & show all files",
+        toggleFilesBtn: "◧ Files",
+        toggleFilesTitle: "Toggle file tree sidebar (Alt+1 / Option+1)",
+        viewLabelDefault: "Please select a document",
+        reloadCurrentFileBtn: "🔄 Reload File",
+        reloadCurrentFileTitle: "High-speed single file refresh from disk (without folder rescan)",
+        reloadCurrentFileSuccess: "✓ Reloaded",
+        diffBtnModified: "⏭️ Modified (Diff)",
+        diffBtnModifiedTitle: "Viewing: Modified with Diff highlights (Click to view Original)",
+        diffBtnOriginal: "⏮️ Original",
+        diffBtnOriginalTitle: "Viewing: Pristine Original (Click to view Modified)",
+        addIssueBtn: "📌 Add to Feedback",
+        addIssueTitle: "Add highlighted text or entire document to feedback list",
+        zoomCenterTag: "Preview",
+        toggleLogsBtn: "◨ Feedback",
+        toggleLogsTitle: "Toggle feedback sidebar (Alt+2 / Option+2)",
+        phTitle: "No Document Selected",
+        phDesc: "Click \"Open\" in the header to select your HTML or Markdown documentation folder.<br>Runs 100% client-side with zero server transmission—safe for confidential manuals.",
+        phOpenBtn: "📁 Open Source Folder",
+        phRecentBtn: "🕒 Open from History",
+        phGuideBtn: "💡 Guide",
+        promoBadge: "Related Product",
+        promoTitle: "📊 Working with Massive Excel Specifications?",
+        promoDesc: "Full-text in-memory search across thousands of Excel specifications at blazing speed. Try our dedicated Windows utility \"Kensaku-kun\" (30-day free trial available).",
+        promoBtn: "Visit Kensaku-kun Website ↗",
+        promoNote: "※ 30-day free trial &bull; 100% offline",
+        logCountPrefix: "Feedback",
+        clearLogsBtn: "Clear All",
+        emptyLogsMsg: "Highlight text in the preview and click \"Add to Feedback\" to log review items here.",
+        cardDeleteBtn: "Delete",
+        cardLinePrefix: "~L.",
+        cardLineSuffix: "",
+        cardEntireTag: "📁 Entire File",
+        cardPlaceholder: "Enter revision instruction...",
+        typeLabels: { "修正": "Fix", "追加": "Add", "削除": "Delete", "質問": "Question", "検討中": "Pending" },
+        diffBeforeDefault: "Original (Backup not set)",
+        diffAfterLabel: "Modified (Working folder - Latest)",
+        diffReloadBtn: "🔄 Reload Workspace",
+        noIssuesAlert: "No feedback items logged.",
+        copyPromptSuccess: "prompt(s) copied to clipboard!",
+        langSwitchBtn: "🇯🇵 日本語",
+        langSwitchTitle: "UIを日本語に切り替え"
+      }
+    };
+
+    function applyLanguage(lang) {
+      if (!I18N[lang]) lang = 'ja';
+      currentLang = lang;
+      localStorage.setItem('doc_review_lang', lang);
+      document.documentElement.lang = lang;
+      const t = I18N[lang];
+
+      // 言語切替ボタン
+      const langBtn = document.getElementById('langToggleBtn');
+      if (langBtn) {
+        langBtn.innerHTML = formatBtnHtml(t.langSwitchBtn);
+        langBtn.title = t.langSwitchTitle;
+      }
+
+      // ヘッダーボタン
+      const setBtn = (id, text, title) => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (text !== undefined) el.innerHTML = formatBtnHtml(text);
+          if (title !== undefined) el.title = title;
+        }
+      };
+
+      setBtn('openDirBtn', t.openDirBtn, t.openDirTitle);
+      setBtn('openRecentBtn', t.openRecentBtn, t.openRecentTitle);
+      setBtn('reloadWorkBtn', t.reloadWorkBtn, t.reloadWorkTitle);
+      setBtn('createSnapshotBtn', t.createSnapshotBtn, t.createSnapshotTitle);
+      setBtn('exportGenerationBtn', t.exportGenBtn, t.exportGenTitle);
+      setBtn('exportJsonBtn', t.exportJsonBtn, t.exportJsonTitle);
+      setBtn('exportMdBtn', t.exportMdBtn, t.exportMdTitle);
+      setBtn('importJsonBtn', t.importJsonBtn, t.importJsonTitle);
+      setBtn('copyCurrentBtn', t.copyCurrentBtn, t.copyCurrentTitle);
+      setBtn('copyAllBtn', t.copyAllBtn, t.copyAllTitle);
+      setBtn('openDetachedModifiedBtn', t.openDetachedModifiedBtn, t.openDetachedModifiedTitle);
+      setBtn('openDetachedBackupBtn', t.openDetachedBackupBtn, t.openDetachedBackupTitle);
+      setBtn('showGuideBtn', t.showGuideBtn, t.showGuideTitle);
+
+      const genLbl = document.getElementById('generationLabelText');
+      if (genLbl) genLbl.innerText = t.genLabel;
+
+      const pfx = document.getElementById('kensakuBadgePrefix');
+      if (pfx) pfx.innerText = t.kensakuPrefix;
+
+      // 検索・ツリー
+      const filterInput = document.getElementById('fileFilterInput');
+      if (filterInput) filterInput.placeholder = t.fileSearchPlaceholder;
+      const filterClear = document.getElementById('fileFilterClearBtn');
+      if (filterClear) filterClear.title = t.fileSearchClearTitle;
+
+      // 中央ツールバー
+      setBtn('toggleFilesBtn', t.toggleFilesBtn, t.toggleFilesTitle);
+      setBtn('reloadCurrentFileBtn', t.reloadCurrentFileBtn, t.reloadCurrentFileTitle);
+      setBtn('addIssueFromParentBtn', t.addIssueBtn, t.addIssueTitle);
+      setBtn('toggleLogsBtn', t.toggleLogsBtn, t.toggleLogsTitle);
+
+      const zTag = document.getElementById('zoomPaneTagCenter');
+      if (zTag) zTag.innerText = t.zoomCenterTag;
+
+      // プレースホルダー
+      const phT = document.getElementById('phTitle');
+      if (phT) phT.innerText = t.phTitle;
+      const phD = document.getElementById('phDesc');
+      if (phD) phD.innerHTML = t.phDesc;
+      setBtn('placeholderOpenDirBtn', t.phOpenBtn);
+      setBtn('placeholderRecentBtn', t.phRecentBtn);
+      setBtn('placeholderGuideBtn', t.phGuideBtn);
+      const prB = document.getElementById('promoBadge');
+      if (prB) prB.innerText = t.promoBadge;
+      const prT = document.getElementById('promoTitle');
+      if (prT) prT.innerText = t.promoTitle;
+      const prD = document.getElementById('promoDesc');
+      if (prD) prD.innerText = t.promoDesc;
+      const prBtn = document.getElementById('promoBtn');
+      if (prBtn) prBtn.innerText = t.promoBtn;
+      const prN = document.getElementById('promoNote');
+      if (prN) prN.innerHTML = t.promoNote;
+
+      // 右ペイン
+      setBtn('clearLogsBtn', t.clearLogsBtn);
+      const diffB = document.getElementById('diffBeforeLabel');
+      if (diffB && (!backupDirHandle || !backupHtmlMap[currentFileName])) diffB.innerText = t.diffBeforeDefault;
+
+      const emptyLogsEl = document.querySelector('.empty-logs');
+      if (emptyLogsEl && reviewLogs.length === 0) {
+        emptyLogsEl.innerText = t.emptyLogsMsg;
+      }
+
+      // 再描画
+      updateDiffToggleButtonUI();
+      renderLogs(false);
+      renderFileTree();
+      renderGenerationSelect();
+    }
 
     const TYPES = ["修正", "追加", "削除", "質問", "検討中"];
 
@@ -2279,8 +2701,8 @@
         return;
       }
 
-      // 2. Ctrl+ホイール操作: コンテキスト判定で完全両立
-      if (e.ctrlKey) {
+      // 2. Ctrl+ホイール (Windows) / Cmd+ホイール (Mac) 操作: コンテキスト判定で完全両立
+      if (e.ctrlKey || e.metaKey) {
         const target = e.target;
         if (!target) return;
 
@@ -2312,9 +2734,9 @@
       }
     }, { passive: false, capture: true });
 
-    // 中クリックによるペインズーム100%リセット (CtrlまたはAlt + 中クリック)
+    // 中クリックによるペインズーム100%リセット (Ctrl/CmdまたはAlt/Option + 中クリック)
     document.addEventListener('mousedown', (e) => {
-      if ((e.ctrlKey || e.altKey) && e.button === 1) {
+      if ((e.ctrlKey || e.metaKey || e.altKey) && e.button === 1) {
         e.preventDefault();
         let pane = 'center';
         if (e.target && e.target.closest('#paneFiles')) pane = 'left';
@@ -2334,7 +2756,7 @@
       } else if (e.altKey && e.key === '2') {
         e.preventDefault();
         toggleLogsPane();
-      } else if ((e.ctrlKey || e.altKey) && (e.key === '0' || e.key === 'Numpad0')) {
+      } else if ((e.ctrlKey || e.metaKey || e.altKey) && (e.key === '0' || e.key === 'Numpad0')) {
         const hovered = document.querySelector(':hover');
         let pane = 'center';
         if (hovered && hovered.closest('#paneFiles')) pane = 'left';
@@ -2421,6 +2843,15 @@
         localStorage.setItem('doc_review_auto_show_recent', e.target.checked ? 'true' : 'false');
       };
     }
+
+    // 言語切替ボタンのイベント登録 & 初期適用
+    const langToggleBtn = document.getElementById('langToggleBtn');
+    if (langToggleBtn) {
+      langToggleBtn.onclick = () => {
+        applyLanguage(currentLang === 'ja' ? 'en' : 'ja');
+      };
+    }
+    applyLanguage(currentLang);
 
     // 起動時の最近のワークスペース自動確認
     window.addEventListener('load', () => {
@@ -3193,7 +3624,8 @@
       if (!backupDirHandle || !generationManifest || !generationManifest.generations || generationManifest.generations.length === 0) {
         if (sel) {
           sel.disabled = true;
-          sel.innerHTML = '<option value="">(原本を開いてください)</option>';
+          const t = I18N[currentLang] || I18N.ja;
+          sel.innerHTML = `<option value="">${t.genDefault}</option>`;
         }
         if (createBtn) createBtn.disabled = true;
         if (exportBtn) exportBtn.disabled = true;
@@ -3208,8 +3640,9 @@
         for (const gen of generationManifest.generations) {
           const opt = document.createElement('option');
           opt.value = gen.id;
-          const count = gen.files ? ` (${gen.files.length}件)` : (gen.isLegacyRoot ? ' (全ファイル)' : '');
-          opt.textContent = `${gen.name}${count}`;
+          const count = gen.files ? ` (${gen.files.length}${currentLang === 'en' ? ' files' : '件'})` : (gen.isLegacyRoot ? (currentLang === 'en' ? ' (All files)' : ' (全ファイル)') : '');
+          const genDisplayName = (currentLang === 'en' && gen.id === 'v0') ? 'v0: Initial Original' : gen.name;
+          opt.textContent = `${genDisplayName}${count}`;
           if (gen.id === activeGenerationId) opt.selected = true;
           sel.appendChild(opt);
         }
@@ -3218,7 +3651,9 @@
         const modCount = getModifiedFilesCount();
         const optLatest = document.createElement('option');
         optLatest.value = 'latest';
-        optLatest.textContent = `最新 (作業中)${modCount > 0 ? ` (${modCount}件更新)` : ''}`;
+        optLatest.textContent = currentLang === 'en' 
+          ? `Latest (Working)${modCount > 0 ? ` (${modCount} modified)` : ''}` 
+          : `最新 (作業中)${modCount > 0 ? ` (${modCount}件更新)` : ''}`;
         if (activeGenerationId === 'latest') optLatest.selected = true;
         sel.appendChild(optLatest);
       }
@@ -4184,15 +4619,16 @@
         emptyLi.style.textAlign = 'center';
         emptyLi.style.fontSize = '11px';
 
+        const t = I18N[currentLang] || I18N.ja;
         if (htmlFileNames.length === 0) {
-          emptyLi.innerText = '原本フォルダを開いてください';
+          emptyLi.innerText = t.fileTreeEmpty;
         } else {
           emptyLi.innerHTML = `
             <div style="font-size: 16px; margin-bottom: 4px;">🔍</div>
-            <div style="color: #cbd5e1; font-weight: 600; margin-bottom: 2px;">一致するファイルがありません</div>
-            <div style="color: #64748b; font-size: 10px; margin-bottom: 8px;">検索語: "${escapeHtml(fileSearchQuery)}"</div>
+            <div style="color: #cbd5e1; font-weight: 600; margin-bottom: 2px;">${t.fileTreeNoMatch}</div>
+            <div style="color: #64748b; font-size: 10px; margin-bottom: 8px;">${t.fileTreeQueryLabel}"${escapeHtml(fileSearchQuery)}"</div>
             <button class="btn btn-secondary" onclick="document.getElementById('fileFilterClearBtn').click()" style="font-size: 10px; padding: 2px 8px;">
-              ✖ 検索をクリアして全ファイル表示
+              ${t.fileTreeClearBtn}
             </button>
           `;
         }
@@ -4358,18 +4794,19 @@
     function updateDiffToggleButtonUI() {
       const btn = document.getElementById('toggleInlineDiffBtn');
       if (!btn) return;
+      const t = I18N[currentLang] || I18N.ja;
       if (isInlineDiffMode) {
-        btn.innerHTML = "⏭️ 修正後 (Diff)";
+        btn.innerHTML = t.diffBtnModified;
         btn.style.background = "rgba(34, 197, 94, 0.25)";
         btn.style.borderColor = "#22c55e";
         btn.style.color = "#4ade80";
-        btn.title = "現在: 修正後(Diffハイライト)を表示中 (クリックで修正前を表示)";
+        btn.title = t.diffBtnModifiedTitle;
       } else {
-        btn.innerHTML = "⏮️ 修正前 (原本)";
+        btn.innerHTML = t.diffBtnOriginal;
         btn.style.background = "#334155";
         btn.style.borderColor = "#64748b";
         btn.style.color = "#cbd5e1";
-        btn.title = "現在: 修正前(原本データ)を表示中 (クリックで修正後を表示)";
+        btn.title = t.diffBtnOriginalTitle;
       }
     }
 
@@ -4399,10 +4836,11 @@
       const labelEl = document.getElementById('currentViewLabel');
       if (labelEl) {
         const badge = isShowingBefore 
-          ? `<span style="background:#475569; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">修正前(原本)</span>` 
-          : `<span style="background:#22c55e; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">修正後(Diff)</span>`;
-        labelEl.innerHTML = `表示中: ${icon} <strong style="color:#ffffff;">${escapeHtml(currentFileName)}</strong> ${badge}`;
-        labelEl.title = `クリックで「${currentFileName}」全体への指摘を追加`;
+          ? `<span style="background:#475569; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">${currentLang === 'en' ? 'Original' : '修正前(原本)'}</span>` 
+          : `<span style="background:#22c55e; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">${currentLang === 'en' ? 'Modified (Diff)' : '修正後(Diff)'}</span>`;
+        const viewPrefix = currentLang === 'en' ? 'Viewing: ' : '表示中: ';
+        labelEl.innerHTML = `${viewPrefix}${icon} <strong style="color:#ffffff;">${escapeHtml(currentFileName)}</strong> ${badge}`;
+        labelEl.title = currentLang === 'en' ? `Click to add feedback for "${currentFileName}"` : `クリックで「${currentFileName}」全体への指摘を追加`;
       }
 
       updateDiffToggleButtonUI();
@@ -5345,10 +5783,11 @@
 
     function renderLogs(autoFocus) {
       const container = document.getElementById('logList');
-      document.getElementById('logCountLabel').innerText = `指摘 (${reviewLogs.length}件)`;
+      const t = I18N[currentLang] || I18N.ja;
+      document.getElementById('logCountLabel').innerText = `${t.logCountPrefix} (${reviewLogs.length}${currentLang === 'ja' ? '件' : ''})`;
 
       if (reviewLogs.length === 0) {
-        container.innerHTML = '<div class="empty-logs">テキストを選択して画面上部の追記ボタンを押すと、ここに指摘が蓄積されます。</div>';
+        container.innerHTML = `<div class="empty-logs">${t.emptyLogsMsg}</div>`;
         return;
       }
 
@@ -5357,31 +5796,32 @@
           <div class="card-head">
             <div>
               <span class="file-tag">${escapeHtml(item.file)}</span>
-              ${item.line ? `<span class="line-tag">L.${item.line}付近</span>` : ''}
+              ${item.line ? `<span class="line-tag">${t.cardLinePrefix}${item.line}${t.cardLineSuffix}</span>` : ''}
               <strong style="color:#ffffff; margin-left:4px;">#${idx + 1}</strong>
             </div>
-            <button class="btn btn-danger" onclick="event.stopPropagation(); removeLog(${idx})">削除</button>
+            <button class="btn btn-danger" onclick="event.stopPropagation(); removeLog(${idx})">${t.cardDeleteBtn}</button>
           </div>
 
           <div class="radio-row" onclick="event.stopPropagation()">
-            ${TYPES.map(t => {
-              const isChecked = item.type === t;
+            ${TYPES.map(typeVal => {
+              const isChecked = item.type === typeVal;
+              const displayLabel = (t.typeLabels && t.typeLabels[typeVal]) ? t.typeLabels[typeVal] : typeVal;
               return `
                 <label class="radio-chip ${isChecked ? 'active' : ''}">
-                  <input type="radio" name="t_${idx}" value="${t}" ${isChecked ? 'checked' : ''} onchange="updateType(${idx}, '${t}')">
-                  <span>${t}</span>
+                  <input type="radio" name="t_${idx}" value="${typeVal}" ${isChecked ? 'checked' : ''} onchange="updateType(${idx}, '${typeVal}')">
+                  <span>${displayLabel}</span>
                 </label>
               `;
             }).join('')}
           </div>
 
           <div class="target-box" title="クリックで該当箇所へジャンプ">
-            ${item.target && item.target.startsWith('[ファイル全体]') ? '<span style="background:#2563eb; color:#ffffff; font-size:10.5px; font-weight:bold; padding:1px 6px; border-radius:3px; margin-right:5px;">📁 ファイル全体</span>' : ''}
+            ${item.target && item.target.startsWith('[ファイル全体]') ? `<span style="background:#2563eb; color:#ffffff; font-size:10.5px; font-weight:bold; padding:1px 6px; border-radius:3px; margin-right:5px;">${t.cardEntireTag}</span>` : ''}
             ${escapeHtml(item.target)}
           </div>
           ${item.context ? `<div class="context-box">${escapeHtml(item.context)}</div>` : ''}
 
-          <textarea class="inst-text" id="inst-${idx}" placeholder="指示を入力" onclick="event.stopPropagation()" oninput="updateInst(${idx}, this.value)">${escapeHtml(item.instruction)}</textarea>
+          <textarea class="inst-text" id="inst-${idx}" placeholder="${t.cardPlaceholder}" onclick="event.stopPropagation()" oninput="updateInst(${idx}, this.value)">${escapeHtml(item.instruction)}</textarea>
         </div>
       `).join('');
 
@@ -5659,40 +6099,69 @@
     function copyCurrentPrompt() {
       if (!currentFileName) return;
       const targetLogs = reviewLogs.filter(l => l.file === currentFileName);
-      generatePrompt(targetLogs, `【対象ファイル: ${currentFileName}】`);
+      const title = currentLang === 'en' ? `【Target File: ${currentFileName}】` : `【対象ファイル: ${currentFileName}】`;
+      generatePrompt(targetLogs, title);
     }
 
     function copyAllPrompt() {
-      generatePrompt(reviewLogs, "【全ファイル横断指摘】");
+      const title = currentLang === 'en' ? "【Project-Wide Revision Prompts】" : "【全ファイル横断指摘】";
+      generatePrompt(reviewLogs, title);
     }
 
     function generatePrompt(logs, titleHeader) {
-      if (logs.length === 0) { alert("指摘が登録されていません。"); return; }
+      const t = I18N[currentLang] || I18N.ja;
+      if (logs.length === 0) { alert(t.noIssuesAlert); return; }
 
       for (const item of logs) {
         if (item.file) ensureV0Backup(item.file);
       }
 
-      let out = `${titleHeader}\n`;
-      out += "以下の指定箇所について、対象ファイルのみを直接編集して指摘内容を反映してください。\n\n";
-      out += "【厳守ルール】\n";
-      out += "1. 完全単一ファイル完結: 外部Web検索や他ファイルの走査・grepは一切行わないこと。\n";
-      out += "2. リンク先・外部構造の不問: HTML内のリンク先（href等）や参照先の存在・整合性は一切意識・検証せず、対象テキストのみをシンプルに検索・置換すること。\n";
-      out += "3. 他ファイル参照時の事前確認: もし他ファイルの参照や大掛かりな整合性確認がどうしても必要だと判断される場合は、勝手に調べ始めず、修正前に「どこを何のために参照する必要があるか」をユーザーに確認すること。\n";
-      out += "4. 構造・識別子の保護: 既存のHTMLタグ、属性値、クラス名、およびコード・メソッド等の英語識別子は維持し、指示のない前後の文言は変更しないこと。\n\n";
+      let out = "";
+      if (currentLang === 'en') {
+        out += `${titleHeader}\n`;
+        out += "Please directly edit the specified file to apply the revisions listed below.\n\n";
+        out += "【Strict Execution Rules】\n";
+        out += "1. Single File Scope: Do not execute web searches or search/grep other files in the project.\n";
+        out += "2. Ignore External Links: Do not validate or alter external URL links (hrefs). Strictly perform simple text replacement on the target strings.\n";
+        out += "3. Verify Before Cross-Referencing: If referencing other files is deemed essential, do not proceed autonomously; explicitly verify with the user first.\n";
+        out += "4. Preserve Markup & Identifiers: Keep existing HTML tags, attributes, class names, code blocks, and English code identifiers intact. Do not alter surrounding text unless instructed.\n\n";
 
-      logs.forEach((item, idx) => {
-        out += "========================================\n";
-        out += `[指摘 #${idx + 1}] 【${item.type}】\n`;
-        out += `対象ファイル: ${item.file} ${item.line ? `(L.${item.line}付近)` : ''}\n`;
-        out += `対象テキスト:\n"${item.target}"\n`;
-        if (item.context) out += `周辺文脈:\n"${item.context}"\n`;
-        out += `指示内容:\n${item.instruction ? item.instruction.trim() : "（指示未入力）"}\n\n`;
-      });
+        const typeEnMap = { "修正": "Fix", "追加": "Add", "削除": "Delete", "質問": "Question", "検討中": "Pending" };
 
-      navigator.clipboard.writeText(out).then(() => {
-        alert(`${logs.length} 件のAI指示プロンプトをクリップボードにコピーしました！`);
-      });
+        logs.forEach((item, idx) => {
+          out += "========================================\n";
+          out += `[Feedback #${idx + 1}] 【${typeEnMap[item.type] || item.type}】\n`;
+          out += `Target File: ${item.file} ${item.line ? `(~L.${item.line})` : ''}\n`;
+          out += `Target Text:\n"${item.target}"\n`;
+          if (item.context) out += `Context:\n"${item.context}"\n`;
+          out += `Instruction:\n${item.instruction ? item.instruction.trim() : "(No instruction entered)"}\n\n`;
+        });
+
+        navigator.clipboard.writeText(out).then(() => {
+          alert(`Copied ${logs.length} AI revision prompt(s) to clipboard!`);
+        });
+      } else {
+        out += `${titleHeader}\n`;
+        out += "以下の指定箇所について、対象ファイルのみを直接編集して指摘内容を反映してください。\n\n";
+        out += "【厳守ルール】\n";
+        out += "1. 完全単一ファイル完結: 外部Web検索や他ファイルの走査・grepは一切行わないこと。\n";
+        out += "2. リンク先・外部構造の不問: HTML内のリンク先（href等）や参照先の存在・整合性は一切意識・検証せず、対象テキストのみをシンプルに検索・置換すること。\n";
+        out += "3. 他ファイル参照時の事前確認: もし他ファイルの参照や大掛かりな整合性確認がどうしても必要だと判断される場合は、勝手に調べ始めず、修正前に「どこを何のために参照する必要があるか」をユーザーに確認すること。\n";
+        out += "4. 構造・識別子の保護: 既存のHTMLタグ、属性値、クラス名、およびコード・メソッド等の英語識別子は維持し、指示のない前後の文言は変更しないこと。\n\n";
+
+        logs.forEach((item, idx) => {
+          out += "========================================\n";
+          out += `[指摘 #${idx + 1}] 【${item.type}】\n`;
+          out += `対象ファイル: ${item.file} ${item.line ? `(L.${item.line}付近)` : ''}\n`;
+          out += `対象テキスト:\n"${item.target}"\n`;
+          if (item.context) out += `周辺文脈:\n"${item.context}"\n`;
+          out += `指示内容:\n${item.instruction ? item.instruction.trim() : "（指示未入力）"}\n\n`;
+        });
+
+        navigator.clipboard.writeText(out).then(() => {
+          alert(`${logs.length} 件のAI指示プロンプトをクリップボードにコピーしました！`);
+        });
+      }
     }
 
     async function toggleDiffMode() {
@@ -5700,18 +6169,19 @@
       const normal = document.getElementById('normalContainer');
       const diff = document.getElementById('diffContainer');
       const btn = document.getElementById('toggleDiffBtn');
+      const t = I18N[currentLang] || I18N.ja;
 
       if (isDiffMode) {
         normal.style.display = 'none';
         diff.style.display = 'flex';
-        btn.innerText = "✖ 通常モードへ戻る";
+        btn.innerHTML = formatBtnHtml(t.toggleDiffBtnActive);
         btn.style.background = "#4b5563";
 
         await refreshDiffFrames();
       } else {
         normal.style.display = 'block';
         diff.style.display = 'none';
-        btn.innerText = "🔄 WinMerge風Diff";
+        btn.innerHTML = formatBtnHtml(t.toggleDiffBtn);
         btn.style.background = "var(--success)";
 
         // Diffを閉じて通常モードに戻った際、最新の原本データでプレビューを確実に再読込

@@ -44,18 +44,20 @@ A standalone, client-side HTML & Markdown document review, AI prompt generation,
 
 ## 🚀 クイックスタート (Getting Started)
 
-- 🌐 **Webアプリを開く**: [https://tossy-apps.github.io/doc-review-studio/](https://tossy-apps.github.io/doc-review-studio/)
-- 📖 **操作マニュアル (HTML)**: [https://tossy-apps.github.io/doc-review-studio/manual.html](https://tossy-apps.github.io/doc-review-studio/manual.html)（または [manual.md](manual.md)）
+- 🌐 **Webアプリを開く (Live App)**: [https://tossy-apps.github.io/doc-review-studio/](https://tossy-apps.github.io/doc-review-studio/)
+- 📖 **操作マニュアル (日本語)**: [manual.html](manual.html) / [manual.md](manual.md)
+- 🌐 **User Manual (English)**: [manual.en.html](manual.en.html) / [manual.en.md](manual.en.md)
+- 📄 **English README**: [README.en.md](README.en.md)
 
 ### 基本利用手順
 
-1. Chromium系ブラウザ（**Google Chrome**, **Microsoft Edge**, **Brave** 等）で `index.html`（または上記Webページ）を開きます。
+1. Chromium系ブラウザ（**Google Chrome**, **Microsoft Edge**, **Brave** 等 / **Windows** & **macOS** 両対応）で `index.html`（または上記Webページ）を開きます。
 2. ヘッダーの **「📁 原本を開く」** をクリックし、レビュー対象のHTML / Markdownが入った作業フォルダを選択します。
 3. 左ツリーからファイルを選択し、本文プレビュー上で修正したい箇所をドラッグ選択して **「📌 指摘リストに追加」** を押します（画像は右クリックでも追加可能）。
 4. 指示内容を入力したら、ヘッダーの **「🤖 選択ファイル指示」** または **「🤖 全ファイル指示」** をクリックしてAIプロンプトをコピーし、LLMに渡して修正させます。
 5. AI修正後、**「🔄 原本再読込」**（または開いているファイル単体の **「🔄 ファイル再読込」**）を押すと、即座に最新状態が反映され、**「⏭️ 修正後 (Diff)」** や **「🔄 WinMerge風Diff」** で修正差分を目視検証できます。
 
-> **推奨環境**: Chromium系ブラウザ（Google Chrome, Microsoft Edge, Brave 等）  
+> **推奨環境**: Chromium系ブラウザ（Google Chrome, Microsoft Edge, Brave 等 / Windows & macOS）  
 > ※ File System Access API の仕様上、Firefox および Safari は現在非対応です。
 
 ---
@@ -70,10 +72,13 @@ A standalone, client-side HTML & Markdown document review, AI prompt generation,
 ├── marked.min.js           # Markdownパース用ライブラリ (オフライン完結)
 ├── onboarding-guide.js     # スタジオガイド（動的チュートリアルモジュール）
 ├── onboarding-guide.css    # スタジオガイド用スタイル
-├── manual.html             # 詳細操作マニュアル (単体閲覧可能HTML)
-├── manual.md               # 詳細操作マニュアル原稿 (Markdown)
+├── manual.html             # 詳細操作マニュアル (日本語 HTML)
+├── manual.en.html          # 詳細操作マニュアル (English HTML)
+├── manual.md               # 詳細操作マニュアル原稿 (日本語 Markdown)
+├── manual.en.md            # 詳細操作マニュアル原稿 (English Markdown)
 ├── robots.txt              # クローラー向け設定
-├── README.md               # 本ドキュメント
+├── README.md               # 本ドキュメント (日本語)
+├── README.en.md            # English README
 └── LICENSE                 # ライセンスファイル (MIT & サードパーティライセンス)
 ```
 

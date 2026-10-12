@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DocReview Studio User Manual</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta name="description" content="Official user manual for DocReview Studio. A 100% client-side, privacy-first HTML and Markdown document proofreading studio featuring AI prompt generation, inline diff highlights, and WinMerge-style side-by-side visual diff comparison.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #0f1013;
+      --bg-card: #181a1f;
+      --bg-surface: #22252c;
+      --border: #383c47;
+      --border-light: #4b5263;
+      --text-main: #f8fafc;
+      --text-sub: #e2e8f0;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-hover: #7dd3fc;
+      --accent-bg: rgba(56, 189, 248, 0.12);
+      --link: #38bdf8;
+      --link-hover: #7dd3fc;
+      --success: #22c55e;
+      --warning: #facc15;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 'BIZ UDPGothic', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.85;
+      -webkit-font-smoothing: antialiased;
+      padding: 36px 20px 100px;
+    }
+
+    .doc-container {
+      max-width: 1060px;
+      margin: 0 auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 44px 56px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 12px 8px 60px;
+      }
+      .doc-container {
+        padding: 24px 18px;
+        border-radius: 8px;
+      }
+    }
+
+    .doc-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .doc-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-bg);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent);
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .launch-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #2563eb;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 7px 16px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    .launch-link:hover {
+      background: #1d4ed8;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .lang-switch-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-light);
+      color: #e2e8f0 !important;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .lang-switch-link:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: var(--accent);
+      color: #ffffff !important;
+      transform: translateY(-1px);
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      color: #ffffff;
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+
+    h2 {
+      font-size: 21px;
+      font-weight: 700;
+      margin-top: 48px;
+      margin-bottom: 18px;
+      color: #ffffff;
+      border-left: 5px solid var(--accent);
+      padding-left: 14px;
+      line-height: 1.4;
+    }
+
+    h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-top: 28px;
+      margin-bottom: 14px;
+      color: #f1f5f9;
+    }
+
+    p {
+      margin-bottom: 18px;
+      color: var(--text-main);
+      font-size: 16px;
+      line-height: 1.85;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 36px 0;
+    }
+
+    a {
+      color: var(--link);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease, text-decoration 0.15s ease;
+    }
+
+    a:hover {
+      color: var(--link-hover);
+      text-decoration: underline;
+    }
+
+    ul, ol {
+      margin-bottom: 20px;
+      padding-left: 28px;
+      color: var(--text-main);
+      font-size: 16px;
+    }
+
+    li {
+      margin-bottom: 8px;
+      line-height: 1.8;
+    }
+
+    li strong {
+      color: #ffffff;
+      font-weight: 700;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+      margin: 18px 0 28px;
+      display: block;
+      background: #111214;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0 28px;
+      background: var(--bg-surface);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      font-size: 15px;
+    }
+
+    th {
+      background: #2b2f38;
+      color: #ffffff;
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    pre {
+      background: #0d0e11;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin: 18px 0 24px;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #7dd3fc;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 2px 7px;
+      border-radius: 4px;
+      color: #7dd3fc;
+    }
+
+    pre code {
+      background: transparent;
+      border: none;
+      padding: 0;
+      color: inherit;
+    }
+
+    blockquote {
+      background: var(--accent-bg);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 14px 18px;
+      margin: 20px 0;
+      color: #e0f2fe;
+      font-size: 15px;
+    }
+
+    blockquote p {
+      margin-bottom: 0;
+      color: inherit;
+      font-size: 15px;
+    }
+
+    .back-to-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: #fff;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.6);
+      transition: all 0.2s ease;
+      font-size: 18px;
+      z-index: 40;
+    }
+
+    .back-to-top:hover {
+      background: #2563eb;
+      border-color: var(--accent);
+      color: #fff !important;
+      transform: translateY(-2px);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="doc-container">
+    <!-- Top Navigation -->
+    <div class="doc-nav-bar">
+      <div class="doc-badge">
+        <span>📖 DocReview Studio Official Manual</span>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <a href="./manual.html" class="lang-switch-link" title="日本語版マニュアルに切り替え">
+          <span>🇯🇵 日本語</span>
+        </a>
+        <a href="./index.html" class="launch-link" target="_blank" rel="noopener">
+          <span>🚀 Launch Web App</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Document Body -->
+    <h1>DocReview Studio User Manual</h1>
+    <p>DocReview Studio is a <strong>100% client-side, AI-collaborative document proofreading studio</strong> that runs completely inside your browser. It allows technical writers, reviewers, and engineering teams to load local HTML manuals or Markdown documents (<code>.md</code> / <code>.markdown</code>), record feedback visually, automatically bundle structured revision prompts for LLMs (Claude, Gemini, ChatGPT), highlight inline diffs in real time, and verify changes side-by-side with a WinMerge-style visual diff inspector.</p>
+
+    <hr />
+
+    <h2 id="sec-toc">📑 Table of Contents</h2>
+    <p>
+      <a href="#sec-features">1. Core Concepts &amp; Architecture (Human-AI Review Cycle)</a><br />
+      <a href="#sec-layout">2. UI Layout &amp; 3-Pane Structure</a><br />
+      <a href="#sec-quickstart">3. Quick Start (Get Started in 3 Steps)</a><br />
+      <a href="#sec-review">4. Core Review Workflow (Text Highlights, Image Reviews &amp; Evidence)</a><br />
+      <a href="#sec-aiprompt">5. AI Prompt Integration (Automated LLM Revision Instructions)</a><br />
+      <a href="#sec-diff">6. Visual Diff Inspection (Inline Highlighting &amp; Side-by-Side Comparison)</a><br />
+      <a href="#sec-generations">7. Generation &amp; Snapshot Management (Version Checkpoints &amp; Safe Exports)</a><br />
+      <a href="#sec-shortcuts">8. Keyboard Shortcuts, Independent Zoom &amp; Multi-Window Tools</a>
+    </p>
+
+    <hr />
+
+    <h2 id="sec-features">1. Core Concepts &amp; Architecture (Human-AI Review Cycle)</h2>
+    <p><img alt="Main Workspace View" src="./images/01_main_view.png" /></p>
+    
+    <h3>🤖 Human-in-the-Loop AI Collaboration Cycle</h3>
+    <ul>
+      <li><strong>Human: Highlight &amp; Instruct Intuitive Changes</strong>: Simply drag and select text directly in the rendered preview and type your feedback. DocReview Studio automatically generates high-precision, actionable prompts (target file, approximate line number, selected text, surrounding context, and your instructions) formatted specifically for LLMs (Claude, Gemini, ChatGPT, etc.) so they never guess or break surrounding markup.</li>
+      <li><strong>AI: Modify Code &amp; Safely Verify via Visual Diff</strong>: Once the AI modifies your local files, reload with a single click. Inspect the edits immediately via green inline highlights and side-by-side visual diffs to confirm that all feedback was addressed accurately without unexpected layout breaks or unintended edits.</li>
+    </ul>
+
+    <h3>🔒 Zero Server Transmission &bull; 100% Local Privacy</h3>
+    <ul>
+      <li>Powered by the native <strong>File System Access API</strong>, files and folders are read and manipulated strictly within your browser's local memory.</li>
+      <li>Proprietary manuals, confidential specifications, and private company documents never leave your workstation. No cloud upload, no telemetry, no tracking.</li>
+    </ul>
+
+    <h3>📝 High-Speed HTML &amp; Markdown (.md) Rendering</h3>
+    <ul>
+      <li>Seamlessly renders native HTML manuals and Markdown documents (<code>.md</code> / <code>.markdown</code>) using clean, GitHub-style typography and dark mode styling.</li>
+      <li>Bundles a self-contained, offline Markdown parser (<code>marked.min.js</code>) that requires zero external network dependencies.</li>
+    </ul>
+
+    <h3>🚀 No Installer Required &bull; Cross-Platform (Windows &amp; macOS)</h3>
+    <ul>
+      <li>Runs immediately on any modern Chromium-based browser (<strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Brave</strong>, etc.) across both <strong>Windows</strong> and <strong>macOS</strong> without installing drivers, runtimes, or backend services.</li>
+      <li><em>Note</em>: Because it relies on the File System Access API, Safari and Firefox are currently unsupported.</li>
+    </ul>
+
+    <hr />
+
+    <h2 id="sec-layout">2. UI Layout &amp; 3-Pane Structure</h2>
+    <p>DocReview Studio features an ergonomically designed <strong>3-pane workspace</strong> tailored for extended, distraction-free proofreading sessions.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>Component</th>
+          <th>Primary Functions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Header</strong></td>
+          <td>Control Bar</td>
+          <td>Open source folder, workspace history, generation controls (Snapshot Save / Export As), Evidence export (JSON / MD), AI prompt copy, and WinMerge-style diff toggle.</td>
+        </tr>
+        <tr>
+          <td><strong>Left Pane</strong></td>
+          <td>File Tree</td>
+          <td>Hierarchical tree of HTML/Markdown documents with search filter, badge indicators (HTML / MD), and independent zoom widget.</td>
+        </tr>
+        <tr>
+          <td><strong>Center Pane</strong></td>
+          <td>Preview &amp; Diff Inspector</td>
+          <td>Live HTML/Markdown document rendering, inline diff highlighting, side-by-side block diff comparison, and detached window views.</td>
+        </tr>
+        <tr>
+          <td><strong>Right Pane</strong></td>
+          <td>Evidence List</td>
+          <td>Card list of review feedback items with target text, line estimates, category pills, instructions, and independent zoom controls.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <blockquote>
+      <p><strong>💡 Dynamic Pane Resizing</strong>: Drag the divider lines (resizers) between panes to flexibly adjust the widths of the file tree and evidence cards to suit your display setup.</p>
+    </blockquote>
+
+    <hr />
+
+    <h2 id="sec-quickstart">3. Quick Start (Get Started in 3 Steps)</h2>
+    <p><img alt="Open Source Folder" src="./images/02_open_source.png" /></p>
+
+    <h3>STEP 1: Open Your Source Directory</h3>
+    <ol>
+      <li>Click the <strong>"📁 Open Source"</strong> button in the top header.</li>
+      <li>Choose the local directory containing your HTML or Markdown manuals and grant browser access when prompted.</li>
+      <li>The file hierarchy will populate in the left pane (filter anytime using the search box above).</li>
+      <li>If you have opened this directory previously, use the <strong>"🕒 History"</strong> button to restore your prior workspace state instantly.</li>
+    </ol>
+
+    <h3>STEP 2: Select a Document to Review (Automatic v0 Backup)</h3>
+    <ol>
+      <li>Click any file in the left file tree.</li>
+      <li>The document renders immediately in the center pane. At the exact moment it is opened, its pristine original state is automatically captured and safeguarded as <strong>"v0: Initial Source"</strong> in memory.</li>
+      <li>This ensures that even if an AI overwrites the active file, you can always compare changes against the original benchmark without manual backups.</li>
+    </ol>
+
+    <h3>STEP 3: Highlight Text &amp; Log Feedback</h3>
+    <ol>
+      <li>Drag and highlight any phrase or sentence in the center preview, then click <strong>"📌 Add to Feedback"</strong>.</li>
+      <li>A new card is created in the right pane with auto-detected line numbers and context. Type your instruction (e.g., "Clarify benchmark numbers", "Fix typo").</li>
+    </ol>
+
+    <hr />
+
+    <h2 id="sec-review">4. Core Review Workflow (Text Highlights, Image Reviews &amp; Evidence)</h2>
+    <p><img alt="Text Highlighting and Evidence Input" src="./images/03_evidence_input.png" /></p>
+
+    <h3>1. Logging Feedback from Text Selection</h3>
+    <ol>
+      <li>Highlight target text in the center preview with your mouse cursor.</li>
+      <li>Click either the floating <strong>"📌 Add to Feedback"</strong> tooltip directly above the selection or the toolbar button <strong>"📌 Add to Feedback List"</strong>.</li>
+      <li>A new feedback card is appended to the right pane, and the instruction text area is automatically focused.</li>
+    </ol>
+
+    <h3>2. Reviewing Images &amp; Figures (Right-Click Instant Log)</h3>
+    <ul>
+      <li><strong>Click on an image</strong>: A floating "📌 Add to Feedback" button appears above the upper-right corner of the image.</li>
+      <li><strong>Right-click on an image</strong>: Instantly captures the image file name, figure caption, and parent section heading, creating a pre-filled feedback card in one click.</li>
+    </ul>
+
+    <h3>3. Document-Wide General Feedback</h3>
+    <p>To provide broad guidance for an entire document (e.g., "Unify tone across all sections", "Add SEO keywords to headings"):</p>
+    <ul>
+      <li>Click the <strong>"Viewing: 📄 [filename]"</strong> label in the center toolbar.</li>
+      <li>Alternatively, click <strong>"📌 Add to Feedback List"</strong> without selecting any text.</li>
+    </ul>
+
+    <h3>4. Editing Feedback Cards</h3>
+    <p>Each feedback card automatically tracks and displays:</p>
+    <ul>
+      <li><strong>Target File &amp; Line Estimate</strong>: Automatically calculated from position in original source (e.g., <code>~L.24</code>).</li>
+      <li><strong>Category Pill (Radio)</strong>: Categorize as <code>Fix</code> / <code>Add</code> / <code>Delete</code> / <code>Question</code> / <code>Pending</code>.</li>
+      <li><strong>Selected Text (Yellow Highlight)</strong>: Clicking this automatically scrolls the center preview to the exact passage with an animated pulse highlight.</li>
+      <li><strong>Context Window</strong>: Preserves preceding and following sentences for ambiguity-free AI targeting.</li>
+      <li><strong>Instruction Field</strong>: Detail the precise changes you want the author or LLM to execute.</li>
+    </ul>
+
+    <h3>5. Exporting &amp; Restoring Evidence</h3>
+    <p>Use the <strong>Evidence</strong> action group in the header to preserve and share review results:</p>
+    <ul>
+      <li><strong>💾 JSON</strong>: Exports an exact, structured JSON file of all logged cards for storage or automated parsing.</li>
+      <li><strong>📝 MD Table</strong>: Exports a clean Markdown table ready to paste directly into GitHub Issues, PR descriptions, or review reports.</li>
+      <li><strong>📂 Load</strong>: Imports previously exported JSON files, fully restoring your review workspace and feedback cards.</li>
+    </ul>
+
+    <hr />
+
+    <h2 id="sec-aiprompt">5. AI Prompt Integration (Automated LLM Revision Instructions)</h2>
+    <p><img alt="AI Prompt Generation Modal" src="./images/04_ai_prompt.png" /></p>
+    <p>Transform your logged feedback into production-grade prompts formatted specifically for LLMs (Claude 3.5/3.7, Gemini 2.0/3.0, ChatGPT o3/GPT-4o) to execute direct in-place modifications accurately.</p>
+
+    <h3>Copying Instructions to Clipboard</h3>
+    <ul>
+      <li><strong>🤖 Selected File Prompt</strong>: Formats only the review items belonging to the currently active document.</li>
+      <li><strong>🤖 All Files Prompt</strong>: Consolidates and structures all feedback items across your entire project into a single prompt.</li>
+    </ul>
+
+    <h4>Example of Generated LLM Prompt</h4>
+    <pre><code class="language-markdown">【Target File: 01_intro.html】
+Please directly edit the specified file to apply the revisions listed below.
+
+【Strict Execution Rules】
+1. Single File Scope: Do not execute web searches or search/grep other files in the project.
+2. Ignore External Links: Do not validate or alter external URL links (hrefs). Strictly perform simple text replacement on the target strings.
+3. Preserve Markup & Identifiers: Keep existing HTML tags, attributes, class names, code blocks, and English code identifiers intact. Do not alter surrounding text unless instructed.
+
+========================================
+[Feedback #1] 【Fix】
+Target File: 01_intro.html (~L.18)
+Target Text:
+"In-Memory Full-Text Search: Loads hundreds of Excel sheets into memory and returns results instantly."
+Context:
+"...Key Features: In-Memory Full-Text Search: Loads hundreds of Excel sheets into memory and returns results instantly. 100% Offline Operation..."
+Instruction:
+Add the latest benchmark metrics (~0.8s for 100 files) to demonstrate explicit performance advantages.
+</code></pre>
+
+    <hr />
+
+    <h2 id="sec-diff">6. Visual Diff Inspection (Inline Highlighting &amp; Side-by-Side Comparison)</h2>
+    <p><img alt="Visual Diff Inspector" src="./images/05_diff_inspector.png" /></p>
+    <p>After your AI assistant or team members complete the revisions, inspect and verify changes visually using two dedicated diff modes.</p>
+
+    <h3>1. Real-Time Inline Diff Highlighting (Recommended)</h3>
+    <ul>
+      <li>Click the <strong>"⏭️ Modified (Diff)"</strong> button in the center toolbar. Without leaving your reading flow, all updated or newly added sentences are <strong>highlighted directly in green inside the document preview</strong>.</li>
+      <li>Click again to toggle to <strong>"⏮️ Original"</strong>, allowing instantaneous A/B comparison between revisions.</li>
+    </ul>
+
+    <h3>2. WinMerge-Style Side-by-Side Block Comparison</h3>
+    <ul>
+      <li>Click <strong>"🔄 WinMerge Diff"</strong> in the top header to split the center area into a synchronized 2-pane comparison view:</li>
+      <li><strong>Left Pane</strong>: Original baseline (Safeguarded v0 original or backup folder).</li>
+      <li><strong>Right Pane</strong>: Modified document (Live working directory with latest edits).</li>
+      <li><strong>Center Canvas Bridge Lines</strong>: Connects corresponding diff blocks with smooth bezier curves so you immediately spot where content was inserted or rewritten.</li>
+      <li><strong>Synchronized Scrolling</strong>: Scrolling either side smoothly updates the opposite pane to keep matching sections in view.</li>
+    </ul>
+
+    <h3>3. High-Precision HTML Tokenizer Engine</h3>
+    <ul>
+      <li>Powered by <strong>Google <code>diff-match-patch</code></strong> combined with custom HTML token lexical analysis.</li>
+      <li>Unlike naive text diffs that break upon encounter of tags, our engine tokenizes HTML markup and raw text separately, preventing broken DOM trees and eliminating false-positive color noise on unrelated headings.</li>
+    </ul>
+
+    <h3>4. 🔄 Instant Reload Buttons</h3>
+    <ul>
+      <li><strong>🔄 Reload File</strong> (Center Toolbar): High-speed single-file refresh from disk (updates immediately without rescanning large directories).</li>
+      <li><strong>🔄 Reload Workspace</strong> (Header): Full rescanning of all project folders to detect newly added or renamed files.</li>
+    </ul>
+
+    <hr />
+
+    <h2 id="sec-generations">7. Generation &amp; Snapshot Management (Version Checkpoints &amp; Safe Exports)</h2>
+    <p>Manage progressive document milestones directly in the browser without having to switch over to Git or command line tools.</p>
+
+    <h3>Lifecycle of Generations</h3>
+    <ol>
+      <li><strong>v0: Initial Original</strong>: The untouched baseline recorded automatically upon first opening. It remains safeguarded as the ultimate comparison benchmark.</li>
+      <li><strong>📸 Save Snapshot</strong>: After an AI applies a batch of fixes and you verify the outcome, click <strong>"📸 Save"</strong> to commit this milestone as "v1", "v2", etc.</li>
+      <li><strong>Active Working File</strong>: The live disk file currently receiving edits.</li>
+      <li><strong>Generation Selector</strong>: Select any prior generation from the dropdown menu to dynamically change which baseline version is compared against your working files.</li>
+      <li><strong>📥 Export As</strong>: Export any historic snapshot safely under a distinct filename (e.g., <code>index_v0_snapshot.html</code>) without overwriting your original.</li>
+    </ol>
+
+    <hr />
+
+    <h2 id="sec-shortcuts">8. Keyboard Shortcuts, Independent Zoom &amp; Multi-Window Tools</h2>
+    <p><img alt="Sidebar Toggle and Shortcuts" src="./images/06_pane_toggle.png" /></p>
+
+    <h3>⌨️ Keyboard Shortcuts (Windows &amp; macOS Compatible)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Windows</th>
+          <th>macOS (Mac)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Toggle Left Pane (File Tree)</strong></td>
+          <td><code>Alt + 1</code></td>
+          <td><code>Option + 1</code> (<code>⌥1</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Toggle Right Pane (Evidence List)</strong></td>
+          <td><code>Alt + 2</code></td>
+          <td><code>Option + 2</code> (<code>⌥2</code>)</td>
+        </tr>
+        <tr>
+          <td><strong>Independent Pane Zoom Under Cursor</strong></td>
+          <td><code>Ctrl + Scroll Wheel</code><br /><small style="color:var(--text-muted);">or <code>Alt + Scroll Wheel</code></small></td>
+          <td><code>Cmd + Scroll</code> (<code>⌘</code>)<br /><small style="color:var(--text-muted);">or <code>Option + Scroll</code> (<code>⌥</code>)</small></td>
+        </tr>
+        <tr>
+          <td><strong>Reset Pane Zoom to 100%</strong></td>
+          <td><code>Ctrl + 0</code><br /><small style="color:var(--text-muted);">or Middle-Click / <code>Alt + 0</code></small></td>
+          <td><code>Cmd + 0</code> (<code>⌘0</code>)<br /><small style="color:var(--text-muted);">or Middle-Click / <code>Option + 0</code></small></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>🔍 Independent 3-Zone Zoom System</h3>
+    <p>Each pane (File Tree, Document Preview, and Evidence Cards) features its own dedicated <strong>zoom widget (<code>−</code> <code>100%</code> <code>＋</code>)</strong> in its header.</p>
+    <ul>
+      <li>Enlarge tiny document text without blowing up your file tree, or shrink cards on high-density displays for an expanded overview.</li>
+      <li>The top header and toolbars stay locked at 100% scale and fully respect your native browser zoom settings without distortion.</li>
+    </ul>
+
+    <h3>🖥️ Multi-Display Detached Window Mode</h3>
+    <ul>
+      <li><strong>"🪟 Working"</strong>: Opens the current modified HTML preview in a dedicated, distraction-free external browser window.</li>
+      <li><strong>"🪟 Original"</strong>: Opens the pristine original document in an independent window.</li>
+      <li>Ideal for dual-monitor workflows: place the original document full-screen on monitor 1 and the live modified version on monitor 2.</li>
+    </ul>
+
+  </div>
+
+  <!-- Back to top -->
+  <a href="#" class="back-to-top" title="Back to Top">↑</a>
+
+</body>
+</html>
