@@ -2094,6 +2094,7 @@
     let detachedBackupWin = null;
 
     let isDiffMode = false;
+    let isInlineDiffMode = true; // デフォルトは最新の修正後(Diff)を表示
     let isFilesVisible = true;
     let isLogsVisible = true;
 
@@ -4788,8 +4789,6 @@
       renderGenerationSelect();
       await renderCurrentView();
     }
-
-    let isInlineDiffMode = true; // デフォルトは最新の修正後(Diff)を表示
 
     function updateDiffToggleButtonUI() {
       const btn = document.getElementById('toggleInlineDiffBtn');
