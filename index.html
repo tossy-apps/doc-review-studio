@@ -4924,10 +4924,14 @@
         rawHtmlMap = {};
         blobUrlMap = {};
 
-        // 2. ディレクトリツリーの完全再走査
+        // 2. ディレクトリツリーの完全再走査（ディスク最新状態を読込）
         await loadWorkFolder();
+        await loadWorkspaceReviewLogs();
 
-        // 3. 表示を「最新 (作業中)」に切り替えて、今ディスクにある最新の実ファイルを確実に表示
+        // 3. 現在の原本を「正本」としてベースライン（v0: 修正前）に完全同期
+        await resetV0BaselineToCurrent();
+
+        // 4. 世代管理と表示を更新
         activeGenerationId = 'latest';
         if (generationManifest) {
           generationManifest.activeGeneration = 'latest';
@@ -4936,25 +4940,11 @@
 
         renderGenerationSelect();
         await renderCurrentView();
+        if (isDiffMode) refreshDiffFrames();
 
         hideScanModal();
 
-        // 4. ベースライン（v0）のリセット確認（Git復元時などのテレコ防止）
-        const resetV0 = confirm(
-          "✅ 原本ファイルを最新状態に再読込しました！（最新状態を表示中）\n\n" +
-          "【ベースライン更新の確認】\n" +
-          "Gitでの巻き戻しや外部編集に合わせて、現在のディスク状態を新しい「初回原本 (v0)」としてリセットしますか？\n" +
-          "（「OK」を押すと現在の状態が新たな初回原本になります）"
-        );
-
-        if (resetV0) {
-          showScanModal("📦 初回原本 (v0) を現在の状態にリセット中...");
-          await resetV0BaselineToCurrent();
-          hideScanModal();
-          renderGenerationSelect();
-          await renderCurrentView();
-          alert("初回原本 (v0) を現在のファイル状態で更新・リセットしました！");
-        }
+        showStudioToast("✅ 原本を正本として同期しました<br><span style='font-size:11px; color:#94a3b8;'>現在のディスク状態を新たな基準（修正前・修正後）に設定しました</span>");
       } catch (err) {
         hideScanModal();
         alert("原本再読込エラー: " + err.message);
@@ -4978,14 +4968,20 @@
         backupHtmlMap = {};
         backupFileHandles = {};
 
-        if (currentFileName && workFileHandles[currentFileName]) {
+        // 初回原本（v0）は初期表示ファイル1件のみを退避登録（他はクリック時にオンデマンド退避）
+        const activeFile = currentFileName || htmlFileNames.find(f => f.toLowerCase() === 'index.html') || htmlFileNames[0];
+        if (activeFile && workFileHandles[activeFile]) {
           try {
-            const f = await workFileHandles[currentFileName].getFile();
-            await saveFileToDirectory(v0Dir, currentFileName, f);
-            if (v0Gen) v0Gen.files.push(currentFileName);
-            backupHtmlMap[currentFileName] = await f.text();
-            backupFileHandles[currentFileName] = await getFileHandleFromDirectory(v0Dir, currentFileName);
-          } catch (e) { }
+            const f = await workFileHandles[activeFile].getFile();
+            await saveFileToDirectory(v0Dir, activeFile, f);
+            if (v0Gen && !v0Gen.files.includes(activeFile)) {
+              v0Gen.files.push(activeFile);
+            }
+            backupHtmlMap[activeFile] = await f.text();
+            backupFileHandles[activeFile] = await getFileHandleFromDirectory(v0Dir, activeFile);
+          } catch (e) {
+            console.warn("v0 初期ファイル保存スキップ:", activeFile, e);
+          }
         }
 
         await saveManifest(backupDirHandle, generationManifest);
