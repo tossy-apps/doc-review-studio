@@ -777,8 +777,19 @@
   // ========================================================
   // 7. モーダル開閉
   // ========================================================
+  function updateGuideManualLink() {
+    const isEn = (typeof currentLang !== 'undefined' ? currentLang : localStorage.getItem('doc_review_lang')) === 'en';
+    const manualBtn = document.getElementById('btnQuickManual');
+    if (manualBtn) {
+      manualBtn.href = isEn ? './manual.en.html' : './manual.html';
+      manualBtn.innerHTML = isEn ? '<span>📖</span> User Manual' : '<span>📖</span> マニュアル';
+      manualBtn.title = isEn ? 'Open Detailed User Manual in English' : '詳細な使い方マニュアルを開く';
+    }
+  }
+
   function openGuideModal() {
     initGuideUI();
+    updateGuideManualLink();
     const overlay = document.getElementById('guideModalOverlay');
     if (overlay) {
       overlay.classList.add('active');
@@ -802,7 +813,8 @@
   window.OnboardingGuide = {
     open: openGuideModal,
     close: closeGuideModal,
-    pointTo: pointToElement
+    pointTo: pointToElement,
+    updateLanguage: updateGuideManualLink
   };
   window.DocReviewGuide = window.OnboardingGuide;
   window.openDocReviewGuide = openGuideModal;

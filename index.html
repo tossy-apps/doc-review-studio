@@ -1710,19 +1710,14 @@
     <ul class="file-tree" id="fileTree">
       <li style="color: #9ca3af; cursor: default;">原本フォルダを開いてください</li>
     </ul>
-      <div style="display: flex; gap: 4px; margin-bottom: 4px;">
-        <a href="./manual.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualLink" title="詳細な使い方マニュアルを開く (日本語 / 別タブ)" style="flex: 1; text-align: center; margin-bottom: 0;">
-          📖 マニュアル (JA)
-        </a>
-        <a href="./manual.en.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualEnLink" title="Open Detailed User Manual in English (New Tab)" style="flex: 1; text-align: center; margin-bottom: 0;">
-          🌐 Manual (EN)
-        </a>
-      </div>
-      <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="kensaku-link-box" id="sidebarKensakuLink" title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
-        <img src="kensaku-favicon.png" alt="けんさくくん" class="kensaku-link-img"> けんさくくん (Excel検索) ↗
+      <a href="./manual.html" target="_blank" rel="noopener noreferrer" class="manual-link-box" id="sidebarManualLink" title="詳細な使い方マニュアルを開く (日本語 / 別タブ)">
+        📖 詳細マニュアル ↗
       </a>
-      <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="portal-link-box" title="tossy-apps 公式ポータルへ戻る">
-        🏠 tossy-apps 公式ポータル
+      <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer" class="kensaku-link-box" id="sidebarKensakuLink" title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
+        <img src="kensaku-favicon.png" alt="けんさくくん" class="kensaku-link-img"> <span id="sidebarKensakuText">けんさくくん (Excel検索) ↗</span>
+      </a>
+      <a href="https://tossy-apps.github.io/" target="_blank" rel="noopener noreferrer" class="portal-link-box" id="sidebarPortalLink" title="tossy-apps 公式ポータルへ戻る">
+        <span id="sidebarPortalText">🏠 tossy-apps 公式ポータル</span>
       </a>
       <div style="margin-top: 5px; font-size: 9px; color: #4b5563;">&copy; 2026 DocReview Studio</div>
     </div>
@@ -2216,7 +2211,14 @@
         noIssuesAlert: "指摘が登録されていません。",
         copyPromptSuccess: "件のAI指示プロンプトをクリップボードにコピーしました！",
         langSwitchBtn: "🌐 EN",
-        langSwitchTitle: "Switch UI to English"
+        langSwitchTitle: "Switch UI to English",
+        manualLinkText: "📖 詳細マニュアル ↗",
+        manualLinkHref: "./manual.html",
+        manualLinkTitle: "詳細な使い方マニュアルを開く (日本語 / 別タブ)",
+        sidebarKensakuText: "けんさくくん (Excel検索) ↗",
+        sidebarKensakuTitle: "大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）",
+        sidebarPortalText: "🏠 tossy-apps 公式ポータル",
+        sidebarPortalTitle: "tossy-apps 公式ポータルへ戻る"
       },
       en: {
         openDirBtn: "📁 Open",
@@ -2297,7 +2299,14 @@
         noIssuesAlert: "No feedback items logged.",
         copyPromptSuccess: "prompt(s) copied to clipboard!",
         langSwitchBtn: "🇯🇵 日本語",
-        langSwitchTitle: "UIを日本語に切り替え"
+        langSwitchTitle: "UIを日本語に切り替え",
+        manualLinkText: "📖 User Manual ↗",
+        manualLinkHref: "./manual.en.html",
+        manualLinkTitle: "Open Detailed User Manual in English (New Tab)",
+        sidebarKensakuText: "Kensaku-kun (Excel Search) ↗",
+        sidebarKensakuTitle: "Fast in-memory full-text search for thousands of Excel specifications (30-day free trial)",
+        sidebarPortalText: "🏠 tossy-apps Portal",
+        sidebarPortalTitle: "Return to tossy-apps Official Portal"
       }
     };
 
@@ -2350,6 +2359,22 @@
       const filterClear = document.getElementById('fileFilterClearBtn');
       if (filterClear) filterClear.title = t.fileSearchClearTitle;
 
+      // 左下フッターリンク
+      const mLink = document.getElementById('sidebarManualLink');
+      if (mLink) {
+        mLink.href = t.manualLinkHref;
+        mLink.innerHTML = t.manualLinkText;
+        mLink.title = t.manualLinkTitle;
+      }
+      const kText = document.getElementById('sidebarKensakuText');
+      if (kText) kText.innerText = t.sidebarKensakuText;
+      const kLink = document.getElementById('sidebarKensakuLink');
+      if (kLink) kLink.title = t.sidebarKensakuTitle;
+      const pText = document.getElementById('sidebarPortalText');
+      if (pText) pText.innerText = t.sidebarPortalText;
+      const pLink = document.getElementById('sidebarPortalLink');
+      if (pLink) pLink.title = t.sidebarPortalTitle;
+
       // 中央ツールバー
       setBtn('toggleFilesBtn', t.toggleFilesBtn, t.toggleFilesTitle);
       setBtn('reloadCurrentFileBtn', t.reloadCurrentFileBtn, t.reloadCurrentFileTitle);
@@ -2393,6 +2418,11 @@
       renderLogs(false);
       renderFileTree();
       renderGenerationSelect();
+
+      // ガイド内の言語連動
+      if (window.OnboardingGuide && typeof window.OnboardingGuide.updateLanguage === 'function') {
+        window.OnboardingGuide.updateLanguage();
+      }
     }
 
     const TYPES = ["修正", "追加", "削除", "質問", "検討中"];
@@ -5913,9 +5943,34 @@
     }
 
     function exportAsJson() {
-      if (reviewLogs.length === 0) { alert("エクスポートする指摘がありません。"); return; }
+      const isEn = currentLang === 'en';
+      if (reviewLogs.length === 0) {
+        alert(isEn ? "No feedback items to export." : "エクスポートする指摘がありません。");
+        return;
+      }
+      const rules = isEn ? [
+        "1. Single File Scope: Do not execute web searches or search/grep other files in the project.",
+        "2. Ignore External Links: Do not validate or alter external URL links (hrefs). Strictly perform simple text replacement on the target strings.",
+        "3. Verify Before Cross-Referencing: If referencing other files is deemed essential, do not proceed autonomously; explicitly verify with the user first.",
+        "4. Preserve Markup & Identifiers: Keep existing HTML tags, attributes, class names, code blocks, and English code identifiers intact. Do not alter surrounding text unless instructed."
+      ] : [
+        "1. 完全単一ファイル完結: 外部Web検索や他ファイルの走査・grepは一切行わないこと。",
+        "2. リンク先・外部構造の不問: HTML内のリンク先（href等）や参照先の存在・整合性は一切意識・検証せず、対象テキストのみをシンプルに検索・置換すること。",
+        "3. 他ファイル参照時の事前確認: もし他ファイルの参照や大掛かりな整合性確認がどうしても必要だと判断される場合は、勝手に調べ始めず、修正前に「どこを何のために参照する必要があるか」をユーザーに確認すること。",
+        "4. 構造・識別子の保護: 既存のHTMLタグ、属性値、クラス名、およびコード・メソッド等の英語識別子は維持し、指示のない前後の文言は変更しないこと。"
+      ];
+
       const data = {
-        meta: { project: workDirHandle ? workDirHandle.name : "doc_review", exportDate: new Date().toISOString(), totalIssues: reviewLogs.length },
+        meta: {
+          project: workDirHandle ? workDirHandle.name : "doc_review",
+          exportDate: new Date().toISOString(),
+          language: currentLang,
+          totalIssues: reviewLogs.length,
+          executionRules: rules
+        },
+        systemPrompt: isEn
+          ? "You are an automated document editing assistant. Please directly apply the feedback revisions in 'logs' to the specified target files in place, strictly following the guidelines in 'meta.executionRules'."
+          : "ドキュメント修正アシスタントです。meta.executionRules の厳守ルールに従い、logs に記録された各指摘を対象ファイルに直接反映してください。",
         logs: reviewLogs
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -5923,17 +5978,79 @@
     }
 
     function exportAsMarkdown() {
-      if (reviewLogs.length === 0) { alert("エクスポートする指摘がありません。"); return; }
-      let md = `# ドキュメントレビュー記録エビデンス\n\n`;
-      md += `- **対象フォルダ**: ${workDirHandle ? workDirHandle.name : "doc_review"}\n- **出力日時**: ${new Date().toLocaleString()}\n- **指摘件数**: ${reviewLogs.length}件\n\n`;
-      md += `| # | ファイル | 概算行 | 区分 | 対象テキスト | 指示内容 |\n|---|---|---|---|---|---|\n`;
+      const isEn = currentLang === 'en';
+      if (reviewLogs.length === 0) {
+        alert(isEn ? "No feedback items to export." : "エクスポートする指摘がありません。");
+        return;
+      }
+      let md = "";
+      if (isEn) {
+        md += `# Document Review Evidence & AI Revision Instructions\n\n`;
+        md += `- **Workspace**: ${workDirHandle ? workDirHandle.name : "doc_review"}\n`;
+        md += `- **Export Date**: ${new Date().toLocaleString()}\n`;
+        md += `- **Total Issues**: ${reviewLogs.length}\n\n`;
+        md += `## 🤖 AI Revision Guidelines (Strict Execution Rules)\n`;
+        md += `Please directly edit the specified files to apply the revisions listed below.\n\n`;
+        md += `1. **Single File Scope**: Do not execute web searches or search/grep other files in the project.\n`;
+        md += `2. **Ignore External Links**: Do not validate or alter external URL links (hrefs). Strictly perform simple text replacement on the target strings.\n`;
+        md += `3. **Verify Before Cross-Referencing**: If referencing other files is deemed essential, do not proceed autonomously; explicitly verify with the user first.\n`;
+        md += `4. **Preserve Markup & Identifiers**: Keep existing HTML tags, attributes, class names, code blocks, and English code identifiers intact. Do not alter surrounding text unless instructed.\n\n`;
+        md += `---\n\n`;
+        md += `## 📋 Feedback Summary Table\n\n`;
+        md += `| # | File | Line | Type | Target Text | Instruction |\n|---|---|---|---|---|---|\n`;
 
-      reviewLogs.forEach((item, idx) => {
-        const line = item.line ? `L.${item.line}` : '-';
-        const targetClean = (item.target || '').replace(/[\r\n]+/g, ' ').replace(/\|/g, '\\|');
-        const instClean = (item.instruction || '（未入力）').replace(/[\r\n]+/g, '<br>').replace(/\|/g, '\\|');
-        md += `| ${idx + 1} | ${item.file} | ${line} | ${item.type} | ${targetClean} | ${instClean} |\n`;
-      });
+        const typeEnMap = { "修正": "Fix", "追加": "Add", "削除": "Delete", "質問": "Question", "検討中": "Pending" };
+
+        reviewLogs.forEach((item, idx) => {
+          const line = item.line ? `L.${item.line}` : '-';
+          const targetClean = (item.target || '').replace(/[\r\n]+/g, ' ').replace(/\|/g, '\\|');
+          const instClean = (item.instruction || '(No instruction)').replace(/[\r\n]+/g, '<br>').replace(/\|/g, '\\|');
+          md += `| ${idx + 1} | ${item.file} | ${line} | ${typeEnMap[item.type] || item.type} | ${targetClean} | ${instClean} |\n`;
+        });
+
+        md += `\n---\n\n`;
+        md += `## 📝 Detailed Revision Instructions\n\n`;
+        reviewLogs.forEach((item, idx) => {
+          md += `### [Item #${idx + 1}] 【${typeEnMap[item.type] || item.type}】 ${item.file} ${item.line ? `(~L.${item.line})` : ''}\n\n`;
+          md += `- **Target File**: \`${item.file}\`\n`;
+          if (item.line) md += `- **Approx Line**: L.${item.line}\n`;
+          md += `- **Target Text**:\n\`\`\`text\n${item.target || ''}\n\`\`\`\n`;
+          if (item.context) md += `- **Surrounding Context**:\n\`\`\`text\n${item.context}\n\`\`\`\n`;
+          md += `- **Instruction**:\n${item.instruction ? item.instruction.trim() : '(No instruction entered)'}\n\n`;
+        });
+      } else {
+        md += `# ドキュメントレビュー記録エビデンス（AI修正指示書）\n\n`;
+        md += `- **対象フォルダ**: ${workDirHandle ? workDirHandle.name : "doc_review"}\n`;
+        md += `- **出力日時**: ${new Date().toLocaleString()}\n`;
+        md += `- **指摘件数**: ${reviewLogs.length}件\n\n`;
+        md += `## 🤖 AI修正指示ガイドライン（厳守ルール）\n`;
+        md += `以下の指定箇所について、対象ファイルのみを直接編集して指摘内容を反映してください。\n\n`;
+        md += `1. **完全単一ファイル完結**: 外部Web検索や他ファイルの走査・grepは一切行わないこと。\n`;
+        md += `2. **リンク先・外部構造の不問**: HTML内のリンク先（href等）や参照先の存在・整合性は一切意識・検証せず、対象テキストのみをシンプルに検索・置換すること。\n`;
+        md += `3. **他ファイル参照時の事前確認**: もし他ファイルの参照や大掛かりな整合性確認がどうしても必要だと判断される場合は、勝手に調べ始めず、修正前に「どこを何のために参照する必要があるか」をユーザーに確認すること。\n`;
+        md += `4. **構造・識別子の保護**: 既存のHTMLタグ、属性値、クラス名、およびコード・メソッド等の英語識別子は維持し、指示のない前後の文言は変更しないこと。\n\n`;
+        md += `---\n\n`;
+        md += `## 📋 指摘一覧（サマリー表）\n\n`;
+        md += `| # | ファイル | 概算行 | 区分 | 対象テキスト | 指示内容 |\n|---|---|---|---|---|---|\n`;
+
+        reviewLogs.forEach((item, idx) => {
+          const line = item.line ? `L.${item.line}` : '-';
+          const targetClean = (item.target || '').replace(/[\r\n]+/g, ' ').replace(/\|/g, '\\|');
+          const instClean = (item.instruction || '（未入力）').replace(/[\r\n]+/g, '<br>').replace(/\|/g, '\\|');
+          md += `| ${idx + 1} | ${item.file} | ${line} | ${item.type} | ${targetClean} | ${instClean} |\n`;
+        });
+
+        md += `\n---\n\n`;
+        md += `## 📝 詳細修正指示（個別）\n\n`;
+        reviewLogs.forEach((item, idx) => {
+          md += `### [指摘 #${idx + 1}] 【${item.type}】 ${item.file} ${item.line ? `(L.${item.line}付近)` : ''}\n\n`;
+          md += `- **対象ファイル**: \`${item.file}\`\n`;
+          if (item.line) md += `- **概算行**: L.${item.line}\n`;
+          md += `- **対象テキスト**:\n\`\`\`text\n${item.target || ''}\n\`\`\`\n`;
+          if (item.context) md += `- **周辺文脈**:\n\`\`\`text\n${item.context}\n\`\`\`\n`;
+          md += `- **指示内容**:\n${item.instruction ? item.instruction.trim() : '（指示未入力）'}\n\n`;
+        });
+      }
 
       const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
       triggerDownload(blob, `review_report_${getTimestampStr()}.md`);
