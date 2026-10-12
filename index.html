@@ -145,15 +145,32 @@
     .folder-status-box {
       font-size: 11px;
       color: #93c5fd;
-      font-weight: bold;
-      font-family: monospace;
       background: #111214;
       border: 1px solid #2b2d35;
       border-radius: 4px;
-      padding: 4px 8px;
+      padding: 4px 6px;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .folder-status-box:hover {
+      border-color: #3b82f6;
+      background: #161a22;
+    }
+    .folder-btn-micro {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 10px;
+      padding: 1px 4px;
+      line-height: 1.2;
+      transition: background 0.15s, color 0.15s;
+    }
+    .folder-btn-micro:hover {
+      background: #334155;
+      color: #f8fafc;
     }
 
     .action-group {
@@ -1332,14 +1349,58 @@
       color: #fbbf24;
       border: 1px solid rgba(245, 158, 11, 0.3);
     }
-    .recent-path {
-      color: #64748b;
+    .recent-path-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #101114;
+      border: 1px solid #282b33;
+      border-radius: 4px;
+      padding: 3px 8px;
+      margin: 2px 0 4px 0;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .recent-path-bar:hover {
+      border-color: #3b82f6;
+      background: #141720;
+    }
+    .recent-path-val {
       font-family: monospace;
-      font-size: 10px;
-      max-width: 160px;
+      color: #60a5fa;
+      font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      flex: 1;
+      font-size: 11px;
+    }
+    .recent-path-val.unregistered {
+      color: #f59e0b;
+      font-weight: normal;
+      font-style: italic;
+    }
+    .recent-path-actions {
+      display: inline-flex;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .recent-path-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #94a3b8;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 10px;
+      padding: 1px 6px;
+      line-height: 1.3;
+      transition: all 0.15s;
+    }
+    .recent-path-btn:hover {
+      background: #334155;
+      color: #f8fafc;
+      border-color: #64748b;
     }
     .recent-item-actions {
       display: flex;
@@ -1530,27 +1591,126 @@
       color: #64748b;
     }
 
-    /* サイドバー下部: けんさくくんリンクボックス */
+    /* サイドバー下部: けんさくくんリンクボックス (差分比較と同じ緑パターン背景) */
     .kensaku-link-box {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      background: rgba(16, 185, 129, 0.1);
-      color: #6ee7b7;
-      border: 1px solid rgba(52, 211, 153, 0.3);
+      background: #16a34a;
+      color: #ffffff;
+      border: 1px solid #22c55e;
       border-radius: 6px;
-      padding: 5px 8px;
+      padding: 6px 10px;
       font-size: 11px;
       font-weight: 700;
       text-decoration: none;
       transition: all 0.15s ease;
       margin-top: 6px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     }
     .kensaku-link-box:hover {
-      background: rgba(16, 185, 129, 0.22);
-      border-color: #34d399;
+      background: #15803d;
+      border-color: #4ade80;
       color: #ffffff;
+      box-shadow: 0 2px 6px rgba(22, 163, 74, 0.4);
+    }
+
+    /* ヘッダー: スタジオガイドボタン (水色系) */
+    .btn-guide-sky {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      border: 1px solid #38bdf8 !important;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+      font-weight: 800 !important;
+    }
+    .btn-guide-sky:hover {
+      background: #0369a1 !important;
+      border-color: #7dd3fc !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
+    }
+
+    /* 指摘完了ボタン (未対応時は押したいので水色背景、対応済は目立たない黒背景) */
+    .btn-done {
+      background: #0284c7;
+      color: #ffffff;
+      border: 1px solid #38bdf8;
+      padding: 2px 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      height: 22px;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+    .btn-done:hover {
+      background: #0369a1;
+      border-color: #7dd3fc;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
+    }
+    .btn-done.completed {
+      background: #111827 !important;
+      color: #64748b !important;
+      border: 1px solid #374151 !important;
+      font-weight: 600;
+      box-shadow: none !important;
+    }
+    .btn-done.completed:hover {
+      background: #1f2937 !important;
+      color: #94a3b8 !important;
+      border-color: #4b5563 !important;
+    }
+    .card.completed {
+      opacity: 0.65;
+      background: #0d1612 !important;
+      border-color: #1b472e !important;
+    }
+    .card.completed .target-box {
+      text-decoration: line-through;
+      color: #6ee7b7 !important;
+    }
+    .card.completed .inst-text {
+      color: #94a3b8 !important;
+    }
+
+    /* ソフト非活性ボタンスタイル (クリック可能で案内トーストを出す) */
+    .btn-soft-disabled {
+      opacity: 0.45 !important;
+      cursor: not-allowed !important;
+      filter: grayscale(40%);
+    }
+
+    /* スタジオトースト通知 */
+    .studio-toast {
+      position: fixed;
+      top: 50px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-10px);
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #38bdf8;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 12px rgba(56, 189, 248, 0.3);
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      z-index: 999999;
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .studio-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
 
     /* 空状態プレースホルダーのスクロール調整 */
@@ -1591,7 +1751,6 @@
       #exportMdBtn .btn-text,
       #importJsonBtn .btn-text,
       #createSnapshotBtn .btn-text,
-      #exportGenerationBtn .btn-text,
       #openDetachedModifiedBtn .btn-text,
       #openDetachedBackupBtn .btn-text,
       #showGuideBtn .btn-text {
@@ -1601,7 +1760,6 @@
       #exportMdBtn,
       #importJsonBtn,
       #createSnapshotBtn,
-      #exportGenerationBtn,
       #openDetachedModifiedBtn,
       #openDetachedBackupBtn,
       #showGuideBtn {
@@ -1750,49 +1908,29 @@
             <button class="btn" id="createSnapshotBtn" title="現在の修正状態を新しい版（チェックポイント）として保存" style="padding: 2px 7px; font-size: 11px;" disabled>
               <span class="btn-icon">📸</span><span class="btn-text">セーブ</span>
             </button>
-            <button class="btn" id="exportGenerationBtn" title="選択中の世代ファイルを安全に別名保存（原本は上書きしません）" style="padding: 2px 7px; font-size: 11px;" disabled>
-              <span class="btn-icon">📥</span><span class="btn-text">別名保存</span>
-            </button>
           </div>
         </div>
       </div>
 
-      <!-- グループ2: レビューエビデンス -->
-      <div class="action-group">
-        <div class="group-label">Evidence</div>
-        <div class="group-buttons">
-          <button class="btn" id="exportJsonBtn" title="指摘データをJSON保存">
-            <span class="btn-icon">💾</span><span class="btn-text">JSON</span>
-          </button>
-          <button class="btn" id="exportMdBtn" title="指摘データをMarkdown表保存">
-            <span class="btn-icon">📝</span><span class="btn-text">MD表</span>
-          </button>
-          <button class="btn" id="importJsonBtn" title="過去の指摘JSONを復元">
-            <span class="btn-icon">📂</span><span class="btn-text">読込</span>
-          </button>
-          <input type="file" id="importJsonInput" accept=".json" style="display: none;">
-        </div>
-      </div>
-
-      <!-- グループ3: AIプロンプト生成 -->
+      <!-- グループ2: AIプロンプト生成 -->
       <div class="action-group">
         <div class="group-label">AI Prompt</div>
         <div class="group-buttons">
-          <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの指摘のみコピー">
+          <button class="btn btn-accent" id="copyCurrentBtn" title="選択中ファイルの未完了指摘のみコピー">
             <span class="btn-icon">🤖</span><span class="btn-text">選択中</span>
           </button>
-          <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの指摘を合算コピー">
+          <button class="btn btn-accent" id="copyAllBtn" title="全ファイルの未完了指摘を合算コピー">
             <span class="btn-icon">🤖</span><span class="btn-text">全ファイル</span>
           </button>
         </div>
       </div>
 
-      <!-- グループ4: 差分比較・別窓・ガイド -->
+      <!-- グループ3: 差分比較・別窓・ガイド -->
       <div class="action-group" style="margin-left: auto;">
         <div class="group-label">Diff & View</div>
         <div class="group-buttons">
-          <button class="btn btn-success" id="toggleDiffBtn" title="原本と並列退避フォルダを2画面ブロック差分検証 (WinMerge風)">
-            <span class="btn-icon">🔄</span><span class="btn-text">WinMerge Diff</span>
+          <button class="btn btn-success" id="toggleDiffBtn" title="修正前(退避)と修正後(原本)を2画面に並べて差分比較を開始 (Alt+D / Option+D)">
+            <span class="btn-icon">🔄</span><span class="btn-text">差分比較 (Diff)</span>
           </button>
           <button class="btn" id="openDetachedModifiedBtn" title="原本（修正後作業中）を独立別ウィンドウで開く" style="padding: 2px 6px; font-size: 11px;">
             <span class="btn-icon">🪟</span><span class="btn-text">原本</span>
@@ -1800,20 +1938,11 @@
           <button class="btn" id="openDetachedBackupBtn" title="退避（修正前原本）を独立別ウィンドウで開く" style="display: none; padding: 2px 6px; font-size: 11px;">
             <span class="btn-icon">🪟</span><span class="btn-text">修正前</span>
           </button>
-          <button class="btn" id="showGuideBtn" title="3ステップの動くスタジオガイドを表示">
-            <span class="btn-icon">💡</span><span class="btn-text">ガイド</span>
+          <button class="btn btn-guide-sky" id="showGuideBtn" title="3ステップの動くスタジオガイドを表示">
+            <span class="btn-icon">💡</span><span class="btn-text">スタジオガイド</span>
           </button>
         </div>
       </div>
-
-      <!-- 姉妹ツール誘導: けんさくくん -->
-      <a href="https://tossy-apps.github.io/kensaku-kun/" target="_blank" rel="noopener noreferrer"
-        class="btn-kensaku-badge"
-        title="大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール「けんさくくん」（30日無料試用版あり）">
-        <span class="badge-icon"><img src="kensaku-favicon.png" alt="けんさくくん" class="badge-icon-img"></span>
-        <span class="badge-text"><span class="badge-prefix" id="kensakuBadgePrefix">Excel検索: </span>けんさくくん</span>
-        <span class="badge-arrow">↗</span>
-      </a>
 
       <!-- 言語切替トグル (EN / 日本語) -->
       <button class="btn-lang-toggle" id="langToggleBtn" title="Switch Language / 言語切替 (EN / 日本語)">
@@ -1948,6 +2077,18 @@
           </div>
           <button class="btn btn-danger" id="clearLogsBtn">全消去</button>
         </div>
+      </div>
+      <div class="pane-logs-toolbar" style="display: flex; gap: 5px; padding: 5px 8px; background: #161b22; border-bottom: 1px solid #30363d; align-items: center; justify-content: flex-start; flex-wrap: wrap;">
+        <button class="btn btn-xs" id="exportMdBtn" title="指摘一覧をMarkdownレポートとして出力" style="font-size: 11px; padding: 2px 7px; height: 23px;">
+          <span class="btn-icon">📝</span><span class="btn-text">指摘レポート(MD)</span>
+        </button>
+        <button class="btn btn-xs" id="exportJsonBtn" title="指摘データをJSON保存" style="font-size: 11px; padding: 2px 7px; height: 23px;">
+          <span class="btn-icon">💾</span><span class="btn-text">指摘の保存</span>
+        </button>
+        <button class="btn btn-xs" id="importJsonBtn" title="過去の指摘データを読込" style="font-size: 11px; padding: 2px 7px; height: 23px;">
+          <span class="btn-icon">📂</span><span class="btn-text">指摘の読込</span>
+        </button>
+        <input type="file" id="importJsonInput" accept=".json" style="display: none;">
       </div>
       <div class="log-list" id="logList">
         <div class="empty-logs">テキストを選択して画面上部の追記ボタンを押すと、ここに指摘が蓄積されます。</div>
@@ -2143,26 +2284,24 @@
         genDefault: "(原本を開いてください)",
         createSnapshotBtn: "📸 セーブ",
         createSnapshotTitle: "現在の修正状態を新しい版（チェックポイント）として保存",
-        exportGenBtn: "📥 別名保存",
-        exportGenTitle: "選択中の世代ファイルを安全に別名保存（原本は上書きしません）",
-        exportJsonBtn: "💾 JSON",
-        exportJsonTitle: "指摘データをJSON保存",
-        exportMdBtn: "📝 MD表",
-        exportMdTitle: "指摘データをMarkdown表保存",
-        importJsonBtn: "📂 読込",
-        importJsonTitle: "過去の指摘JSONを復元",
+        exportJsonBtn: "💾 指摘の保存",
+        exportJsonTitle: "指摘データをJSONファイルとして保存",
+        exportMdBtn: "📝 指摘レポート(MD)",
+        exportMdTitle: "指摘一覧をMarkdownレポートとして出力",
+        importJsonBtn: "📂 指摘の読込",
+        importJsonTitle: "保存した指摘データ(JSON)を読み込んで復元",
         copyCurrentBtn: "🤖 選択中",
-        copyCurrentTitle: "選択中ファイルの指摘のみコピー",
+        copyCurrentTitle: "選択中ファイルの未完了指摘のみコピー",
         copyAllBtn: "🤖 全ファイル",
-        copyAllTitle: "全ファイルの指摘を合算コピー",
-        toggleDiffBtn: "🔄 WinMerge Diff",
-        toggleDiffBtnTitle: "原本と並列退避フォルダを2画面ブロック差分検証 (WinMerge風)",
-        toggleDiffBtnActive: "✖ 通常モード",
+        copyAllTitle: "全ファイルの未完了指摘を合算コピー",
+        toggleDiffBtn: "🔄 差分比較 (Diff)",
+        toggleDiffBtnTitle: "修正前(退避)と修正後(原本)を2画面に並べて差分比較を開始 (Alt+D / Option+D)",
+        toggleDiffBtnActive: "✖ 差分終了",
         openDetachedModifiedBtn: "🪟 原本",
         openDetachedModifiedTitle: "原本（修正後作業中）を独立別ウィンドウで開く",
         openDetachedBackupBtn: "🪟 修正前",
         openDetachedBackupTitle: "退避（修正前原本）を独立別ウィンドウで開く",
-        showGuideBtn: "💡 ガイド",
+        showGuideBtn: "💡 スタジオガイド",
         showGuideTitle: "3ステップの動くスタジオガイドを表示",
         kensakuPrefix: "Excel検索: ",
         fileSearchPlaceholder: "🔍 ファイル検索 (HTML / MD)...",
@@ -2200,6 +2339,10 @@
         clearLogsBtn: "全消去",
         emptyLogsMsg: "テキストを選択して画面上部の追記ボタンを押すと、ここに指摘が蓄積されます。",
         cardDeleteBtn: "削除",
+        cardDoneBtn: "未対応",
+        cardDoneBtnActive: "✔ 対応済",
+        cardDoneTitle: "クリックで対応済みにする",
+        cardDoneTitleActive: "クリックで未対応に戻す",
         cardLinePrefix: "L.",
         cardLineSuffix: "付近",
         cardEntireTag: "📁 ファイル全体",
@@ -2231,26 +2374,24 @@
         genDefault: "(Open source folder)",
         createSnapshotBtn: "📸 Save",
         createSnapshotTitle: "Save current revisions as a new version checkpoint",
-        exportGenBtn: "📥 Export",
-        exportGenTitle: "Safely export selected snapshot under a new filename",
-        exportJsonBtn: "💾 JSON",
-        exportJsonTitle: "Export feedback evidence as JSON",
-        exportMdBtn: "📝 MD",
-        exportMdTitle: "Export feedback evidence as Markdown table",
-        importJsonBtn: "📂 Import",
-        importJsonTitle: "Import and restore feedback JSON",
+        exportJsonBtn: "💾 Save Data",
+        exportJsonTitle: "Save feedback data as JSON file",
+        exportMdBtn: "📝 Report (MD)",
+        exportMdTitle: "Export feedback evidence as Markdown report",
+        importJsonBtn: "📂 Load Data",
+        importJsonTitle: "Load and restore feedback data from JSON",
         copyCurrentBtn: "🤖 Active",
-        copyCurrentTitle: "Copy prompts for active file only",
+        copyCurrentTitle: "Copy prompts for uncompleted feedback in active file only",
         copyAllBtn: "🤖 All",
-        copyAllTitle: "Copy all feedback prompts across entire project",
-        toggleDiffBtn: "🔄 WinMerge Diff",
-        toggleDiffBtnTitle: "Toggle WinMerge-style synchronized 2-pane visual diff comparison",
+        copyAllTitle: "Copy all uncompleted feedback prompts across entire project",
+        toggleDiffBtn: "🔄 Visual Diff",
+        toggleDiffBtnTitle: "Toggle synchronized 2-pane visual diff comparison (Alt+D / Option+D)",
         toggleDiffBtnActive: "✖ Exit Diff",
         openDetachedModifiedBtn: "🪟 Working",
         openDetachedModifiedTitle: "Open working document in detached external window",
         openDetachedBackupBtn: "🪟 Original",
         openDetachedBackupTitle: "Open baseline original in detached external window",
-        showGuideBtn: "💡 Guide",
+        showGuideBtn: "💡 Studio Guide",
         showGuideTitle: "Open interactive 3-step studio walkthrough",
         kensakuPrefix: "Excel: ",
         fileSearchPlaceholder: "🔍 Filter files (HTML / MD)...",
@@ -2288,6 +2429,10 @@
         clearLogsBtn: "Clear All",
         emptyLogsMsg: "Highlight text in the preview and click \"Add to Feedback\" to log review items here.",
         cardDeleteBtn: "Delete",
+        cardDoneBtn: "Open",
+        cardDoneBtnActive: "✔ Resolved",
+        cardDoneTitle: "Mark as resolved",
+        cardDoneTitleActive: "Reopen issue",
         cardLinePrefix: "~L.",
         cardLineSuffix: "",
         cardEntireTag: "📁 Entire File",
@@ -2337,7 +2482,6 @@
       setBtn('openRecentBtn', t.openRecentBtn, t.openRecentTitle);
       setBtn('reloadWorkBtn', t.reloadWorkBtn, t.reloadWorkTitle);
       setBtn('createSnapshotBtn', t.createSnapshotBtn, t.createSnapshotTitle);
-      setBtn('exportGenerationBtn', t.exportGenBtn, t.exportGenTitle);
       setBtn('exportJsonBtn', t.exportJsonBtn, t.exportJsonTitle);
       setBtn('exportMdBtn', t.exportMdBtn, t.exportMdTitle);
       setBtn('importJsonBtn', t.importJsonBtn, t.importJsonTitle);
@@ -2941,11 +3085,57 @@
     const copyAllBtn = document.getElementById('copyAllBtn');
     if (copyAllBtn) copyAllBtn.onclick = copyAllPrompt;
 
+    let studioToastTimer = null;
+    function showStudioToast(msg) {
+      let toast = document.getElementById('studioToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'studioToast';
+        toast.className = 'studio-toast';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = msg;
+      toast.classList.add('show');
+      if (studioToastTimer) clearTimeout(studioToastTimer);
+      studioToastTimer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3200);
+    }
+
+    function updateSourceFolderDependentUI() {
+      const hasWorkDir = !!workDirHandle;
+      const targetIds = [
+        'createSnapshotBtn',
+        'reloadWorkBtn',
+        'toggleDiffBtn',
+        'openDetachedModifiedBtn'
+      ];
+      targetIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.classList.toggle('btn-soft-disabled', !hasWorkDir);
+        }
+      });
+    }
+
+    function requireWorkDir(callback, customMsg) {
+      if (!workDirHandle) {
+        const msg = customMsg || (currentLang === 'en' ? "📁 Please open a source folder first from the header" : "📁 まずヘッダー左の「原本を開く」から作業フォルダを選択してください");
+        showStudioToast(msg);
+        return;
+      }
+      if (typeof callback === 'function') callback();
+    }
+
     const toggleDiffBtn = document.getElementById('toggleDiffBtn');
-    if (toggleDiffBtn) toggleDiffBtn.onclick = toggleDiffMode;
+    if (toggleDiffBtn) {
+      toggleDiffBtn.onclick = () => requireWorkDir(toggleDiffMode, currentLang === 'en' ? "📁 Please open a source folder first to compare diff" : "📁 差分比較を行うには、まず「原本を開く」からフォルダを選択してください");
+    }
 
     const openDetachedModifiedBtn = document.getElementById('openDetachedModifiedBtn');
-    if (openDetachedModifiedBtn) openDetachedModifiedBtn.onclick = openDetachedModified;
+    if (openDetachedModifiedBtn) {
+      openDetachedModifiedBtn.onclick = () => requireWorkDir(openDetachedModified);
+    }
 
     const openDetachedBackupBtn = document.getElementById('openDetachedBackupBtn');
     if (openDetachedBackupBtn) openDetachedBackupBtn.onclick = openDetachedBackup;
@@ -2968,10 +3158,10 @@
     }
 
     const reloadWorkBtn = document.getElementById('reloadWorkBtn');
-    if (reloadWorkBtn) reloadWorkBtn.onclick = reloadWorkDirectory;
+    if (reloadWorkBtn) reloadWorkBtn.onclick = () => requireWorkDir(reloadWorkDirectory);
 
     const reloadDiffAfterBtn = document.getElementById('reloadDiffAfterBtn');
-    if (reloadDiffAfterBtn) reloadDiffAfterBtn.onclick = reloadWorkDirectory;
+    if (reloadDiffAfterBtn) reloadDiffAfterBtn.onclick = () => requireWorkDir(reloadWorkDirectory);
 
     const reloadCurrentFileBtn = document.getElementById('reloadCurrentFileBtn');
     if (reloadCurrentFileBtn) reloadCurrentFileBtn.onclick = reloadCurrentFileOnly;
@@ -2997,14 +3187,38 @@
       });
     };
 
-    document.getElementById('createSnapshotBtn').onclick = createNewGenerationSnapshot;
-    const exportGenBtn = document.getElementById('exportGenerationBtn');
-    if (exportGenBtn) exportGenBtn.onclick = exportSelectedGenerationFile;
+    const createSnapshotBtn = document.getElementById('createSnapshotBtn');
+    if (createSnapshotBtn) {
+      createSnapshotBtn.onclick = () => requireWorkDir(createNewGenerationSnapshot);
+    }
     document.getElementById('generationSelect').onchange = onGenerationChange;
+
+    updateSourceFolderDependentUI();
 
     function getRootFullPath() {
       if (!workDirHandle) return '';
       return localStorage.getItem('doc_review_root_path_' + workDirHandle.name) || '';
+    }
+
+    function guessLocalRootPath(folderName) {
+      if (typeof location === 'undefined') return '';
+      if (location.protocol === 'file:') {
+        let p = decodeURIComponent(location.pathname || '');
+        if (p.startsWith('/') && /^\/[a-zA-Z]:/.test(p)) {
+          p = p.slice(1);
+        }
+        p = p.replace(/\//g, '\\');
+        const lastSlash = p.lastIndexOf('\\');
+        if (lastSlash !== -1) {
+          const dir = p.substring(0, lastSlash);
+          const curDirName = dir.split('\\').pop();
+          if (!folderName || curDirName.toLowerCase() === folderName.toLowerCase()) {
+            return dir;
+          }
+          return dir + '\\' + folderName;
+        }
+      }
+      return '';
     }
 
     function setRootFullPath(path) {
@@ -3016,6 +3230,34 @@
         localStorage.removeItem('doc_review_root_path_' + workDirHandle.name);
       }
       updateFolderLabel();
+      if (workDirHandle) {
+        saveRecentWorkspace(workDirHandle);
+      }
+      if (currentFileName) {
+        const copyBtn = document.getElementById('copyFilePathBtn');
+        if (copyBtn) {
+          copyBtn.title = `クリックしてPCフルパスをコピー:\n${getFullFilePath(currentFileName)}`;
+        }
+      }
+    }
+
+    function promptSetRootFullPath() {
+      if (!workDirHandle) return;
+      const current = getRootFullPath();
+      const guessed = guessLocalRootPath(workDirHandle.name);
+      const input = prompt(
+        "【原本フォルダのPCフルパス設定】\nAI指示プロンプトや差分比較に正確なファイルパスを反映するため、PC上のフルパスを入力・確認してください。\n（例: D:\\Dev\\GeminiWorkspace\\doc-review-studio）",
+        current || guessed || (workDirHandle ? workDirHandle.name : "")
+      );
+      if (input !== null) {
+        const trimmed = input.trim();
+        setRootFullPath(trimmed);
+        if (trimmed) {
+          showStudioToast(`✓ フルパスを保存しました:<br><code style="font-size:11px; color:#93c5fd;">${escapeHtml(trimmed)}</code>`);
+        } else {
+          showStudioToast("フルパス設定を解除しました");
+        }
+      }
     }
 
     function getFullFilePath(relPath) {
@@ -3036,34 +3278,71 @@
       const label = document.getElementById('folderLabel');
       if (!label) return;
       if (!workDirHandle) {
-        label.innerText = "[原本未選択]";
-        label.title = "";
+        label.innerHTML = '<span style="color:#64748b; font-weight:600;">[原本未選択]</span>';
+        label.title = "ヘッダーの「原本を開く」からフォルダを選択してください";
         return;
       }
       const rootPath = getRootFullPath();
       if (rootPath) {
-        label.innerHTML = `[原本: <span style="color:#60a5fa;" title="${escapeHtml(rootPath)}">${escapeHtml(rootPath.split(/[\\/]/).pop())}</span> ✏️]`;
-        label.title = `設定中PCフルパス: ${rootPath}\n(クリックでフルパスを変更)`;
+        label.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:4px; width:100%;">
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; font-family:monospace; font-size:10.5px; color:#60a5fa; font-weight:600;" title="原本PCフルパス: ${escapeHtml(rootPath)}&#10;(クリックで変更 / 📋でコピー)">
+              📁 ${escapeHtml(rootPath)}
+            </span>
+            <span style="display:inline-flex; gap:2px; flex-shrink:0;">
+              <button class="folder-btn-micro" id="folderCopyBtn" title="フルパスをコピー">📋</button>
+              <button class="folder-btn-micro" id="folderEditBtn" title="フルパスを変更">✏️</button>
+            </span>
+          </div>
+        `;
+        label.title = `原本PCフルパス: ${rootPath}\n(クリックで変更 / 📋でコピー)`;
       } else {
-        label.innerHTML = `[原本: ${escapeHtml(workDirHandle.name)} ✏️]`;
-        label.title = `クリックしてPCフルパス（例: D:\\...）を設定`;
+        label.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:4px; width:100%;">
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; color:#fbbf24; font-weight:600; font-size:11px;" title="原本名: ${escapeHtml(workDirHandle.name)}&#10;クリックしてPCフルパスを設定してください">
+              📁 ${escapeHtml(workDirHandle.name)}
+              <span style="font-size:9.5px; color:#f59e0b; background:rgba(245,158,11,0.18); border:1px solid rgba(245,158,11,0.4); padding:0 4px; border-radius:3px; margin-left:3px;">⚠️未設定</span>
+            </span>
+            <button class="folder-btn-micro" id="folderEditBtn" title="PCフルパスを設定">✏️ 設定</button>
+          </div>
+        `;
+        label.title = `クリックしてPCフルパス（例: D:\\...）を設定してください`;
       }
-      label.style.cursor = 'pointer';
+
+      const copyBtn = document.getElementById('folderCopyBtn');
+      if (copyBtn) {
+        copyBtn.onclick = async (e) => {
+          e.stopPropagation();
+          const p = getRootFullPath();
+          if (p) {
+            try {
+              await navigator.clipboard.writeText(p);
+            } catch (err) {
+              const ta = document.createElement('textarea');
+              ta.value = p;
+              document.body.appendChild(ta);
+              ta.select();
+              document.execCommand('copy');
+              document.body.removeChild(ta);
+            }
+            showStudioToast(`📋 原本フルパスをコピーしました:<br><code style="font-size:11px; color:#93c5fd;">${escapeHtml(p)}</code>`);
+          }
+        };
+      }
+      const editBtn = document.getElementById('folderEditBtn');
+      if (editBtn) {
+        editBtn.onclick = (e) => {
+          e.stopPropagation();
+          promptSetRootFullPath();
+        };
+      }
     }
 
     const folderLabelEl = document.getElementById('folderLabel');
     if (folderLabelEl) {
       folderLabelEl.onclick = () => {
         if (!workDirHandle) return;
-        const current = getRootFullPath();
-        const input = prompt(
-          "【原本フォルダのPCフルパス設定】\nクリップボードにコピーするルートパスを入力してください。\n（例: D:\\Downloads\\jdk-27_doc-all\\docs）",
-          current || (workDirHandle ? workDirHandle.name : "")
-        );
-        if (input !== null) {
-          setRootFullPath(input.trim());
-          alert("フルパスを保存しました:\n" + (getRootFullPath() || "フォルダ名のみ"));
-        }
+        promptSetRootFullPath();
       };
     }
 
@@ -3095,7 +3374,7 @@
         }, 1200);
       }
 
-      alert(`パスをクリップボードにコピーしました:\n${fullPath}`);
+      showStudioToast(`📋 パスをコピーしました:<br><code style="font-size:11px; color:#93c5fd;">${escapeHtml(fullPath)}</code>`);
     }
 
     async function openWorkDirectory() {
@@ -3110,6 +3389,25 @@
       }
 
       try {
+        let currentRoot = getRootFullPath();
+        if (!currentRoot) {
+          const guessed = guessLocalRootPath(workDirHandle.name);
+          if (guessed && guessed.split(/[\\/]/).pop().toLowerCase() === workDirHandle.name.toLowerCase()) {
+            setRootFullPath(guessed);
+            showStudioToast(`📁 原本PCフルパスを自動設定しました:<br><code style="font-size:11px; color:#93c5fd;">${escapeHtml(guessed)}</code>`);
+          } else {
+            const input = prompt(
+              `【原本フォルダのPCフルパス設定】\n開いたフォルダ:「${workDirHandle.name}」\n\nAI指示プロンプトや差分比較に正確なファイルパスを反映するため、PC上のフルパスを入力・確認してください。\n（※ブラウザの仕様上、OSフルパスは自動取得できないため初回のみ保存します）`,
+              guessed || ""
+            );
+            if (input !== null && input.trim()) {
+              setRootFullPath(input.trim());
+            } else if (guessed) {
+              setRootFullPath(guessed);
+            }
+          }
+        }
+
         updateFolderLabel();
         if (window.DocReviewGuide) window.DocReviewGuide.close();
         await loadWorkFolder();
@@ -3351,6 +3649,29 @@
       const items = await getRecentWorkspaces();
       if (!force && items.length === 0) return;
 
+      // 未設定のアイテムがあれば、localStorageやguessLocalRootPathから自動補完
+      for (const item of items) {
+        if (!item.customPath) {
+          const stored = localStorage.getItem('doc_review_root_path_' + item.name);
+          if (stored) {
+            item.customPath = stored;
+          } else {
+            const guessed = guessLocalRootPath(item.name);
+            if (guessed && guessed.split(/[\\/]/).pop().toLowerCase() === item.name.toLowerCase()) {
+              item.customPath = guessed;
+              localStorage.setItem('doc_review_root_path_' + item.name, guessed);
+            }
+          }
+          if (item.customPath) {
+            try {
+              const db = await openRecentDB();
+              const tx = db.transaction('recent_workspaces', 'readwrite');
+              tx.objectStore('recent_workspaces').put(item);
+            } catch (e) {}
+          }
+        }
+      }
+
       const modal = document.getElementById('recentWorkspacesModal');
       const chk = document.getElementById('recentAutoShowChk');
       if (chk) {
@@ -3387,6 +3708,9 @@
         const safeName = (item.name || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         const safeFile = (item.lastActiveFile || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         const safePath = (item.customPath || '').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const hasPath = !!item.customPath;
+        const escapedRawPath = (item.customPath || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
         return `
           <div class="recent-item-card" id="card-${safeId}">
             <div class="recent-item-info">
@@ -3395,18 +3719,32 @@
                 <span class="recent-item-name" title="${safeName}">${safeName}</span>
                 ${item.lastActiveFile ? `<span class="recent-item-sub" title="${safeFile}">📄 ${safeFile}</span>` : ''}
               </div>
+
+              <!-- PCフルパス専用バー（どこにあるフォルダか一目で判別可能） -->
+              <div class="recent-path-bar" onclick="handleEditRecentPath('${safeId}', event)" title="${hasPath ? 'PCフルパス: ' + safePath + '&#10;(クリックで変更)' : 'クリックしてPCフルパスを設定'}">
+                <span style="font-size: 11px;">📍</span>
+                <span class="recent-path-val ${hasPath ? '' : 'unregistered'}">
+                  ${hasPath ? safePath : '⚠️ PCフルパス未設定（ここをクリックして設定）'}
+                </span>
+                <div class="recent-path-actions">
+                  ${hasPath ? `<button class="recent-path-btn" onclick="handleCopyRecentPath('${escapedRawPath}', event)" title="フルパスをコピー">📋 コピー</button>` : ''}
+                  <button class="recent-path-btn" onclick="handleEditRecentPath('${safeId}', event)" title="${hasPath ? 'フルパスを変更' : 'フルパスを設定'}">
+                    ✏️ ${hasPath ? '変更' : '設定'}
+                  </button>
+                </div>
+              </div>
+
               <div class="recent-item-meta">
                 <span>🕒 ${timeAgo}</span>
                 <span class="recent-badge badge-gen">🏷️ ${item.generationCount || 0}世代</span>
                 <span class="recent-badge badge-issue">📝 指摘 ${item.issueCount || 0}件</span>
-                ${item.customPath ? `<span class="recent-path" title="${safePath}">📍 ${safePath}</span>` : ''}
               </div>
             </div>
             <div class="recent-item-actions">
-              <button class="btn btn-accent btn-sm" onclick="handleOpenRecent('${item.id}')" style="font-weight: 600; padding: 4px 10px;">
+              <button class="btn btn-accent btn-sm" onclick="handleOpenRecent('${item.id}')" style="font-weight: 600; padding: 6px 14px; font-size: 12px;">
                 再開
               </button>
-              <button class="btn-icon-danger" onclick="handleRemoveRecent('${item.id}', event)" title="この履歴を削除">
+              <button class="btn-icon-danger" onclick="handleRemoveRecent('${item.id}', event)" title="この履歴を削除" style="padding: 6px 8px;">
                 🗑️
               </button>
             </div>
@@ -3447,6 +3785,15 @@
 
         workDirHandle = item.handle;
         lastChosenDirHandle = workDirHandle;
+
+        if (item.customPath && !getRootFullPath()) {
+          setRootFullPath(item.customPath);
+        } else if (!getRootFullPath()) {
+          const guessed = guessLocalRootPath(workDirHandle.name);
+          if (guessed && guessed.split(/[\\/]/).pop().toLowerCase() === workDirHandle.name.toLowerCase()) {
+            setRootFullPath(guessed);
+          }
+        }
 
         closeRecentWorkspacesModal();
         if (window.DocReviewGuide) window.DocReviewGuide.close();
@@ -3513,6 +3860,70 @@
       await removeRecentWorkspace(id);
       const items = await getRecentWorkspaces();
       renderRecentWorkspacesList(items);
+    };
+
+    window.handleCopyRecentPath = async function(path, event) {
+      if (event) event.stopPropagation();
+      if (!path) return;
+      try {
+        await navigator.clipboard.writeText(path);
+      } catch (e) {
+        const ta = document.createElement('textarea');
+        ta.value = path;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+      showStudioToast(`📋 フルパスをコピーしました:<br><code style="font-size:11px; color:#93c5fd;">${escapeHtml(path)}</code>`);
+    };
+
+    window.handleEditRecentPath = async function(id, event) {
+      if (event) event.stopPropagation();
+      const item = await getRecentWorkspace(id);
+      if (!item) return;
+
+      const current = item.customPath || localStorage.getItem('doc_review_root_path_' + item.name) || '';
+      const guessed = guessLocalRootPath(item.name);
+      const input = prompt(
+        `【原本フォルダのPCフルパス設定】\n「${item.name}」のPCフルパスを入力してください。\n（例: D:\\Dev\\GeminiWorkspace\\doc-review-studio）`,
+        current || guessed || ""
+      );
+
+      if (input !== null) {
+        const trimmed = input.trim();
+        item.customPath = trimmed;
+        if (trimmed) {
+          localStorage.setItem('doc_review_root_path_' + item.name, trimmed);
+        } else {
+          localStorage.removeItem('doc_review_root_path_' + item.name);
+        }
+
+        // IndexedDBを更新
+        try {
+          const db = await openRecentDB();
+          const tx = db.transaction('recent_workspaces', 'readwrite');
+          tx.objectStore('recent_workspaces').put(item);
+          await new Promise(r => tx.oncomplete = r);
+        } catch (err) {
+          console.warn("Failed to update customPath in IndexedDB:", err);
+        }
+
+        // 現在の作業フォルダと同一なら反映
+        if (workDirHandle && workDirHandle.name === item.name) {
+          updateFolderLabel();
+        }
+
+        // リストを再描画
+        const items = await getRecentWorkspaces();
+        renderRecentWorkspacesList(items);
+
+        if (trimmed) {
+          showStudioToast(`✓ フルパスを保存しました:<br><code style="font-size:11px; color:#93c5fd;">${escapeHtml(trimmed)}</code>`);
+        } else {
+          showStudioToast("フルパス設定を解除しました");
+        }
+      }
     };
 
     async function handleClearAllRecent() {
@@ -3668,7 +4079,6 @@
       const container = document.getElementById('generationControls');
       const sel = document.getElementById('generationSelect');
       const createBtn = document.getElementById('createSnapshotBtn');
-      const exportBtn = document.getElementById('exportGenerationBtn');
 
       if (!backupDirHandle || !generationManifest || !generationManifest.generations || generationManifest.generations.length === 0) {
         if (sel) {
@@ -3677,7 +4087,6 @@
           sel.innerHTML = `<option value="">${t.genDefault}</option>`;
         }
         if (createBtn) createBtn.disabled = true;
-        if (exportBtn) exportBtn.disabled = true;
         return;
       }
 
@@ -3707,39 +4116,8 @@
         sel.appendChild(optLatest);
       }
       if (createBtn) createBtn.disabled = false;
-      if (exportBtn) exportBtn.disabled = false;
 
       updateDiffBeforeLabel();
-    }
-
-    function exportSelectedGenerationFile() {
-      if (!currentFileName) {
-        alert("ファイルが選択されていません。プレビュー対象のファイルを選択してください。");
-        return;
-      }
-      const backupText = (activeGenerationId === 'latest') ? rawHtmlMap[currentFileName] : backupHtmlMap[currentFileName];
-      if (!backupText) {
-        alert(`選択中の世代「${activeGenerationId}」には、このファイル（${currentFileName}）の記録がありません。`);
-        return;
-      }
-      const curGen = generationManifest?.generations?.find(g => g.id === activeGenerationId);
-      const genLabel = curGen ? curGen.id : (activeGenerationId === 'latest' ? 'latest' : 'v0');
-
-      const lastDot = currentFileName.lastIndexOf('.');
-      const base = lastDot !== -1 ? currentFileName.substring(0, lastDot) : currentFileName;
-      const ext = lastDot !== -1 ? currentFileName.substring(lastDot) : '';
-      const baseNameOnly = base.split('/').pop();
-      const outFileName = `${baseNameOnly}_${genLabel}${ext}`;
-
-      const blob = new Blob([backupText], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = outFileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
     }
 
     function updateDiffBeforeLabel() {
@@ -4480,6 +4858,7 @@
           console.warn("初期ファイル自動選択エラー:", e);
         }
       }
+      updateSourceFolderDependentUI();
     }
 
     async function loadBackupFolder() {
@@ -4886,8 +5265,11 @@
           ? `<span style="background:#475569; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">${currentLang === 'en' ? 'Original' : '修正前(原本)'}</span>` 
           : `<span style="background:#22c55e; color:#f8fafc; font-size:10px; padding:2px 6px; border-radius:3px; margin-left:6px; font-weight:bold;">${currentLang === 'en' ? 'Modified (Diff)' : '修正後(Diff)'}</span>`;
         const viewPrefix = currentLang === 'en' ? 'Viewing: ' : '表示中: ';
+        const fullFilePath = getFullFilePath(currentFileName);
         labelEl.innerHTML = `${viewPrefix}${icon} <strong style="color:#ffffff;">${escapeHtml(currentFileName)}</strong> ${badge}`;
-        labelEl.title = currentLang === 'en' ? `Click to add feedback for "${currentFileName}"` : `クリックで「${currentFileName}」全体への指摘を追加`;
+        labelEl.title = currentLang === 'en' 
+          ? `File: ${currentFileName}\nPC Full Path: ${fullFilePath}\n(Click to add feedback for "${currentFileName}")` 
+          : `ファイル: ${currentFileName}\nPCフルパス: ${fullFilePath}\n(クリックで「${currentFileName}」全体への指摘を追加)`;
       }
 
       updateDiffToggleButtonUI();
@@ -5839,14 +6221,19 @@
       }
 
       container.innerHTML = reviewLogs.map((item, idx) => `
-        <div class="card" id="card-${idx}" onclick="focusReviewTarget(${idx})">
+        <div class="card ${item.completed ? 'completed' : ''}" id="card-${idx}" onclick="focusReviewTarget(${idx})">
           <div class="card-head">
             <div>
               <span class="file-tag">${escapeHtml(item.file)}</span>
               ${item.line ? `<span class="line-tag">${t.cardLinePrefix}${item.line}${t.cardLineSuffix}</span>` : ''}
               <strong style="color:#ffffff; margin-left:4px;">#${idx + 1}</strong>
             </div>
-            <button class="btn btn-danger" onclick="event.stopPropagation(); removeLog(${idx})">${t.cardDeleteBtn}</button>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <button class="btn btn-done ${item.completed ? 'completed' : ''}" onclick="event.stopPropagation(); toggleLogCompleted(${idx})" title="${item.completed ? (t.cardDoneTitleActive || '完了を解除する') : (t.cardDoneTitle || '対応完了にする')}">
+                ${item.completed ? (t.cardDoneBtnActive || '✔ 済') : (t.cardDoneBtn || '✔ 完了')}
+              </button>
+              <button class="btn btn-danger" onclick="event.stopPropagation(); removeLog(${idx})">${t.cardDeleteBtn}</button>
+            </div>
           </div>
 
           <div class="radio-row" onclick="event.stopPropagation()">
@@ -5879,6 +6266,14 @@
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     }
+
+    window.toggleLogCompleted = function (idx) {
+      if (reviewLogs[idx]) {
+        reviewLogs[idx].completed = !reviewLogs[idx].completed;
+        renderLogs(false);
+        scheduleSaveReviewLogs();
+      }
+    };
 
     window.focusReviewTarget = function (idx) {
       const item = reviewLogs[idx];
@@ -5983,12 +6378,17 @@
         alert(isEn ? "No feedback items to export." : "エクスポートする指摘がありません。");
         return;
       }
+      const completedCount = reviewLogs.filter(l => l.completed).length;
+      const pendingCount = reviewLogs.length - completedCount;
+      const percent = Math.round((completedCount / reviewLogs.length) * 100);
+
       let md = "";
       if (isEn) {
         md += `# Document Review Evidence & AI Revision Instructions\n\n`;
         md += `- **Workspace**: ${workDirHandle ? workDirHandle.name : "doc_review"}\n`;
         md += `- **Export Date**: ${new Date().toLocaleString()}\n`;
-        md += `- **Total Issues**: ${reviewLogs.length}\n\n`;
+        md += `- **Total Issues**: ${reviewLogs.length} items\n`;
+        md += `- **Progress**: ${completedCount} / ${reviewLogs.length} completed (${percent}%) [Pending: ${pendingCount}]\n\n`;
         md += `## 🤖 AI Revision Guidelines (Strict Execution Rules)\n`;
         md += `Please directly edit the specified files to apply the revisions listed below.\n\n`;
         md += `1. **Single File Scope**: Do not execute web searches or search/grep other files in the project.\n`;
@@ -5997,21 +6397,24 @@
         md += `4. **Preserve Markup & Identifiers**: Keep existing HTML tags, attributes, class names, code blocks, and English code identifiers intact. Do not alter surrounding text unless instructed.\n\n`;
         md += `---\n\n`;
         md += `## 📋 Feedback Summary Table\n\n`;
-        md += `| # | File | Line | Type | Target Text | Instruction |\n|---|---|---|---|---|---|\n`;
+        md += `| # | Status | File | Line | Type | Target Text | Instruction |\n|---|---|---|---|---|---|---|\n`;
 
         const typeEnMap = { "修正": "Fix", "追加": "Add", "削除": "Delete", "質問": "Question", "検討中": "Pending" };
 
         reviewLogs.forEach((item, idx) => {
+          const status = item.completed ? '✔ Done' : '⏳ Pending';
           const line = item.line ? `L.${item.line}` : '-';
           const targetClean = (item.target || '').replace(/[\r\n]+/g, ' ').replace(/\|/g, '\\|');
           const instClean = (item.instruction || '(No instruction)').replace(/[\r\n]+/g, '<br>').replace(/\|/g, '\\|');
-          md += `| ${idx + 1} | ${item.file} | ${line} | ${typeEnMap[item.type] || item.type} | ${targetClean} | ${instClean} |\n`;
+          md += `| ${idx + 1} | ${status} | ${item.file} | ${line} | ${typeEnMap[item.type] || item.type} | ${targetClean} | ${instClean} |\n`;
         });
 
         md += `\n---\n\n`;
         md += `## 📝 Detailed Revision Instructions\n\n`;
         reviewLogs.forEach((item, idx) => {
-          md += `### [Item #${idx + 1}] 【${typeEnMap[item.type] || item.type}】 ${item.file} ${item.line ? `(~L.${item.line})` : ''}\n\n`;
+          const status = item.completed ? '[✔ Done]' : '[⏳ Pending]';
+          md += `### [Item #${idx + 1}] 【${typeEnMap[item.type] || item.type}】 ${status} ${item.file} ${item.line ? `(~L.${item.line})` : ''}\n\n`;
+          md += `- **Status**: ${item.completed ? 'Completed (Done)' : 'Pending (Action Required)'}\n`;
           md += `- **Target File**: \`${item.file}\`\n`;
           if (item.line) md += `- **Approx Line**: L.${item.line}\n`;
           md += `- **Target Text**:\n\`\`\`text\n${item.target || ''}\n\`\`\`\n`;
@@ -6022,7 +6425,8 @@
         md += `# ドキュメントレビュー記録エビデンス（AI修正指示書）\n\n`;
         md += `- **対象フォルダ**: ${workDirHandle ? workDirHandle.name : "doc_review"}\n`;
         md += `- **出力日時**: ${new Date().toLocaleString()}\n`;
-        md += `- **指摘件数**: ${reviewLogs.length}件\n\n`;
+        md += `- **指摘件数**: ${reviewLogs.length}件\n`;
+        md += `- **進捗状況**: ${completedCount} / ${reviewLogs.length} 件 完了 (${percent}%) [未対応: ${pendingCount}件]\n\n`;
         md += `## 🤖 AI修正指示ガイドライン（厳守ルール）\n`;
         md += `以下の指定箇所について、対象ファイルのみを直接編集して指摘内容を反映してください。\n\n`;
         md += `1. **完全単一ファイル完結**: 外部Web検索や他ファイルの走査・grepは一切行わないこと。\n`;
@@ -6031,19 +6435,22 @@
         md += `4. **構造・識別子の保護**: 既存のHTMLタグ、属性値、クラス名、およびコード・メソッド等の英語識別子は維持し、指示のない前後の文言は変更しないこと。\n\n`;
         md += `---\n\n`;
         md += `## 📋 指摘一覧（サマリー表）\n\n`;
-        md += `| # | ファイル | 概算行 | 区分 | 対象テキスト | 指示内容 |\n|---|---|---|---|---|---|\n`;
+        md += `| # | 状態 | ファイル | 概算行 | 区分 | 対象テキスト | 指示内容 |\n|---|---|---|---|---|---|---|\n`;
 
         reviewLogs.forEach((item, idx) => {
+          const status = item.completed ? '✔ 完了' : '⏳ 未対応';
           const line = item.line ? `L.${item.line}` : '-';
           const targetClean = (item.target || '').replace(/[\r\n]+/g, ' ').replace(/\|/g, '\\|');
           const instClean = (item.instruction || '（未入力）').replace(/[\r\n]+/g, '<br>').replace(/\|/g, '\\|');
-          md += `| ${idx + 1} | ${item.file} | ${line} | ${item.type} | ${targetClean} | ${instClean} |\n`;
+          md += `| ${idx + 1} | ${status} | ${item.file} | ${line} | ${item.type} | ${targetClean} | ${instClean} |\n`;
         });
 
         md += `\n---\n\n`;
         md += `## 📝 詳細修正指示（個別）\n\n`;
         reviewLogs.forEach((item, idx) => {
-          md += `### [指摘 #${idx + 1}] 【${item.type}】 ${item.file} ${item.line ? `(L.${item.line}付近)` : ''}\n\n`;
+          const status = item.completed ? '[✔ 完了]' : '[⏳ 未対応]';
+          md += `### [指摘 #${idx + 1}] 【${item.type}】 ${status} ${item.file} ${item.line ? `(L.${item.line}付近)` : ''}\n\n`;
+          md += `- **対応状況**: ${item.completed ? '対応完了済み' : '未対応 (要作業)'}\n`;
           md += `- **対象ファイル**: \`${item.file}\`\n`;
           if (item.line) md += `- **概算行**: L.${item.line}\n`;
           md += `- **対象テキスト**:\n\`\`\`text\n${item.target || ''}\n\`\`\`\n`;
@@ -6232,14 +6639,34 @@
 
     function copyCurrentPrompt() {
       if (!currentFileName) return;
-      const targetLogs = reviewLogs.filter(l => l.file === currentFileName);
+      const targetLogs = reviewLogs.filter(l => l.file === currentFileName && !l.completed);
+      if (targetLogs.length === 0) {
+        const fileAllLogs = reviewLogs.filter(l => l.file === currentFileName);
+        if (fileAllLogs.length > 0) {
+          alert(currentLang === 'en' ? "All feedback items for this file are already completed!" : "このファイルの指摘はすべて完了済みです！");
+        } else {
+          const t = I18N[currentLang] || I18N.ja;
+          alert(t.noIssuesAlert);
+        }
+        return;
+      }
       const title = currentLang === 'en' ? `【Target File: ${currentFileName}】` : `【対象ファイル: ${currentFileName}】`;
       generatePrompt(targetLogs, title);
     }
 
     function copyAllPrompt() {
+      const targetLogs = reviewLogs.filter(l => !l.completed);
+      if (targetLogs.length === 0) {
+        if (reviewLogs.length > 0) {
+          alert(currentLang === 'en' ? "All feedback items across the project are already completed!" : "プロジェクト内のすべての指摘が対応完了済みです！");
+        } else {
+          const t = I18N[currentLang] || I18N.ja;
+          alert(t.noIssuesAlert);
+        }
+        return;
+      }
       const title = currentLang === 'en' ? "【Project-Wide Revision Prompts】" : "【全ファイル横断指摘】";
-      generatePrompt(reviewLogs, title);
+      generatePrompt(targetLogs, title);
     }
 
     function generatePrompt(logs, titleHeader) {

@@ -133,7 +133,7 @@
       summary: '左右並列Diff ➔ 原本再読込 ➔ エビデンス保存',
       slides: [
         {
-          badge: '1/2 左右2画面でブロック差分検証 (WinMerge風)',
+          badge: '1/2 左右2画面でブロック差分検証 (差分比較)',
           html: `
             <div class="anim-box-step3" style="width: 90%;">
               <div class="ai-copy-chip" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
@@ -172,7 +172,7 @@
           items: [
             {
               id: 'toggleDiffBtn',
-              name: '🔄 WinMerge風Diff',
+              name: '🔄 差分比較 (Diff)',
               loc: 'ヘッダー右',
               desc: '左右2画面で退避原本とAI修正原本を並列比較し、ブロック差分を検証',
               icon: '🔄'
@@ -210,16 +210,16 @@
           items: [
             {
               id: 'exportJsonBtn',
-              name: '💾 指摘JSON保存',
-              loc: 'ヘッダー中央',
+              name: '💾 指摘の保存',
+              loc: '右ペイン上部',
               desc: '指摘データをJSONファイルとしてエクスポート保存します',
               icon: '💾'
             },
             {
               id: 'exportMdBtn',
-              name: '📝 MD表保存',
-              loc: 'ヘッダー中央',
-              desc: '指摘一覧をMarkdownテーブル表として出力・報告用保存します',
+              name: '📝 指摘レポート(MD)',
+              loc: '右ペイン上部',
+              desc: '指摘一覧をMarkdownレポートとして出力・報告用保存します',
               icon: '📝'
             }
           ]
@@ -317,7 +317,7 @@
             {
               id: 'sidebarKensakuLink',
               name: 'Excel検索: けんさくくん',
-              loc: '左下フッター / ヘッダー右',
+              loc: '左下フッター',
               desc: '大量の神Excel・方眼紙仕様書を爆速インメモリ検索するWindows専用ツール（30日無料試用版あり）',
               icon: '<img src="kensaku-favicon.png" alt="けんさくくん" style="width:20px;height:20px;border-radius:50%;object-fit:contain;vertical-align:middle;">'
             }
